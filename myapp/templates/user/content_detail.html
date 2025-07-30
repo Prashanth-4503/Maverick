@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% load static %}
+{% load custom_filters %}
+
+
+{% block title %}{{ content.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900">
+        <i class="fas fa-book-open text-blue-500 mr-2"></i> {{ content.title }}
+      </h1>
+      <p class="mt-2 text-gray-600">
+        Part of: <a href="{% url 'module_detail' module.id %}" class="text-blue-600 hover:underline">{{ module.name }}</a>
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0">
+      <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+        {{ content.content_type|title }}
+      </span>
+    </div>
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-8">
+    <div class="md:w-2/3">
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+
+        {# --- Video Content --- #}
+        {% if content.content_type == 'video' %}
+          {% if embed_url %}
+            <div class="relative" style="padding-top: 56.25%;"> {# 16:9 Aspect Ratio #}
+              <iframe src="{{ embed_url }}" frameborder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen
+                      class="absolute top-0 left-0 w-full h-full rounded-lg">
+              </iframe>
+            </div>
+          {% elif content.video_url %}
+            <div class="bg-gray-100 rounded-lg p-4 text-center">
+              <video controls class="w-full h-auto rounded-lg" preload="metadata">
+                <source src="{{ content.video_url }}" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+              <p class="mt-2 text-sm text-gray-600">
+                <a href="{{ content.video_url }}" class="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                  Open video in new tab
+                </a>
+              </p>
+            </div>
+          {% else %}
+            <p class="text-red-600">Video URL not available.</p>
+          {% endif %}
+
+          <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+            {% csrf_token %}
+            {% if not completed %}
+              <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium w-full md:w-auto">
+                <i class="fas fa-check mr-2"></i> Mark as Read
+              </button>
+            {% else %}
+              <p class="mt-4 text-green-600 font-semibold flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> You have completed this content.
+              </p>
+            {% endif %}
+          </form>
+
+        {# --- PDF Content --- #}
+{# --- PDF Content --- #}
+{% elif content.content_type == 'pdf' %}
+  {% if pdf_url %}
+    <div class="mb-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">PDF Document</h3>
+        <div class="flex gap-2">
+          <a href="{{ pdf_url }}" 
+             class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center" 
+             download>
+            <i class="fas fa-download mr-2"></i> Download
+          </a>
+          <a href="{{ pdf_url }}" 
+             target="_blank" 
+             rel="noopener noreferrer"
+             class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+            <i class="fas fa-external-link-alt mr-2"></i> Open in New Tab
+          </a>
+        </div>
+      </div>
+
+      {# PDF Preview Section #}
+      <div class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50 min-h-[600px]" >
+        {% if pdf_size and pdf_size < 10000000 %}  {# 10MB limit for preview #}
+          {# Primary PDF Viewer #}
+          <object id="pdf-viewer" 
+                  data="{{ pdf_url }}#toolbar=0&navpanes=0&scrollbar=0" 
+                  type="application/pdf" 
+                  class="w-full h-[600px]" >
+            <div class="p-8 text-center">
+              <i class="fas fa-file-pdf text-5xl text-red-500 mb-4"></i>
+              <p class="text-gray-700 mb-4" >Your browser doesn't support PDF viewing.</p>
+              <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="{{ pdf_url }}" 
+                   class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center"
+                   download>
+                  <i class="fas fa-download mr-2"></i> Download PDF
+                </a>
+                <a href="https://docs.google.com/viewer?url={{ request.build_absolute_uri|urlencode }}{{ pdf_url|urlencode }}" 
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+                  <i class="fab fa-google-drive mr-2"></i> View with Google
+                </a>
+              </div>
+            </div>
+          </object>
+        {% else %}
+          {# For files too large to preview #}
+          <div class="p-8 text-center">
+            <i class="fas fa-file-pdf text-5xl text-red-500 mb-4"></i>
+            <p class="text-gray-700 mb-4">
+              This PDF is too large to preview ({{ pdf_size|filesizeformat }}). 
+              Please download to view.
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+              <a href="{{ pdf_url }}" 
+                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center"
+                 download>
+                <i class="fas fa-download mr-2"></i> Download PDF
+              </a>
+              <a href="https://docs.google.com/viewer?url={{ request.build_absolute_uri|urlencode }}{{ pdf_url|urlencode }}" 
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded inline-flex items-center justify-center">
+                <i class="fab fa-google-drive mr-2"></i> View with Google
+              </a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% else %}
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <strong class="font-bold">Error!</strong>
+      <span class="block sm:inline">PDF file is missing or unavailable.</span>
+    </div>
+  {% endif %}
+
+  <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+    {% csrf_token %}
+    {% if not completed %}
+      <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium w-full md:w-auto">
+        <i class="fas fa-check mr-2"></i> Mark as Read
+      </button>
+    {% else %}
+      <p class="mt-4 text-green-600 font-semibold flex items-center gap-2">
+        <i class="fas fa-check-circle"></i> You have completed this content.
+      </p>
+    {% endif %}
+  </form>
+
+{# --- Quiz Content --- #}
+{# --- Quiz Content --- #}
+{% elif content.content_type == 'quiz' %}
+  <div class="bg-blue-50 rounded-lg p-6 mb-6">
+    <h3 class="text-xl font-semibold text-blue-800 mb-4">Quiz: {{ content.title }}</h3>
+
+    {% if quiz_questions %}
+      <form id="quiz-form" method="POST" action="{% url 'submit_quiz_form' content.id %}">
+        {% csrf_token %}
+        {% for question in quiz_questions %}
+          {% with q_index=forloop.counter0 %}
+          <div class="question-block mb-6 p-4 bg-white rounded shadow border border-gray-300">
+            <div class="flex justify-between items-center mb-2">
+              <span class="text-sm font-semibold text-gray-600">{{ question.category }}</span>
+              <span class="text-xs text-gray-500 uppercase tracking-wide">{{ question.difficulty }}</span>
+            </div>
+            <p class="mb-4 font-semibold text-gray-800">Q{{ forloop.counter }}: {{ question.question_text }}</p>
+
+            <fieldset class="space-y-3">
+              {% for option in question.options %}
+                {% with o_index=forloop.counter0 %}
+                  {% if quiz_taken %}
+                    {# Post-submission answers: color-code options and disable inputs #}
+                    {% if option == question.correct_answer %}
+                      {% if user_quiz_answers|get_item:q_index == option %}
+                        {# User selected correct answer #}
+                        <input 
+                          type="radio" 
+                          id="q{{ q_index }}_option{{ o_index }}" 
+                          name="q{{ q_index }}" 
+                          value="{{ option }}" 
+                          class="peer hidden" 
+                          checked 
+                          disabled 
+                        />
+                        <label for="q{{ q_index }}_option{{ o_index }}" 
+                               class="flex items-center cursor-default rounded-lg border border-green-500 bg-green-100 p-3 text-green-800 transition shadow">
+                          <span class="w-5 h-5 rounded-full border-2 border-green-500 flex items-center justify-center mr-3 text-white bg-green-500">
+                            <i class="fas fa-check text-xs"></i>
+                          </span>
+                          <span class="flex-grow">{{ option }}</span>
+                        </label>
+                      {% else %}
+                        {# Correct answer, user did NOT select #}
+                        <input 
+                          type="radio" 
+                          id="q{{ q_index }}_option{{ o_index }}" 
+                          name="q{{ q_index }}" 
+                          value="{{ option }}" 
+                          class="peer hidden" 
+                          disabled 
+                        />
+                        <label for="q{{ q_index }}_option{{ o_index }}" 
+                               class="flex items-center cursor-default rounded-lg border border-green-300 bg-green-50 p-3 text-green-700 transition">
+                          <span class="w-5 h-5 rounded-full border-2 border-green-300 flex items-center justify-center mr-3 text-green-300">
+                            <i class="fas fa-check text-xs"></i>
+                          </span>
+                          <span class="flex-grow">{{ option }}</span>
+                        </label>
+                      {% endif %}
+                    {% elif user_quiz_answers|get_item:q_index == option %}
+                      {# User's incorrect selected answer #}
+                      <input 
+                        type="radio" 
+                        id="q{{ q_index }}_option{{ o_index }}" 
+                        name="q{{ q_index }}" 
+                        value="{{ option }}" 
+                        class="peer hidden" 
+                        checked 
+                        disabled 
+                      />
+                      <label for="q{{ q_index }}_option{{ o_index }}" 
+                             class="flex items-center cursor-default rounded-lg border border-red-500 bg-red-100 p-3 text-red-800 transition shadow">
+                        <span class="w-5 h-5 rounded-full border-2 border-red-500 flex items-center justify-center mr-3 text-white bg-red-500">
+                          <i class="fas fa-times text-xs"></i>
+                        </span>
+                        <span class="flex-grow">{{ option }}</span>
+                      </label>
+                    {% else %}
+                      {# Other options - disabled neutral style #}
+                      <input 
+                        type="radio" 
+                        id="q{{ q_index }}_option{{ o_index }}" 
+                        name="q{{ q_index }}" 
+                        value="{{ option }}" 
+                        class="peer hidden" 
+                        disabled 
+                      />
+                      <label for="q{{ q_index }}_option{{ o_index }}" 
+                             class="flex items-center cursor-default rounded-lg border border-gray-200 bg-gray-50 p-3 text-gray-600 transition">
+                        <span class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center mr-3"></span>
+                        <span class="flex-grow">{{ option }}</span>
+                      </label>
+                    {% endif %}
+
+                  {% else %}
+                    {# Before quiz submission: interactive, enabled radios #}
+                    <div class="quiz-option">
+                      <input 
+                        type="radio" 
+                        id="q{{ q_index }}_option{{ o_index }}" 
+                        name="q{{ q_index }}" 
+                        value="{{ option }}" 
+                        class="peer hidden" 
+                        required 
+                      />
+                      <label for="q{{ q_index }}_option{{ o_index }}" 
+                             class="flex items-center cursor-pointer rounded-lg border border-gray-300 p-3 text-gray-800 transition hover:bg-gray-100 peer-checked:border-blue-600 peer-checked:bg-blue-50"
+                             tabindex="0">
+                        <span class="w-5 h-5 rounded-full border-2 border-gray-400 peer-checked:border-blue-600 peer-checked:bg-blue-600 flex items-center justify-center mr-3 text-white">
+                          <i class="fas fa-dot-circle peer-checked:inline hidden text-xs"></i>
+                        </span>
+                        <span class="flex-grow">{{ option }}</span>
+                      </label>
+                    </div>
+                  {% endif %}
+                {% endwith %}
+              {% endfor %}
+            </fieldset>
+
+            {# Show incorrect message only if user answered incorrectly #}
+            {% if quiz_taken and user_quiz_answers|get_item:q_index != question.correct_answer %}
+              <p class="mt-2 text-sm font-semibold text-red-600 flex items-center">
+                <i class="fas fa-times-circle mr-2"></i> Incorrect.
+              </p>
+              <p class="mt-1 text-sm font-semibold text-gray-700">
+                Correct Answer: <span class="text-green-600">{{ question.correct_answer }}</span>
+              </p>
+            {% endif %}
+          </div>
+          {% endwith %}
+        {% endfor %}
+
+        {% if not quiz_taken %}
+         <button type="submit" 
+        class="mt-4 w-full max-w-xs mx-auto bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-6 rounded-full text-sm font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 flex items-center justify-center space-x-2">
+    <i class="fas fa-paper-plane text-xs"></i>
+    <span>Submit Quiz</span>
+</button>
+        {% else %}
+          <div class="mt-4 p-4 border border-blue-200 bg-blue-50 rounded-lg text-center">
+            <p class="text-gray-700 font-semibold mb-2">You have already taken this quiz.</p>
+            <p class="text-xl font-bold text-blue-800">Your Score: {{ attempt.score }} / {{ attempt.total }}</p>
+          </div>
+        {% endif %}
+      </form>
+
+      {# Mark as Read button separate from quiz submission form #}
+      <!-- <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+        {% csrf_token %}
+        {% if not completed %}
+          <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium w-full md:w-auto">
+            <i class="fas fa-check mr-2"></i> Mark as Read
+          </button>
+        {% else %}
+          <p class="mt-4 text-green-600 font-semibold flex items-center gap-2">
+            <i class="fas fa-check-circle"></i> You have completed this quiz.
+          </p>
+        {% endif %}
+      </form> -->
+
+    <!-- {% else %}
+      <p class="text-gray-700">No quiz questions available. Please upload a CSV file.</p>
+    {% endif %} -->
+  </div>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Add click handlers for quiz options
+    const quizOptions = document.querySelectorAll('.quiz-option label');
+    
+    quizOptions.forEach(option => {
+      option.addEventListener('click', function(e) {
+        // Get the radio input associated with this label
+        const radioId = this.getAttribute('for');
+        const radioInput = document.getElementById(radioId);
+        
+        // Check the radio input
+        radioInput.checked = true;
+        
+        // Update visual styling
+        const questionOptions = this.closest('fieldset').querySelectorAll('.quiz-option label');
+        questionOptions.forEach(opt => {
+          opt.classList.remove('border-blue-600', 'bg-blue-50');
+          opt.querySelector('span').classList.remove('border-blue-600', 'bg-blue-600');
+        });
+        
+        this.classList.add('border-blue-600', 'bg-blue-50');
+        this.querySelector('span').classList.add('border-blue-600', 'bg-blue-600');
+      });
+    });
+  });
+  </script>
+
+
+
+        {# --- Assignment Content --- #}
+        {% elif content.content_type == 'assignment' %}
+          <div class="bg-white rounded-lg p-6 mb-6 border border-gray-200">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Assignment: {{ content.title }}</h3>
+
+            <div class="prose max-w-none text-gray-700 mb-4">
+              {{ content.content_text|safe }}
+            </div>
+
+            {% if user_assignment_submission %}
+              <!-- <p class="text-green-600 font-semibold mb-4 flex items-center gap-2">
+                <i class="fas fa-check-circle"></i> You have submitted this assignment.
+              </p> -->
+              <p>
+                <a href="{{ user_assignment_submission.uploaded_file.url }}" target="_blank" class="text-blue-600 hover:underline">View your submission</a>
+              </p>
+
+              {% if not completed %}
+                <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium w-full md:w-auto">
+                    <i class="fas fa-check mr-2"></i> Mark as Read
+                  </button>
+                </form>
+              {% endif %}
+              {% if completed %}
+                <p class="mt-2 text-green-600 font-semibold flex items-center gap-2">
+                  <i class="fas fa-check-circle"></i> You have completed this assignment.
+                </p>
+              {% endif %}
+            {% else %}
+              <form method="post" enctype="multipart/form-data" action="{% url 'submit_assignment' content.id %}">
+    {% csrf_token %}
+    
+    <!-- Enhanced File Input Container -->
+    <div class="mb-4">
+        <label for="assignment_zip" class="block mb-2 text-sm font-medium text-gray-700">Upload ZIP file</label>
+        
+        <div class="relative">
+            <input type="file" id="assignment_zip" name="assignment_zip" accept=".zip" required
+                   class="absolute inset-0 w-full h-full opacity-0 cursor-pointer peer">
+            
+            <div class="flex items-center justify-between px-4 py-3 bg-white border-2 border-dashed border-gray-300 rounded-lg 
+                        peer-hover:border-blue-400 peer-focus:border-blue-500 peer-focus:ring-2 peer-focus:ring-blue-200
+                        transition-all duration-200">
+                <span id="file-name" class="text-sm text-gray-500 truncate">
+                    Choose a file or drag here
+                </span>
+                <span class="px-3 py-1.5 bg-blue-50 text-blue-600 text-sm font-medium rounded-md border border-blue-100">
+                    Browse Files
+                </span>
+            </div>
+        </div>
+        <p class="mt-1 text-xs text-gray-500">.zip format only (max 20MB)</p>
+    </div>
+
+    <button type="submit" class="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 w-full md:w-auto">
+        <i class="fas fa-upload mr-2"></i> Submit Assignment
+    </button>
+</form>
+
+<script>
+    document.getElementById('assignment_zip').addEventListener('change', function(e) {
+        const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose a file or drag here';
+        document.getElementById('file-name').textContent = fileName;
+    });
+</script>
+            {% endif %}
+          </div>
+        {% endif %}
+
+        {% if content.content_text and content.content_type not in 'quiz assignment' %}
+          <div class="prose max-w-none mt-6">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4">Description</h3>
+            {{ content.content_text|safe }}
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar (unchanged) -->
+    <div class="md:w-1/3">
+      <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-4">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Content Details</h2>
+        <div class="space-y-4">
+          <div>
+            <h3 class="text-sm font-medium text-gray-500">Duration</h3>
+            <p class="mt-1 text-sm text-gray-900">{{ content.duration_minutes }} minutes</p>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium text-gray-500">Module</h3>
+            <p class="mt-1 text-sm text-gray-900">
+              <a href="{% url 'module_detail' module.id %}" class="text-blue-600 hover:underline">{{ module.name }}</a>
+            </p>
+          </div>
+          <div>
+            <h3 class="text-sm font-medium text-gray-500">Content Type</h3>
+            <p class="mt-1 text-sm text-gray-900">{{ content.content_type|title }}</p>
+          </div>
+          {% if content.content_type == 'video' and content.video_url %}
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">Video Source</h3>
+              <p class="mt-1 text-sm text-gray-900">
+                <a href="{{ content.video_url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                  {% if content.is_youtube_video %}YouTube{% elif content.is_vimeo_video %}Vimeo{% else %}External Video{% endif %}
+                </a>
+              </p>
+            </div>
+          {% endif %}
+          {% if content.content_type == 'pdf' and content.pdf_file %}
+            <div>
+              <h3 class="text-sm font-medium text-gray-500">File Size</h3>
+              {% if content.pdf_file and content.pdf_file.size %}
+                <p class="mt-1 text-sm text-gray-900">{{ content.pdf_file.size|filesizeformat }}</p>
+              {% else %}
+                <p class="mt-1 text-sm text-red-600">File size not available</p>
+              {% endif %}
+            </div>
+          {% endif %}
+          <div class="pt-4">
+            {% if next_content %}
+              <a href="{% url 'content_detail' next_content.id %}" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 block text-center">
+                Next: {{ next_content.title|truncatechars:30 }}
+                <i class="fas fa-arrow-right ml-2"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'module_detail' module.id %}" class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200 block text-center">
+                <i class="fas fa-check-circle mr-2"></i> Complete Module
+              </a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

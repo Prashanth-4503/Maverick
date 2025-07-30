@@ -1,0 +1,467 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Hackathon - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .form-input {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: white;
+    }
+    
+    .form-textarea {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        min-height: 100px;
+        resize: vertical;
+        transition: all 0.2s ease;
+        background: rgba(255, 255, 255, 0.9);
+    }
+    
+    .form-textarea:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: white;
+    }
+    
+    .section-divider {
+        border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .section-divider::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+        border-radius: 1px;
+    }
+    
+    .form-checkbox {
+        accent-color: #6366f1;
+        transform: scale(1.1);
+    }
+    
+    .error-message {
+        color: #ef4444;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .help-text {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        color: white;
+    }
+    
+    .btn-secondary-custom {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="indigo-gradient rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">🚀 Create New Hackathon</h1>
+                <p class="text-indigo-100">Design an exciting coding challenge for the community</p>
+            </div>
+            <div class="hidden lg:block">
+                <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center bg-white bg-opacity-20">
+                    <i class="fas fa-rocket text-white text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Card -->
+    <div class="main-card rounded-2xl p-8">
+        <form method="post" enctype="multipart/form-data" class="space-y-8">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-info-circle text-indigo-600"></i>
+                    </div>
+                    Basic Information
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Hackathon Name *
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <div class="error-message">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.thumbnail.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Thumbnail Image
+                        </label>
+                        {{ form.thumbnail }}
+                        {% if form.thumbnail.errors %}
+                            <div class="error-message">{{ form.thumbnail.errors.0 }}</div>
+                        {% endif %}
+                        <p class="help-text">Upload an eye-catching image for your hackathon</p>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Description *
+                    </label>
+                    {{ form.description }}
+                    {% if form.description.errors %}
+                        <div class="error-message">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                    <p class="help-text">Describe your hackathon's theme, goals, and what participants can expect</p>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-calendar-alt text-indigo-600"></i>
+                    </div>
+                    Timeline
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.registration_start.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Registration Start *
+                        </label>
+                        {{ form.registration_start }}
+                        {% if form.registration_start.errors %}
+                            <div class="error-message">{{ form.registration_start.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.registration_end.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Registration End *
+                        </label>
+                        {{ form.registration_end }}
+                        {% if form.registration_end.errors %}
+                            <div class="error-message">{{ form.registration_end.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.start_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Hackathon Start *
+                        </label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                            <div class="error-message">{{ form.start_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.end_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Hackathon End *
+                        </label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                            <div class="error-message">{{ form.end_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+                        <div>
+                            <p class="text-sm text-blue-800 font-medium">Timeline Tips:</p>
+                            <ul class="text-sm text-blue-700 mt-1 list-disc list-inside">
+                                <li>Allow sufficient registration time (at least 1 week)</li>
+                                <li>Consider time zones of your target participants</li>
+                                <li>Plan for 24-48 hours duration for most hackathons</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Configuration -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-users text-indigo-600"></i>
+                    </div>
+                    Team Configuration
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div>
+                        <label for="{{ form.team_size_min.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Minimum Team Size
+                        </label>
+                        {{ form.team_size_min }}
+                        {% if form.team_size_min.errors %}
+                            <div class="error-message">{{ form.team_size_min.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.team_size_max.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Maximum Team Size
+                        </label>
+                        {{ form.team_size_max }}
+                        {% if form.team_size_max.errors %}
+                            <div class="error-message">{{ form.team_size_max.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.max_participants.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Maximum Participants
+                        </label>
+                        {{ form.max_participants }}
+                        {% if form.max_participants.errors %}
+                            <div class="error-message">{{ form.max_participants.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <label class="flex items-center cursor-pointer">
+                        {{ form.allow_individual }}
+                        <span class="ml-3 text-sm font-medium text-gray-700">Allow individual participation</span>
+                    </label>
+                    <p class="help-text ml-6">Enable solo developers to participate without forming teams</p>
+                </div>
+            </div>
+
+            <!-- Content & Rules -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-file-alt text-indigo-600"></i>
+                    </div>
+                    Content & Rules
+                </h2>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.prize.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Prizes & Rewards
+                        </label>
+                        {{ form.prize }}
+                        {% if form.prize.errors %}
+                            <div class="error-message">{{ form.prize.errors.0 }}</div>
+                        {% endif %}
+                        <p class="help-text">Describe the exciting prizes and rewards for winners</p>
+                    </div>
+                    
+                    <div>
+                        <label for="{{ form.rules.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            Rules & Guidelines
+                        </label>
+                        {{ form.rules }}
+                        {% if form.rules.errors %}
+                            <div class="error-message">{{ form.rules.errors.0 }}</div>
+                        {% endif %}
+                        <p class="help-text">Set clear rules and guidelines for participants</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Evaluation Criteria -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-star text-indigo-600"></i>
+                    </div>
+                    Evaluation Criteria
+                </h2>
+                
+                <div>
+                    <label for="{{ form.evaluation_criteria.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Evaluation Criteria (JSON Format) *
+                    </label>
+                    {{ form.evaluation_criteria }}
+                    {% if form.evaluation_criteria.errors %}
+                        <div class="error-message">{{ form.evaluation_criteria.errors.0 }}</div>
+                    {% endif %}
+                    <p class="help-text">{{ form.evaluation_criteria.help_text }}</p>
+                </div>
+                
+                <div class="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div class="flex items-start">
+                        <i class="fas fa-lightbulb text-yellow-500 mt-1 mr-2"></i>
+                        <div>
+                            <p class="text-sm text-yellow-800 font-medium">Example Criteria:</p>
+                            <code class="text-sm text-yellow-700 bg-yellow-100 px-2 py-1 rounded mt-1 block">
+                                {"Innovation": 25, "Technical Implementation": 25, "Presentation": 25, "Impact": 25}
+                            </code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-center space-x-4 pt-8 border-t border-gray-200">
+                <button type="submit" class="btn-primary-custom">
+                    <i class="fas fa-rocket mr-2"></i>Create Hackathon
+                </button>
+                <a href="{% url 'hackathon' %}" class="btn-secondary-custom">
+                    <i class="fas fa-times mr-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form styling classes
+    const inputs = document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], input[type="datetime-local"], input[type="file"]');
+    inputs.forEach(input => {
+        input.classList.add('form-input', 'w-full');
+    });
+    
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.classList.add('form-textarea', 'w-full');
+    });
+    
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('form-checkbox');
+    });
+    
+    // Real-time validation for dates
+    const regStart = document.querySelector('input[name="registration_start"]');
+    const regEnd = document.querySelector('input[name="registration_end"]');
+    const hackStart = document.querySelector('input[name="start_date"]');
+    const hackEnd = document.querySelector('input[name="end_date"]');
+    
+    function validateDates() {
+        const now = new Date();
+        const regStartVal = new Date(regStart.value);
+        const regEndVal = new Date(regEnd.value);
+        const hackStartVal = new Date(hackStart.value);
+        const hackEndVal = new Date(hackEnd.value);
+        
+        // Reset styles
+        [regStart, regEnd, hackStart, hackEnd].forEach(input => {
+            input.style.borderColor = '#d1d5db';
+        });
+        
+        // Validate chronological order
+        if (regStart.value && regEnd.value && regStartVal >= regEndVal) {
+            regEnd.style.borderColor = '#ef4444';
+        }
+        
+        if (regEnd.value && hackStart.value && regEndVal >= hackStartVal) {
+            hackStart.style.borderColor = '#ef4444';
+        }
+        
+        if (hackStart.value && hackEnd.value && hackStartVal >= hackEndVal) {
+            hackEnd.style.borderColor = '#ef4444';
+        }
+    }
+    
+    [regStart, regEnd, hackStart, hackEnd].forEach(input => {
+        if (input) {
+            input.addEventListener('change', validateDates);
+        }
+    });
+    
+    // JSON validation for evaluation criteria
+    const criteriaField = document.querySelector('textarea[name="evaluation_criteria"]');
+    if (criteriaField) {
+        criteriaField.addEventListener('blur', function() {
+            try {
+                JSON.parse(this.value);
+                this.style.borderColor = '#10b981';
+            } catch (e) {
+                this.style.borderColor = '#ef4444';
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

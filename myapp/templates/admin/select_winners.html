@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Select Winners - {{ hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-trophy"></i> Select Winners - {{ hackathon.name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if submissions %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        <strong>Winner Selection:</strong> Select submissions to mark as winners. 
+                        Winners will be displayed prominently in the results page.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="thead-dark">
+                                    <tr>
+                                        <th width="50">Winner</th>
+                                        <th>Rank</th>
+                                        <th>Project</th>
+                                        <th>Team/Individual</th>
+                                        <th>Score</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for submission in submissions %}
+                                    <tr class="{% if submission.is_winner %}table-warning{% endif %}">
+                                        <td class="text-center">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="winners" value="{{ submission.id }}" id="winner{{ submission.id }}" {% if submission.is_winner %}checked{% endif %}>
+                                                <label class="form-check-label" for="winner{{ submission.id }}"></label>
+                                            </div>
+                                        </td>
+                                        <td class="font-weight-bold">
+                                            {% if submission.rank <= 3 %}
+                                                {% if submission.rank == 1 %}🥇{% elif submission.rank == 2 %}🥈{% else %}🥉{% endif %}
+                                            {% endif %}
+                                            #{{ submission.rank }}
+                                        </td>
+                                        <td>
+                                            <strong>{{ submission.project_title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ submission.project_description|truncatewords:15 }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if submission.is_team_submission %}
+                                                    <i class="fas fa-users text-primary mr-1"></i>
+                                                {% else %}
+                                                    <i class="fas fa-user text-success mr-1"></i>
+                                                {% endif %}
+                                                {{ submission.submitter_name }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-{% if submission.final_score >= 80 %}success{% elif submission.final_score >= 60 %}warning{% else %}secondary{% endif %} badge-pill">
+                                                {{ submission.final_score|floatformat:1 }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if submission.github_url %}
+                                            <a href="{{ submission.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm mr-1" title="GitHub">
+                                                <i class="fab fa-github"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if submission.demo_url %}
+                                            <a href="{{ submission.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm mr-1" title="Demo">
+                                                <i class="fas fa-play"></i>
+                                            </a>
+                                            {% endif %}
+                                            {% if submission.submission_url %}
+                                            <a href="{{ submission.submission_url }}" target="_blank" class="btn btn-outline-info btn-sm" title="Project">
+                                                <i class="fas fa-external-link-alt"></i>
+                                            </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button type="submit" name="action" value="mark_winners" class="btn btn-success btn-lg" onclick="return confirm('Are you sure you want to mark selected submissions as winners?')">
+                                    <i class="fas fa-trophy"></i> Mark as Winners
+                                </button>
+                            </div>
+                            <div class="col-md-6 text-right">
+                                {% if hackathon.status != 'completed' %}
+                                <button type="submit" name="action" value="complete_hackathon" class="btn btn-warning btn-lg" onclick="return confirm('Are you sure you want to mark this hackathon as completed? This action cannot be undone.')">
+                                    <i class="fas fa-flag-checkered"></i> Complete Hackathon
+                                </button>
+                                {% else %}
+                                <span class="badge badge-success badge-lg">
+                                    <i class="fas fa-check-circle"></i> Hackathon Completed
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </form>
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No evaluated submissions</h4>
+                        <p class="text-muted">Complete the evaluation process before selecting winners.</p>
+                        <a href="{% url 'evaluate_submissions' hackathon.id %}" class="btn btn-warning">
+                            <i class="fas fa-star"></i> Go to Evaluation
+                        </a>
+                    </div>
+                    {% endif %}
+
+                    <!-- Navigation -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'admin_hackathon_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Management
+                        </a>
+                        <a href="{% url 'evaluate_submissions' hackathon.id %}" class="btn btn-warning ml-2">
+                            <i class="fas fa-star"></i> Back to Evaluation
+                        </a>
+                        {% if hackathon.status == 'completed' %}
+                        <a href="{% url 'hackathon_results' hackathon.id %}" class="btn btn-info ml-2">
+                            <i class="fas fa-eye"></i> View Public Results
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Select/Deselect all functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add select all functionality
+    const selectAllBtn = document.createElement('button');
+    selectAllBtn.type = 'button';
+    selectAllBtn.className = 'btn btn-outline-secondary btn-sm mb-3';
+    selectAllBtn.innerHTML = '<i class="fas fa-check-square"></i> Select All';
+    selectAllBtn.onclick = function() {
+        const checkboxes = document.querySelectorAll('input[name="winners"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        
+        checkboxes.forEach(cb => cb.checked = !allChecked);
+        this.innerHTML = allChecked ? 
+            '<i class="fas fa-check-square"></i> Select All' : 
+            '<i class="fas fa-square"></i> Deselect All';
+    };
+
+    // Insert before the table
+    const table = document.querySelector('.table-responsive');
+    table.parentNode.insertBefore(selectAllBtn, table);
+});
+</script>
+{% endblock %}

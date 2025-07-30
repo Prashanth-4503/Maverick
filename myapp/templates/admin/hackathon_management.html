@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hackathon Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h3 mb-0 text-gray-800">Hackathon Management</h1>
+            </div>
+
+            <!-- Create New Hackathon -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-plus"></i> Create New Hackathon
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" class="row">
+                        {% csrf_token %}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.name.id_for_label }}">Hackathon Name</label>
+                                {{ form.name }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.description.id_for_label }}">Description</label>
+                                {{ form.description }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="{{ form.start_date.id_for_label }}">Start Date</label>
+                                {{ form.start_date }}
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.end_date.id_for_label }}">End Date</label>
+                                {{ form.end_date }}
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Create Hackathon
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Existing Hackathons -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list"></i> All Hackathons
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Status</th>
+                                    <th>Dates</th>
+                                    <th>Participants</th>
+                                    <th>Teams</th>
+                                    <th>Submissions</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for hackathon in hackathons %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ hackathon.name }}</strong>
+                                        <br><small class="text-muted">by {{ hackathon.created_by.username }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{% if hackathon.status == 'registration_open' %}success{% elif hackathon.status == 'in_progress' %}warning{% elif hackathon.status == 'completed' %}secondary{% else %}info{% endif %}">
+                                            {{ hackathon.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            Start: {{ hackathon.start_date|date:"M d, Y" }}<br>
+                                            End: {{ hackathon.end_date|date:"M d, Y" }}
+                                        </small>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-info">{{ hackathon.participant_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-primary">{{ hackathon.team_count }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge badge-success">{{ hackathon.submission_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn btn-sm btn-outline-primary" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'evaluate_submissions' hackathon.id %}" class="btn btn-sm btn-outline-warning" title="Evaluate">
+                                                <i class="fas fa-star"></i>
+                                            </a>
+                                            <a href="{% url 'select_winners' hackathon.id %}" class="btn btn-sm btn-outline-success" title="Winners">
+                                                <i class="fas fa-trophy"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">No hackathons created yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add form-control class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        field.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}

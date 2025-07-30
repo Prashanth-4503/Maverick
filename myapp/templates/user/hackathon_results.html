@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Results - {{ hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-trophy"></i> {{ hackathon.name }} - Final Results
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <!-- Winners Section -->
+                    {% if winners %}
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            <h4 class="text-center text-warning mb-4">🏆 WINNERS 🏆</h4>
+                            <div class="row justify-content-center">
+                                {% for winner in winners %}
+                                <div class="col-md-4 mb-4">
+                                    <div class="card border-warning bg-light">
+                                        <div class="card-body text-center">
+                                            <div class="mb-3">
+                                                {% if winner.rank == 1 %}
+                                                    <i class="fas fa-trophy text-warning" style="font-size: 3rem;"></i>
+                                                    <h4 class="text-warning">🥇 1st Place</h4>
+                                                {% elif winner.rank == 2 %}
+                                                    <i class="fas fa-medal text-secondary" style="font-size: 3rem;"></i>
+                                                    <h4 class="text-secondary">🥈 2nd Place</h4>
+                                                {% elif winner.rank == 3 %}
+                                                    <i class="fas fa-medal text-warning" style="font-size: 3rem;"></i>
+                                                    <h4 class="text-warning">🥉 3rd Place</h4>
+                                                {% else %}
+                                                    <i class="fas fa-award text-primary" style="font-size: 3rem;"></i>
+                                                    <h4 class="text-primary">🏅 {{ winner.prize_category }}</h4>
+                                                {% endif %}
+                                            </div>
+                                            
+                                            <h5 class="card-title font-weight-bold">{{ winner.project_title }}</h5>
+                                            <p class="text-muted">by {{ winner.submitter_name }}</p>
+                                            
+                                            <div class="mb-3">
+                                                <span class="badge badge-success badge-pill px-3 py-2" style="font-size: 1.1rem;">
+                                                    Score: {{ winner.final_score|floatformat:1 }}/100
+                                                </span>
+                                            </div>
+                                            
+                                            <p class="card-text">{{ winner.project_description|truncatewords:20 }}</p>
+                                            
+                                            <!-- Project Links -->
+                                            <div class="mt-3">
+                                                {% if winner.github_url %}
+                                                <a href="{{ winner.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm mr-1">
+                                                    <i class="fab fa-github"></i> GitHub
+                                                </a>
+                                                {% endif %}
+                                                {% if winner.demo_url %}
+                                                <a href="{{ winner.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm mr-1">
+                                                    <i class="fas fa-play"></i> Demo
+                                                </a>
+                                                {% endif %}
+                                                {% if winner.submission_url %}
+                                                <a href="{{ winner.submission_url }}" target="_blank" class="btn btn-outline-info btn-sm">
+                                                    <i class="fas fa-external-link-alt"></i> Project
+                                                </a>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- All Submissions Leaderboard -->
+                    <div class="row">
+                        <div class="col-12">
+                            <h4 class="text-primary mb-4">📊 Complete Leaderboard</h4>
+                            
+                            <!-- Evaluation Criteria Reference -->
+                            {% if criteria %}
+                            <div class="alert alert-info mb-4">
+                                <h6><i class="fas fa-info-circle"></i> Evaluation Criteria Used:</h6>
+                                <div class="row">
+                                    {% for criterion, max_score in criteria.items %}
+                                    <div class="col-md-3 col-sm-6">
+                                        <span class="badge badge-primary">{{ criterion }}: {{ max_score }}pts</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th>Rank</th>
+                                            <th>Project</th>
+                                            <th>Team/Individual</th>
+                                            <th>Score</th>
+                                            <th>Submitted</th>
+                                            <th>Links</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for submission in submissions %}
+                                        <tr class="{% if submission.is_winner %}table-warning{% endif %}">
+                                            <td class="font-weight-bold">
+                                                {% if submission.rank <= 3 %}
+                                                    {% if submission.rank == 1 %}🥇{% elif submission.rank == 2 %}🥈{% else %}🥉{% endif %}
+                                                {% endif %}
+                                                #{{ submission.rank }}
+                                                {% if submission.is_winner %}
+                                                    <span class="badge badge-warning ml-1">Winner</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <strong>{{ submission.project_title }}</strong>
+                                                <br>
+                                                <small class="text-muted">{{ submission.project_description|truncatewords:15 }}</small>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if submission.is_team_submission %}
+                                                        <i class="fas fa-users text-primary mr-1"></i>
+                                                    {% else %}
+                                                        <i class="fas fa-user text-success mr-1"></i>
+                                                    {% endif %}
+                                                    {{ submission.submitter_name }}
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-{% if submission.final_score >= 80 %}success{% elif submission.final_score >= 60 %}warning{% else %}secondary{% endif %} badge-pill">
+                                                    {{ submission.final_score|floatformat:1 }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">{{ submission.submitted_at|date:"M d, H:i" }}</small>
+                                            </td>
+                                            <td>
+                                                {% if submission.github_url %}
+                                                <a href="{{ submission.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm mr-1" title="GitHub">
+                                                    <i class="fab fa-github"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if submission.demo_url %}
+                                                <a href="{{ submission.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm mr-1" title="Demo">
+                                                    <i class="fas fa-play"></i>
+                                                </a>
+                                                {% endif %}
+                                                {% if submission.submission_url %}
+                                                <a href="{{ submission.submission_url }}" target="_blank" class="btn btn-outline-info btn-sm" title="Project">
+                                                    <i class="fas fa-external-link-alt"></i>
+                                                </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {% if not submissions %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                <h4 class="text-muted">No submissions evaluated yet</h4>
+                                <p class="text-muted">Results will appear here once submissions are evaluated.</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Back to Hackathon -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn btn-primary">
+                                <i class="fas fa-arrow-left"></i> Back to Hackathon Details
+                            </a>
+                            <a href="{% url 'hackathon' %}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-list"></i> View All Hackathons
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

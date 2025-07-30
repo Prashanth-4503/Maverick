@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quiz Results</title>
+    <style>
+        body { font-family: Arial; background: #f2f2f2; padding: 20px; }
+        .result-box { background: white; padding: 20px; max-width: 800px; margin: auto; border-radius: 8px; box-shadow: 0 0 10px #ccc; }
+        .correct { color: green; }
+        .wrong { color: red; }
+    </style>
+</head>
+<body>
+    <div class="result-box">
+        <h2>📊 Your Results</h2>
+        {% for r in results %}
+            <div>
+                <p><strong>Q{{ forloop.counter }}:</strong> {{ r.question }}</p>
+                <p>Your Answer: <span class="{{ 'correct' if r.is_correct else 'wrong' }}">{{ r.selected }}</span></p>
+                {% if not r.is_correct %}
+                    <p>Correct Answer: <strong>{{ r.correct }}</strong></p>
+                {% endif %}
+                <hr>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Learning Path - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress-transition {
+        transition: width 1s ease-in-out;
+    }
+    .module-card {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .module-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .status-badge {
+        min-width: 100px;
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-road text-blue-500 mr-2"></i> My Learning Path
+            </h1>
+            <p class="mt-2 text-gray-600">Track your progress through our learning modules</p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'module_list' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-300 inline-flex items-center">
+                <i class="fas fa-plus-circle mr-2"></i> Add New Module
+            </a>
+        </div>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Overall Progress</h2>
+        <div class="flex flex-col md:flex-row items-center justify-between">
+            <div class="w-full md:w-2/3 mb-4 md:mb-0">
+                <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>{{ completed_count }} of {{ total_count }} modules completed</span>
+                    <span>{{ overall_progress }}% complete</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-blue-600 h-3 rounded-full progress-transition" style="width: {{ overall_progress }}%"></div>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-xl font-bold text-blue-600">{{ xp_earned }}</span>
+                <span class="text-gray-600">XP Earned</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Learning Path Modules -->
+    <div class="space-y-6">
+        {% for path in learning_paths %}
+        <div class="bg-white rounded-xl shadow-md overflow-hidden module-card">
+            <div class="p-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between">
+                    <div class="flex items-start space-x-4">
+                        {% if path.module.thumbnail %}
+                        <img src="{{ path.module.thumbnail.url }}" alt="{{ path.module.name }}" class="h-16 w-16 rounded-lg object-cover">
+                        {% else %}
+                        <div class="h-16 w-16 rounded-lg bg-blue-100 flex items-center justify-center">
+                            <i class="fas fa-book text-blue-500 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-900">{{ path.module.name }}</h3>
+                            <div class="flex flex-wrap items-center mt-1 gap-2">
+                                <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                                    <i class="fas fa-clock mr-1"></i> {{ path.module.estimated_time }}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    {% if path.module.difficulty == 'beginner' %}bg-green-100 text-green-800
+                                    {% elif path.module.difficulty == 'intermediate' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ path.module.get_difficulty_display }}
+                                </span>
+                                <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                                    {{ path.module.xp_reward }} XP
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex items-center space-x-3">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-badge
+                            {% if path.status == 'completed' %}bg-green-100 text-green-800
+                            {% elif path.status == 'in_progress' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ path.get_status_display }}
+                        </span>
+                        <div class="relative">
+    <button onclick="toggleDropdown('dropdown-{{ path.id }}')" class="text-gray-400 hover:text-gray-600">
+        <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <div id="dropdown-{{ path.id }}" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
+        <div class="py-1">
+            {% if path.status == 'not_started' %}
+            <a href="{% url 'start_module' path.module.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-play mr-2"></i> Start Module
+            </a>
+            {% elif path.status == 'in_progress' %}
+            <a href="{% url 'continue_module' path.module.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-play-circle mr-2"></i> Continue
+            </a>
+            {% else %}
+            <a href="{% url 'review_module' path.module.id %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <i class="fas fa-redo mr-2"></i> Review
+            </a>
+            {% endif %}
+            
+            <!-- Disabled Remove option for completed paths -->
+            {% if path.status != 'completed' %}
+            <a href="#" data-url="{% url 'remove_from_path' path.module.id %}" class="remove-link block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                <i class="fas fa-trash-alt mr-2"></i> Remove
+            </a>
+            {% else %}
+            <span class="block px-4 py-2 text-sm text-gray-400 cursor-not-allowed">
+                <i class="fas fa-trash-alt mr-2"></i> Remove
+            </span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+                    </div>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="mt-4 pl-20">
+                    <div class="flex justify-between text-sm text-gray-600 mb-1">
+                        <span>Your Progress</span>
+                        <span>{{ path.progress }}%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                        <div class="bg-blue-600 h-2.5 rounded-full progress-transition" style="width: {{ path.progress }}%"></div>
+                    </div>
+
+                    <!-- Dates -->
+                    <div class="flex flex-wrap justify-between mt-2 text-xs text-gray-500">
+                        {% if path.started_at %}
+                        <span>Started: {{ path.started_at|date:"M d, Y" }}</span>
+                        {% endif %}
+                        {% if path.completed_at %}
+                        <span>Completed: {{ path.completed_at|date:"M d, Y" }}</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-end mt-4 space-x-3">
+                        {% if path.status == 'not_started' %}
+                        <a href="{% url 'start_module' path.module.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Start Learning
+                        </a>
+                        {% elif path.status == 'in_progress' %}
+                        <a href="{% url 'continue_module' path.module.id %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Continue Learning
+                        </a>
+                        {% else %}
+                        <a href="{% url 'review_module' path.module.id %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Review Module
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="text-center py-16 bg-white rounded-xl shadow-md">
+            <div class="mx-auto h-24 w-24 bg-blue-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fas fa-book-open text-3xl text-blue-500"></i>
+            </div>
+            <h3 class="text-xl font-medium text-gray-900">Your learning path is empty</h3>
+            <p class="mt-2 text-gray-500 max-w-md mx-auto">Add modules to your learning path to get started on your journey</p>
+            <div class="mt-6">
+                <a href="{% url 'module_list' %}" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow-md transition duration-300">
+                    <i class="fas fa-plus-circle mr-2"></i> Browse Modules
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Badge Award Modal -->
+<div id="badgeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div class="text-center">
+            <div class="mx-auto h-20 w-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-award text-yellow-500 text-3xl"></i>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Congratulations!</h3>
+            <p class="text-gray-600 mb-4">You've earned a new badge for completing this module</p>
+            <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-center space-x-4">
+                    <img id="badgeImage" src="" alt="Badge" class="h-16 w-16">
+                    <div class="text-left">
+                        <h4 id="badgeName" class="font-semibold text-gray-900"></h4>
+                        <p id="badgeDescription" class="text-sm text-gray-600"></p>
+                    </div>
+                </div>
+            </div>
+            <button onclick="closeBadgeModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200">
+                Continue Learning
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Stylish Confirmation Modal -->
+<div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-xl shadow-lg max-w-md w-full mx-4 p-6">
+    <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+      <i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i> Confirmation Required
+    </h3>
+    <p class="text-gray-700 mb-6">Are you sure you want to remove? All the contents will be discarded.</p>
+    <div class="flex justify-end space-x-4">
+      <button id="cancelBtn" class="px-4 py-2 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-900 font-medium transition duration-200">No</button>
+      <button id="confirmBtn" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium transition duration-200">Yes, Remove</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Toggle dropdown menu
+    function toggleDropdown(id) {
+        document.getElementById(id).classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.matches('.dropdown-toggle') && !event.target.closest('.relative')) {
+            const dropdowns = document.querySelectorAll('.relative > div.absolute');
+            dropdowns.forEach(dropdown => {
+                if (!dropdown.classList.contains('hidden')) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        }
+    });
+
+    // Badge modal functionality
+    function showBadgeModal(badgeData) {
+        if (!badgeData) return;
+        
+        const badgeImage = document.getElementById('badgeImage');
+        const badgeName = document.getElementById('badgeName');
+        const badgeDescription = document.getElementById('badgeDescription');
+
+        if (badgeData.image) {
+            badgeImage.src = badgeData.image;
+            badgeImage.alt = badgeData.name || "Badge";
+            badgeImage.style.display = 'block';
+        } else {
+            badgeImage.style.display = 'none';
+        }
+
+        badgeName.textContent = badgeData.name || '';
+        badgeDescription.textContent = badgeData.description || '';
+        document.getElementById('badgeModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeBadgeModal() {
+        document.getElementById('badgeModal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Check for new badges in session storage after page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const badgeData = sessionStorage.getItem('newBadge');
+        if (badgeData) {
+            try {
+                showBadgeModal(JSON.parse(badgeData));
+                sessionStorage.removeItem('newBadge');
+            } catch (e) {
+                console.error('Invalid badge data:', e);
+            }
+        }
+    });
+
+    // If you use event system for badge notifications
+    document.body.addEventListener('badgeEarned', function(event) {
+        if (event.detail) {
+            showBadgeModal(event.detail);
+        }
+    });
+
+    // Stylish Confirmation Modal Logic for Remove Links
+    document.addEventListener('DOMContentLoaded', function() {
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmBtn = document.getElementById('confirmBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+      let targetUrl = '';
+
+      // Attach click handler to all remove links
+      document.querySelectorAll('.remove-link').forEach(link => {
+        link.addEventListener('click', function(event) {
+          event.preventDefault();
+          targetUrl = this.getAttribute('data-url');
+          confirmModal.classList.remove('hidden');
+          document.body.style.overflow = 'hidden'; // Disable background scroll
+        });
+      });
+
+      // Cancel button closes modal
+      cancelBtn.addEventListener('click', () => {
+        confirmModal.classList.add('hidden');
+        document.body.style.overflow = '';
+        targetUrl = '';
+      });
+
+      // Confirm button navigates to remove URL
+      confirmBtn.addEventListener('click', () => {
+        window.location.href = targetUrl;
+      });
+
+      // Clicking outside modal content closes modal
+      confirmModal.addEventListener('click', (e) => {
+        if (e.target === confirmModal) {
+          confirmModal.classList.add('hidden');
+          document.body.style.overflow = '';
+          targetUrl = '';
+        }
+      });
+    });
+</script>
+{% endblock %}

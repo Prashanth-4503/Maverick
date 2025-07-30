@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Coding Problems - Mavericks{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Coding Problems</h1>
+        
+        <!-- Filters -->
+        <div class="flex space-x-4">
+            <select id="difficultyFilter" class="border border-gray-300 rounded-lg px-3 py-2">
+                <option value="">All Difficulties</option>
+                <option value="easy" {% if current_difficulty == 'easy' %}selected{% endif %}>Easy</option>
+                <option value="medium" {% if current_difficulty == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="hard" {% if current_difficulty == 'hard' %}selected{% endif %}>Hard</option>
+            </select>
+            
+            <input type="text" id="searchInput" placeholder="Search problems..." 
+                   value="{{ search_query|default:'' }}"
+                   class="border border-gray-300 rounded-lg px-3 py-2 w-64">
+        </div>
+    </div>
+    
+    <!-- Problems List -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">#</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Title</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Difficulty</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Acceptance</th>
+                    <th class="px-6 py-3 text-left text-sm font-medium text-gray-700">Tags</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for problem in problems %}
+                <tr class="hover:bg-gray-50 cursor-pointer" data-problem-id="{{ problem.id }}">
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ problem.id }}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-medium text-indigo-600">{{ problem.title }}</div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if problem.difficulty == 'easy' %}bg-green-100 text-green-800
+                            {% elif problem.difficulty == 'medium' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ problem.get_difficulty_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900">{{ problem.acceptance_percentage }}%</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">{{ problem.tags }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                        No problems found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+// Handle row clicks properly
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('tr[data-problem-id]');
+    rows.forEach(row => {
+        row.addEventListener('click', function() {
+            const problemId = this.getAttribute('data-problem-id');
+            window.location.href = `/problems/${problemId}/`;
+        });
+    });
+    
+    // Filter functionality
+    document.getElementById('difficultyFilter').addEventListener('change', function() {
+        const difficulty = this.value;
+        const url = new URL(window.location);
+        if (difficulty) {
+            url.searchParams.set('difficulty', difficulty);
+        } else {
+            url.searchParams.delete('difficulty');
+        }
+        window.location.href = url.toString();
+    });
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            const search = this.value;
+            const url = new URL(window.location);
+            if (search) {
+                url.searchParams.set('search', search);
+            } else {
+                url.searchParams.delete('search');
+            }
+            window.location.href = url.toString();
+        }
+    });
+});
+</script>
+{% endblock %}

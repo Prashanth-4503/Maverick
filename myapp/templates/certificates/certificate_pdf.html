@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Certificate - {{ module.name }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+            background-color: #f9f6ee;
+        }
+        .certificate {
+            width: 297mm;
+            height: 210mm;
+            position: relative;
+            background-color: #fff9e6;
+            border: 25px solid #d4af37;
+            box-sizing: border-box;
+            padding: 40px;
+            text-align: center;
+        }
+        .border-design {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            right: 30px;
+            bottom: 30px;
+            border: 3px dashed #d4af37;
+            pointer-events: none;
+        }
+        .watermark {
+            position: absolute;
+            font-size: 180px;
+            color: rgba(212, 175, 55, 0.1);
+            transform: rotate(-30deg);
+            z-index: 0;
+            top: 30%;
+            left: 10%;
+            white-space: nowrap;
+            font-weight: bold;
+        }
+        .header {
+            margin: 40px 0;
+            position: relative;
+            z-index: 1;
+        }
+        h1 {
+            color: #1a237e;
+            font-size: 42px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 15px;
+        }
+        .subheader {
+            color: #555;
+            font-size: 18px;
+            font-style: italic;
+            letter-spacing: 1px;
+        }
+        .badge-container {
+            position: relative;
+            z-index: 1;
+            margin: 30px 0;
+        }
+        .badge {
+            width: 150px;
+            height: 150px;
+            margin: 0 auto;
+            background: radial-gradient(circle, #d4af37 0%, #f9d423 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 8px solid white;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+        .badge i {
+            color: white;
+            font-size: 70px;
+        }
+        .ribbon {
+            position: absolute;
+            width: 200px;
+            height: 40px;
+            background: #d4af37;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .content {
+            margin: 30px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .recipient {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 25px 0;
+            color: #1a237e;
+        }
+        .course {
+            font-size: 28px;
+            color: #d4af37;
+            font-weight: bold;
+            margin: 25px 0;
+        }
+        .description {
+            font-size: 20px;
+            line-height: 1.6;
+            max-width: 80%;
+            margin: 0 auto;
+            color: #444;
+        }
+        .date {
+            margin-top: 40px;
+            font-size: 18px;
+            font-style: italic;
+            color: #666;
+        }
+        .footer {
+            position: absolute;
+            bottom: 50px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-around;
+            z-index: 1;
+        }
+        .signature {
+            margin-top: 40px;
+        }
+        .signature-line {
+            width: 250px;
+            border-top: 2px solid #333;
+            margin: 10px auto;
+        }
+        .signature-title {
+            font-size: 14px;
+            color: #555;
+        }
+        .certificate-info {
+            text-align: center;
+        }
+        .certificate-id {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            letter-spacing: 1px;
+            margin-top: 20px;
+            color: #333;
+        }
+        .verification {
+            font-size: 14px;
+            margin-top: 10px;
+            color: #555;
+        }
+        .seal {
+            position: absolute;
+            right: 60px;
+            bottom: 60px;
+        }
+    </style>
+</head>
+<body>
+    <div class="certificate">
+        <div class="border-design"></div>
+        <div class="watermark">{{ site_name|default:"EXCELLENCE" }}</div>
+        
+        <div class="header">
+            <h1>CERTIFICATE OF ACHIEVEMENT</h1>
+            <p class="subheader">This certificate is proudly presented by {{ site_name|default:"Our Learning Platform" }}</p>
+        </div>
+        
+        <div class="badge-container">
+            <div class="ribbon">EXCELLENCE</div>
+            <div class="badge">
+                <i class="fas fa-award"></i>
+            </div>
+        </div>
+        
+        <div class="content">
+            <p class="description">This is to certify that</p>
+            <div class="recipient">{{ user.get_full_name }}</div>
+            <p class="description">has successfully completed the course</p>
+            <div class="course">{{ module.name }}</div>
+            <p class="description">with distinction and demonstrated outstanding commitment to learning.</p>
+            <div class="date">Awarded on {{ certificate.date_issued|date:"F j, Y" }}</div>
+        </div>
+        
+        <div class="footer">
+            <div class="signature">
+                <div class="signature-line"></div>
+                <p class="signature-title">Authorized Signature</p>
+            </div>
+            
+            <div class="certificate-info">
+                <div class="certificate-id">Certificate ID: {{ certificate.certificate_id }}</div>
+                <div class="verification">Verify at: {{ verification_url }}</div>
+            </div>
+        </div>
+        
+        <div class="seal">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="45" fill="#d4af37" opacity="0.1" stroke="#d4af37" stroke-width="2"/>
+                <path d="M20,50 Q50,20 80,50 Q50,80 20,50" fill="none" stroke="#d4af37" stroke-width="1"/>
+                <text x="50" y="50" text-anchor="middle" dominant-baseline="middle" 
+                      font-family="Arial" font-size="10" fill="#1a237e" font-weight="bold">OFFICIAL SEAL</text>
+            </svg>
+        </div>
+    </div>
+</body>
+</html>

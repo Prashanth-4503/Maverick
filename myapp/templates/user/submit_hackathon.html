@@ -1,0 +1,228 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit Hackathon - {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .terms-box {
+        max-height: 300px;
+        overflow-y: auto;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        margin: 1rem 0;
+        background-color: #f8fafc;
+        border-radius: 0.5rem;
+    }
+    .user-verify-card {
+        background-color: #ffffff;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    .file-upload-box {
+        border: 2px dashed #cbd5e0;
+        padding: 2rem;
+        text-align: center;
+        margin: 1rem 0;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+    }
+    .file-upload-box:hover {
+        border-color: #4f46e5;
+        background-color: #f5f3ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <!-- Header -->
+    <div class="text-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Submit to {{ hackathon.name }}</h1>
+        <p class="mt-2 text-lg text-gray-600">Deadline: {{ hackathon.end_date|date:"F j, Y H:i" }}</p>
+    </div>
+
+    <!-- User Verification Section -->
+    <div class="user-verify-card">
+        <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+            Participant Verification
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-sm text-gray-500">Registered Name</p>
+                <p class="font-medium mt-1">{{ user.get_full_name|default:"Not provided" }}</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-sm text-gray-500">Submission Account</p>
+                <p class="font-medium mt-1">{{ user.username }}</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-sm text-gray-500">Contact Email</p>
+                <p class="font-medium mt-1">{{ user.email }}</p>
+            </div>
+            <div class="bg-gray-50 p-3 rounded-lg">
+                <p class="text-sm text-gray-500">Member Since</p>
+                <p class="font-medium mt-1">{{ user.date_joined|date:"M Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hackathon Rules -->
+    <div class="mb-6">
+        <h2 class="text-xl font-semibold text-gray-800 mb-3 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+            Competition Rules & Terms
+        </h2>
+        <div class="terms-box">
+            {{ hackathon.rules|linebreaks|default:"No specific rules provided for this hackathon." }}
+            
+            <div class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-400">
+                <h4 class="font-medium text-blue-800">General Terms:</h4>
+                <ul class="list-disc pl-5 mt-2 space-y-1 text-sm text-blue-700">
+                    <li>All work must be original and created during the hackathon period</li>
+                    <li>Teams must consist of registered participants only</li>
+                    <li>Submissions must be made before the deadline</li>
+                    <li>Judges' decisions are final</li>
+                    <li>Violations may result in disqualification</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Form -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Project Details -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project Title *</label>
+                <input type="text" name="title" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    placeholder="Your amazing project name">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project Description *</label>
+                <textarea name="description" rows="4" required
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    placeholder="Describe your project (200-500 words)"></textarea>
+            </div>
+
+            <!-- Repository URL -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Repository URL (Optional)</label>
+                <input type="url" name="repository_url"
+                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2 border"
+                    placeholder="https://github.com/yourusername/project">
+            </div>
+
+            <!-- File Upload -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Project Files *</label>
+                <div class="file-upload-box">
+                    <div class="flex flex-col items-center justify-center">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                        <p class="mt-1 text-sm text-gray-600">Drag and drop files here, or click to browse</p>
+                        <input type="file" name="submission_file" required class="hidden" id="fileInput">
+                        <label for="fileInput" class="mt-2 cursor-pointer rounded-md bg-white px-3 py-1 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50">
+                            Select Files
+                        </label>
+                        <p class="mt-1 text-xs text-gray-500">ZIP, RAR, or project files (max 50MB)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms Agreement -->
+            <div class="flex items-start">
+                <div class="flex items-center h-5">
+                    <input id="terms_agreement" name="terms_agreement" type="checkbox" required
+                        class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="terms_agreement" class="font-medium text-gray-700">I certify that:</label>
+                    <ul class="list-disc pl-5 mt-1 text-gray-600">
+                        <li>I have read and agree to the competition rules</li>
+                        <li>This is my original work</li>
+                        <li>All team members are registered participants</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-4 pt-4">
+                <a href="{% url 'hackathon' %}" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancel
+                </a>
+                <button type="submit" class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Submit Entry
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // File upload display
+    const fileInput = document.getElementById('fileInput');
+    const fileUploadBox = document.querySelector('.file-upload-box');
+    
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            const fileSize = (file.size / (1024 * 1024)).toFixed(2);
+            
+            fileUploadBox.innerHTML = `
+                <div class="text-center">
+                    <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <p class="mt-2 text-sm font-medium text-gray-900">${file.name}</p>
+                    <p class="mt-1 text-xs text-gray-500">${fileSize} MB</p>
+                    <button type="button" onclick="resetFileInput()" class="mt-2 text-sm text-indigo-600 hover:text-indigo-500">
+                        Change file
+                    </button>
+                </div>
+            `;
+            fileUploadBox.classList.add('border-green-300', 'bg-green-50');
+        }
+    });
+
+    function resetFileInput() {
+        fileInput.value = '';
+        fileUploadBox.innerHTML = `
+            <div class="flex flex-col items-center justify-center">
+                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <p class="mt-1 text-sm text-gray-600">Drag and drop files here, or click to browse</p>
+                <label for="fileInput" class="mt-2 cursor-pointer rounded-md bg-white px-3 py-1 text-sm font-medium text-indigo-600 shadow-sm hover:bg-indigo-50">
+                    Select Files
+                </label>
+                <p class="mt-1 text-xs text-gray-500">ZIP, RAR, or project files (max 50MB)</p>
+            </div>
+        `;
+        fileUploadBox.classList.remove('border-green-300', 'bg-green-50');
+    }
+
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        if (!document.getElementById('terms_agreement').checked) {
+            e.preventDefault();
+            alert('You must agree to the terms and conditions to submit your entry.');
+            document.getElementById('terms_agreement').focus();
+        }
+    });
+</script>
+{% endblock %}

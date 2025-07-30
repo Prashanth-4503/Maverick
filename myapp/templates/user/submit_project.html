@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Project - {{ hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-upload"></i> Submit Project - {{ hackathon.name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if user_team %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-users"></i> Submitting as team: <strong>{{ user_team.name }}</strong>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-user"></i> Submitting as individual participant
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Project Information -->
+                        <div class="form-section mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Project Information</h5>
+                            <div class="form-group">
+                                <label for="{{ form.project_title.id_for_label }}" class="form-label">Project Title *</label>
+                                {{ form.project_title }}
+                                {% if form.project_title.errors %}
+                                    <div class="text-danger small">{{ form.project_title.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="{{ form.project_description.id_for_label }}" class="form-label">Project Description *</label>
+                                {{ form.project_description }}
+                                <small class="form-text text-muted">Describe your project, the problem it solves, technologies used, and key features.</small>
+                                {% if form.project_description.errors %}
+                                    <div class="text-danger small">{{ form.project_description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Submission Files & Links -->
+                        <div class="form-section mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Submission Files & Links</h5>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.submission_file.id_for_label }}" class="form-label">
+                                            <i class="fas fa-file-archive"></i> Project File (ZIP/RAR)
+                                        </label>
+                                        {{ form.submission_file }}
+                                        <small class="form-text text-muted">Upload your complete project as a ZIP or RAR file (max 50MB)</small>
+                                        {% if form.submission_file.errors %}
+                                            <div class="text-danger small">{{ form.submission_file.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.submission_url.id_for_label }}" class="form-label">
+                                            <i class="fas fa-link"></i> Project URL
+                                        </label>
+                                        {{ form.submission_url }}
+                                        <small class="form-text text-muted">Link to your hosted project or presentation</small>
+                                        {% if form.submission_url.errors %}
+                                            <div class="text-danger small">{{ form.submission_url.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.github_url.id_for_label }}" class="form-label">
+                                            <i class="fab fa-github"></i> GitHub Repository
+                                        </label>
+                                        {{ form.github_url }}
+                                        <small class="form-text text-muted">Link to your GitHub repository</small>
+                                        {% if form.github_url.errors %}
+                                            <div class="text-danger small">{{ form.github_url.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="{{ form.demo_url.id_for_label }}" class="form-label">
+                                            <i class="fas fa-play-circle"></i> Demo/Video URL
+                                        </label>
+                                        {{ form.demo_url }}
+                                        <small class="form-text text-muted">Link to project demo or video presentation</small>
+                                        {% if form.demo_url.errors %}
+                                            <div class="text-danger small">{{ form.demo_url.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Evaluation Criteria Reference -->
+                        {% if hackathon.evaluation_criteria %}
+                        <div class="form-section mb-4">
+                            <h5 class="text-primary border-bottom pb-2">Evaluation Criteria</h5>
+                            <div class="alert alert-light">
+                                <p class="mb-2"><strong>Your project will be evaluated based on:</strong></p>
+                                <div class="row">
+                                    {% for criterion, score in hackathon.evaluation_criteria.items %}
+                                    <div class="col-md-6 mb-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span><i class="fas fa-check-circle text-success"></i> {{ criterion }}</span>
+                                            <span class="badge badge-primary">{{ score }} points</span>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Submission Guidelines -->
+                        <div class="form-section mb-4">
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Submission Guidelines</h6>
+                                <ul class="mb-0">
+                                    <li>Ensure your project files are complete and runnable</li>
+                                    <li>Include clear documentation and setup instructions</li>
+                                    <li>Test all URLs before submitting</li>
+                                    <li>Submissions cannot be modified after the deadline</li>
+                                    <li>Make sure your repository is public if providing GitHub link</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-success btn-lg" onclick="return confirmSubmission()">
+                                <i class="fas fa-upload"></i> Submit Project
+                            </button>
+                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn btn-secondary btn-lg ml-2">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Submission Deadline</h6>
+                </div>
+                <div class="card-body text-center">
+                    <h4 class="text-danger">{{ hackathon.end_date|date:"M d, Y" }}</h4>
+                    <p class="text-muted">{{ hackathon.end_date|date:"H:i T" }}</p>
+                    <div id="countdown" class="text-warning font-weight-bold"></div>
+                </div>
+            </div>
+
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Submission Tips</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-lightbulb text-warning"></i> Write a clear, compelling project description</li>
+                        <li class="mb-2"><i class="fas fa-code text-primary"></i> Include technical details and architecture</li>
+                        <li class="mb-2"><i class="fas fa-users text-success"></i> Mention team member contributions</li>
+                        <li class="mb-2"><i class="fas fa-rocket text-info"></i> Highlight innovation and impact</li>
+                        <li class="mb-2"><i class="fas fa-bug text-danger"></i> Test everything before submitting</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmSubmission() {
+    return confirm('Are you sure you want to submit your project? You will not be able to make changes after submission.');
+}
+
+// Add form-control class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('form-check-input')) {
+            field.classList.add('form-control');
+        }
+    });
+
+    // Countdown timer
+    const deadline = new Date('{{ hackathon.end_date|date:"c" }}');
+    const countdownElement = document.getElementById('countdown');
+    
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = deadline - now;
+        
+        if (timeLeft > 0) {
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            
+            countdownElement.innerHTML = `${days}d ${hours}h ${minutes}m remaining`;
+        } else {
+            countdownElement.innerHTML = 'Deadline passed';
+            countdownElement.classList.add('text-danger');
+        }
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 60000); // Update every minute
+});
+</script>
+{% endblock %}

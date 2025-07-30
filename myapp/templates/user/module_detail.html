@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ module.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <!-- Module Title & Description -->
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-book text-blue-500 mr-2"></i> {{ module.name }}
+            </h1>
+            <p class="mt-2 text-gray-600">{{ module.description }}</p>
+        </div>
+
+        <!-- Learning Path Status Badge -->
+        <div class="mt-4 md:mt-0">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium 
+                {% if learning_path and learning_path.status == 'completed' %}bg-green-100 text-green-800
+                {% elif learning_path and learning_path.status == 'in_progress' %}bg-blue-100 text-blue-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if learning_path %}
+                    {{ learning_path.get_status_display }}
+                {% else %}
+                    Not Started
+                {% endif %}
+            </span>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8">
+
+        <!-- Module Contents -->
+        <div class="md:w-2/3">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Module Contents</h2>
+
+                <div class="space-y-4">
+                    {% for content in contents %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start space-x-4">
+                                <!-- Content Icon -->
+                                <div class="flex-shrink-0">
+                                    {% if content.content_type == 'video' %}
+                                    <div class="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                                        <i class="fas fa-play text-red-500"></i>
+                                    </div>
+                                    {% elif content.content_type == 'pdf' %}
+                                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-file-pdf text-blue-500"></i>
+                                    </div>
+                                    {% elif content.content_type == 'quiz' %}
+                                    <div class="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                        <i class="fas fa-question-circle text-purple-500"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                        <i class="fas fa-tasks text-green-500"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Content Title and Details -->
+                                <div>
+                                    <h3 class="font-medium text-gray-900">
+                                        <a href="{% url 'content_detail' content.id %}" class="hover:text-blue-600">
+                                            {{ content.title }}
+                                        </a>
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        {{ content.content_type|title }} &bull; {{ content.duration_minutes }} min
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Completed Badge -->
+                            <div>
+                                {% if content.id in completed_contents %}
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <i class="fas fa-check mr-1"></i> Completed
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No contents available for this module.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="md:w-1/3">
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-4">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Module Details</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Estimated Time</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ module.estimated_time }}</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Difficulty</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ module.get_difficulty_display }}</p>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">XP Reward</h3>
+                        <p class="mt-1 text-sm text-gray-900">{{ module.xp_reward }} XP</p>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <!-- <div class="pt-4 border-t border-gray-200">
+                        <div class="flex justify-between text-sm text-gray-600 mb-1">
+                            <span>Your Progress</span>
+                            <span>{{ progress_percent|default:"0" }}%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2" role="progressbar" aria-valuenow="{{ progress_percent }}" aria-valuemin="0" aria-valuemax="100" aria-label="Module Progress">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ progress_percent|default:"0" }}%;"></div>
+                        </div>
+                    </div> -->
+
+               <!-- Enhanced Action Button Section -->
+<div class="pt-4 space-y-3">
+    <!-- Debug Information (temporary) -->
+    <div class="bg-yellow-50 p-3 mb-4 rounded-lg border border-yellow-200 text-sm">
+        <div class="font-semibold text-yellow-800">Debug Info:</div>
+        <div class="grid grid-cols-2 gap-2 mt-1">
+            <div>Learning Path Status:</div>
+            <div class="font-medium">{{ learning_path.status|default:"none" }}</div>
+            
+            <div>Module Completed:</div>
+            <div class="font-medium">
+                {% if learning_path and learning_path.status == 'completed' %}Yes{% else %}No{% endif %}
+            </div>
+            
+            <div>Has Certificate:</div>
+            <div class="font-medium">
+                {% if learning_path and learning_path.status == 'completed' %}Yes{% else %}{{ has_certificate|yesno:"Yes,No" }}{% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Button Logic -->
+    {% if not learning_path %}
+        <!-- No learning path exists -->
+        <a href="{% url 'start_module' module.id %}" 
+           class="group w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 block text-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+            <i class="fas fa-play-circle mr-2 transition-transform group-hover:scale-110"></i>
+            Start Module
+        </a>
+    
+    {% elif learning_path.status == 'completed' %}
+        <!-- Module is completed -->
+        {% if not has_certificate %}
+            <!-- Ready to claim certificate -->
+            <div class="relative">
+                <a href="{% url 'generate_certificate' module.id %}" 
+                   class="group w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fas fa-award mr-2 transition-transform group-hover:scale-110"></i>
+                    Claim Your Certificate
+                </a>
+                {% if module.xp_reward > 0 %}
+                    <span class="absolute -top-2 -right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                        +{{ module.xp_reward }} XP
+                    </span>
+                {% endif %}
+            </div>
+        {% else %}
+            <!-- Certificate exists -->
+            <div class="space-y-2">
+                <a href="{% url 'view_certificate' module.id %}" 
+                   class="group w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fas fa-certificate mr-2 transition-transform group-hover:scale-110"></i>
+                    View Certificate
+                </a>
+                <div class="flex justify-center space-x-4">
+                    <a href="{% url 'view_certificate' module.id %}?format=pdf" 
+                       class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center">
+                        <i class="fas fa-file-pdf mr-1"></i> Download PDF
+                    </a>
+                    <a href="#" onclick="shareCertificate('{{ module.name }}')" 
+                       class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center">
+                        <i class="fas fa-share-alt mr-1"></i> Share
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    
+    {% elif learning_path.status == 'not_started' %}
+        <!-- Module not started -->
+        <a href="{% url 'start_module' module.id %}" class="...">
+            <i class="fas fa-play-circle mr-2"></i>
+            Start Module
+        </a>
+    
+    {% else %}
+        <!-- Module in progress -->
+        <div class="space-y-2">
+            <a href="{% url 'continue_module' module.id %}" 
+               class="group w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium transition-all duration-200 block text-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <i class="fas fa-forward mr-2 transition-transform group-hover:scale-110"></i>
+                Continue Module
+            </a>
+        </div>
+    {% endif %}
+    
+    {% if learning_path and learning_path.status == 'completed' %}
+        <div class="text-center text-sm text-green-600 animate-pulse">
+            <i class="fas fa-check-circle mr-1"></i> Module Completed!
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function shareCertificate(moduleName) {
+    if (navigator.share) {
+        navigator.share({
+            title: 'I completed ' + moduleName,
+            text: 'Check out my certificate for completing ' + moduleName,
+            url: window.location.href
+        }).catch(err => {
+            console.log('Error sharing:', err);
+        });
+    } else {
+        const el = document.createElement('textarea');
+        el.value = window.location.href;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert('Certificate link copied to clipboard!');
+    }
+}
+</script>
+</script>
+                </div>
+            </div>
+
+            {% if user_badges %}
+            <div class="bg-white rounded-xl shadow-md p-6 mb-6 sticky top-32">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Your Badges & Certificates</h2>
+                <div class="flex flex-wrap gap-4">
+                    {% for user_badge in user_badges %}
+                    <div class="flex flex-col items-center space-y-1 w-24">
+                        {% if user_badge.badge.award_type == 'badge' %}
+                            {% if user_badge.badge.icon %}
+                                <img src="{{ user_badge.badge.icon.url }}" alt="{{ user_badge.badge.name }}" class="h-16 w-16 rounded-lg shadow-md object-cover" />
+                            {% else %}
+                                <div class="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-award fa-2x"></i>
+                                </div>
+                            {% endif %}
+                        {% elif user_badge.badge.award_type == 'certificate' %}
+                            {% if user_badge.badge.certificate_url %}
+                                <a href="{{ user_badge.badge.certificate_url }}" target="_blank" class="text-blue-600 hover:underline">
+                                    <i class="fas fa-certificate fa-2x"></i>
+                                </a>
+                            {% elif user_badge.badge.certificate_file %}
+                                <a href="{{ user_badge.badge.certificate_file.url }}" target="_blank" class="text-blue-600 hover:underline">
+                                    <i class="fas fa-file-alt fa-2x"></i>
+                                </a>
+                            {% else %}
+                                <div class="h-16 w-16 rounded-lg bg-gray-200 flex items-center justify-center text-gray-400">
+                                    <i class="fas fa-certificate fa-2x"></i>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                        <span class="text-sm font-medium text-gray-800 text-center">{{ user_badge.badge.name }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

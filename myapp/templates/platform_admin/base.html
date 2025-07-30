@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | {% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        .sidebar-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-left: 4px solid white;
+        }
+        .sidebar-link.active:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        .notification-badge {
+            top: -0.5rem;
+            right: -0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="bg-indigo-800 text-white w-64 space-y-6 py-7 px-2 fixed h-full shadow-lg">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-2 px-4 mb-8">
+                <i class="fas fa-code text-2xl text-indigo-300"></i>
+                <span class="text-xl font-bold">CodePlatform</span>
+                <span class="text-xs bg-indigo-600 px-2 py-1 rounded ml-auto">ADMIN</span>
+            </div>
+            
+            <!-- Navigation -->
+            <nav class="space-y-1">
+                <a href="{% url 'admin_dashboard' %}" 
+                   class="sidebar-link block py-3 px-4 rounded transition duration-200 hover:bg-indigo-700 flex items-center {% if request.path == '/admin/dashboard/' %}active{% endif %}">
+                    <i class="fas fa-tachometer-alt mr-3 w-5 text-center"></i>
+                    Dashboard
+                </a>
+                <a href="{% url 'admin_hackathon_management' %}" 
+                   class="sidebar-link block py-3 px-4 rounded transition duration-200 hover:bg-indigo-700 flex items-center {% if request.path == '/admin/hackathon/' %}active{% endif %}">
+                    <i class="fas fa-trophy mr-3 w-5 text-center"></i>
+                    Hackathons
+                </a>
+                <a href="{% url 'admin_users' %}" 
+                   class="sidebar-link block py-3 px-4 rounded transition duration-200 hover:bg-indigo-700 flex items-center {% if request.path == '/admin/users/' %}active{% endif %}">
+                    <i class="fas fa-users mr-3 w-5 text-center"></i>
+                    Users
+                </a>
+                <a href="{% url 'admin_reports' %}" 
+                   class="sidebar-link block py-3 px-4 rounded transition duration-200 hover:bg-indigo-700 flex items-center {% if request.path == '/admin/reports/' %}active{% endif %}">
+                    <i class="fas fa-chart-bar mr-3 w-5 text-center"></i>
+                    Reports
+                </a>
+                <a href="{% url 'admin:index' %}" 
+                   class="sidebar-link block py-3 px-4 rounded transition duration-200 hover:bg-indigo-700 flex items-center mt-8 text-indigo-200 border-t border-indigo-700 pt-4">
+                    <i class="fas fa-cog mr-3 w-5 text-center"></i>
+                    Django Admin
+                </a>
+            </nav>
+            
+            <!-- User Profile -->
+            <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-indigo-700 bg-indigo-900">
+                <div class="flex items-center">
+                    <img src="https://via.placeholder.com/40" alt="admin" class="rounded-full h-10 w-10">
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">{{ request.user.username }}</p>
+                        <p class="text-xs text-indigo-300">Administrator</p>
+                    </div>
+                    <a href="{% url 'logout' %}" class="ml-auto text-indigo-300 hover:text-white">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 ml-64">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center sticky top-0 z-10">
+                <h1 class="text-2xl font-semibold text-gray-800">
+                    <i class="fas {% block header_icon %}{% endblock %} mr-2 text-indigo-600"></i>
+                    {% block header %}{% endblock %}
+                </h1>
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="text-gray-500 hover:text-indigo-600 focus:outline-none">
+                            <i class="fas fa-bell text-xl"></i>
+                            <span class="notification-badge absolute bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Actions Dropdown -->
+                    <div class="relative">
+                        <button class="flex items-center text-gray-700 hover:text-indigo-600 focus:outline-none">
+                            <i class="fas fa-bolt mr-1"></i>
+                            <span>Quick Actions</span>
+                            <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                        </button>
+                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-20 hidden">
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Add User</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Create Hackathon</a>
+                            <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Generate Report</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Container -->
+            <main class="p-6">
+                <!-- Breadcrumbs -->
+                <div class="flex items-center text-sm text-gray-600 mb-6">
+                    <a href="{% url 'admin_dashboard' %}" class="hover:text-indigo-600"><i class="fas fa-home mr-1"></i> Dashboard</a>
+                    {% block breadcrumbs %}{% endblock %}
+                </div>
+                
+                <!-- Messages -->
+                {% if messages %}
+                <div class="mb-6">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-700{% elif message.tags == 'error' %}bg-red-100 text-red-700{% else %}bg-blue-100 text-blue-700{% endif %}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Main Content Block -->
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Toggle dropdown menu
+        document.addEventListener('DOMContentLoaded', function() {
+            // Quick actions dropdown
+            const quickActionsBtn = document.querySelector('header button:last-of-type');
+            const quickActionsMenu = document.querySelector('header .relative:last-of-type .absolute');
+            
+            quickActionsBtn.addEventListener('click', function() {
+                quickActionsMenu.classList.toggle('hidden');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!quickActionsBtn.contains(e.target) && !quickActionsMenu.contains(e.target)) {
+                    quickActionsMenu.classList.add('hidden');
+                }
+            });
+            
+            // Active link highlighting
+            const currentPath = window.location.pathname;
+            document.querySelectorAll('.sidebar-link').forEach(link => {
+                if (link.getAttribute('href') === currentPath) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

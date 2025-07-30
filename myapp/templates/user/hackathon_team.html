@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Team Management - {{ submission.hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <h1 class="text-2xl font-bold mb-6">Team for {{ submission.hackathon.name }}</h1>
+    
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 class="text-xl font-semibold mb-4">Team Members</h2>
+        
+        <div class="space-y-4">
+            <!-- Team Owner -->
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <img src="{{ submission.user.profile_picture.url|default:'/static/images/default-profile.png' }}" 
+                         class="w-10 h-10 rounded-full mr-3">
+                    <div>
+                        <p class="font-medium">{{ submission.user.username }}</p>
+                        <p class="text-sm text-gray-500">Team Owner</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Members -->
+            {% for member in team_members %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <img src="{{ member.profile_picture.url|default:'/static/images/default-profile.png' }}" 
+                         class="w-10 h-10 rounded-full mr-3">
+                    <p class="font-medium">{{ member.username }}</p>
+                </div>
+                {% if is_owner %}
+                <form method="post" action="{% url 'hackathon_team' submission.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="remove_member" value="{{ member.id }}">
+                    <button type="submit" class="text-red-600 hover:text-red-800 text-sm font-medium">
+                        Remove
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            {% empty %}
+            <p class="text-gray-500">No additional team members</p>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if is_owner %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-4">Add Team Members</h2>
+        <a href="{% url 'submit_hackathon' submission.hackathon.id %}" 
+           class="inline-block bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+            Edit Team Members
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

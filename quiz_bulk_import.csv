@@ -1,0 +1,202 @@
+topic,question,difficulty,answer_1,answer_2,answer_3,answer_4,correct
+Data Structures,Which data structure uses FIFO (First-In-First-Out) ordering?,easy,Stack,Queue,Heap,Tree,Queue
+Data Structures,What is the time complexity of accessing an element in an array by index?,easy,O(n),O(log n),O(1),O(n^2),O(1)
+Data Structures,Which data structure uses LIFO (Last-In-First-Out) ordering?,easy,Queue,Stack,Array,Linked List,Stack
+Data Structures,What is the main advantage of a linked list over an array?,easy,Faster access,Dynamic size,Less memory,Sorted data,Dynamic size
+Data Structures,In which data structure are elements stored in contiguous memory locations?,easy,Linked List,Stack,Array,Tree,Array
+Data Structures,What is the time complexity of searching in a binary search tree (average case)?,medium,O(n),O(log n),O(1),O(n^2),O(log n)
+Data Structures,Which operation is NOT typically supported by a stack?,medium,Push,Pop,Peek,Random access,Random access
+Data Structures,What is the worst-case time complexity of inserting an element in a hash table?,medium,O(1),O(log n),O(n),O(n^2),O(n)
+Data Structures,Which data structure is best for implementing recursion?,medium,Array,Queue,Stack,Heap,Stack
+Data Structures,What is the space complexity of a binary search tree with n nodes?,medium,O(1),O(log n),O(n),O(n^2),O(n)
+Data Structures,In a doubly linked list what does each node contain?,medium,Data only,Data and one pointer,Data and two pointers,Only pointers,Data and two pointers
+Data Structures,What is the main disadvantage of using arrays?,medium,Slow access,Dynamic size,Fixed size,Complex implementation,Fixed size
+Data Structures,Which sorting algorithm uses a heap data structure?,medium,Quick Sort,Merge Sort,Heap Sort,Bubble Sort,Heap Sort
+Data Structures,What is the time complexity of finding the minimum element in a min-heap?,medium,O(n),O(log n),O(1),O(n^2),O(1)
+Data Structures,Which data structure allows insertion and deletion at both ends?,medium,Stack,Queue,Array,Deque,Deque
+Data Structures,What is the height of a complete binary tree with n nodes?,hard,O(n),O(log n),O(1),O(n^2),O(log n)
+Data Structures,Which balancing technique is used in AVL trees?,hard,Rotation,Rehashing,Splitting,Color coding,Rotation
+Data Structures,What is the worst-case time complexity for search in a hash table with chaining?,hard,O(1),O(log n),O(n),O(n^2),O(n)
+Data Structures,In a B-tree of order m what is the maximum number of children a node can have?,hard,m,m-1,m+1,2m,m
+Data Structures,What is the space complexity of merge sort?,hard,O(1),O(log n),O(n),O(n^2),O(n)
+Data Structures,Which data structure is used to implement Dijkstra's algorithm efficiently?,hard,Stack,Queue,Priority Queue,Array,Priority Queue
+Data Structures,What is the amortized time complexity of dynamic array resizing?,hard,O(1),O(log n),O(n),O(n^2),O(1)
+Data Structures,In a red-black tree what is the maximum height?,hard,log n,2 log n,n,n^2,2 log n
+Data Structures,What is the time complexity of building a heap from an unsorted array?,hard,O(n log n),O(n^2),O(n),O(log n),O(n)
+Data Structures,Which data structure provides the best average-case performance for all operations?,hard,Array,Linked List,Hash Table,Binary Tree,Hash Table
+Algorithms,What is the time complexity of bubble sort in the worst case?,easy,O(n),O(log n),O(n log n),O(n^2),O(n^2)
+Algorithms,Which algorithm is used to find the shortest path in an unweighted graph?,easy,DFS,BFS,Dijkstra,A*,BFS
+Algorithms,What does DFS stand for?,easy,Data Flow System,Depth First Search,Direct File System,Dynamic Function Sort,Depth First Search
+Algorithms,Which sorting algorithm has the best average-case time complexity?,easy,Bubble Sort,Selection Sort,Quick Sort,Insertion Sort,Quick Sort
+Algorithms,What is the time complexity of linear search?,easy,O(1),O(log n),O(n),O(n^2),O(n)
+Algorithms,Which algorithm technique does merge sort use?,medium,Divide and Conquer,Greedy,Dynamic Programming,Backtracking,Divide and Conquer
+Algorithms,What is the space complexity of quick sort in the average case?,medium,O(1),O(log n),O(n),O(n^2),O(log n)
+Algorithms,Which algorithm is best for finding strongly connected components?,medium,BFS,DFS,Dijkstra,Kruskal,DFS
+Algorithms,What is the time complexity of the fastest comparison-based sorting algorithm?,medium,O(n),O(n log n),O(n^2),O(log n),O(n log n)
+Algorithms,Which technique is used in dynamic programming?,medium,Overlapping subproblems,Random selection,Greedy choice,Backtracking,Overlapping subproblems
+Algorithms,What is the worst-case time complexity of binary search?,medium,O(n),O(log n),O(1),O(n^2),O(log n)
+Algorithms,Which algorithm is used to detect cycles in a directed graph?,medium,BFS,DFS,Dijkstra,Prim's,DFS
+Algorithms,What is the time complexity of heap sort?,medium,O(n),O(n log n),O(n^2),O(log n),O(n log n)
+Algorithms,Which algorithm technique does the knapsack problem commonly use?,medium,Greedy,Divide and Conquer,Dynamic Programming,Backtracking,Dynamic Programming
+Algorithms,What is the main principle behind greedy algorithms?,medium,Optimal substructure,Local optimal choice,Overlapping subproblems,Exhaustive search,Local optimal choice
+Algorithms,What is the time complexity of Dijkstra's algorithm using a binary heap?,hard,O(V + E),O(V log V),O((V + E) log V),O(V^2),O((V + E) log V)
+Algorithms,Which algorithm is used to find the minimum spanning tree?,hard,Dijkstra,Bellman-Ford,Kruskal,Floyd-Warshall,Kruskal
+Algorithms,What is the worst-case time complexity of quicksort?,hard,O(n),O(n log n),O(n^2),O(log n),O(n^2)
+Algorithms,Which algorithm can handle negative edge weights?,hard,Dijkstra,Bellman-Ford,A*,Prim's,Bellman-Ford
+Algorithms,What is the time complexity of the Floyd-Warshall algorithm?,hard,O(V^2),O(V^3),O(V + E),O(E log V),O(V^3)
+Algorithms,Which sorting algorithm is stable and has O(n log n) time complexity?,hard,Quick Sort,Heap Sort,Merge Sort,Selection Sort,Merge Sort
+Algorithms,What is the space complexity of iterative deepening search?,hard,O(bd),O(b^d),O(d),O(1),O(bd)
+Algorithms,Which algorithm is used for topological sorting?,hard,BFS,DFS,Dijkstra,Kruskal,DFS
+Algorithms,What is the time complexity of radix sort?,hard,O(n^2),O(n log n),O(d * n),O(n),O(d * n)
+Algorithms,Which technique does the A* algorithm use?,hard,Greedy,Heuristic search,Dynamic programming,Backtracking,Heuristic search
+Algorithms,What is the worst-case space complexity of merge sort?,hard,O(1),O(log n),O(n),O(n^2),O(n)
+Databases,Which SQL command is used to retrieve data from a database?,easy,INSERT,UPDATE,SELECT,DELETE,SELECT
+Databases,What does ACID stand for in database systems?,easy,Atomicity Consistency Isolation Durability,Accuracy Control Integration Design,Automatic Calculation Information Database,Advanced Computing Information Data,Atomicity Consistency Isolation Durability
+Databases,Which key uniquely identifies each record in a table?,easy,Foreign Key,Primary Key,Composite Key,Candidate Key,Primary Key
+Databases,What is SQL used for?,easy,Styling webpages,Querying databases,Network protocols,File compression,Querying databases
+Databases,Which command is used to create a new database?,easy,CREATE DATABASE,MAKE DATABASE,NEW DATABASE,BUILD DATABASE,CREATE DATABASE
+Databases,What is normalization in databases?,medium,Data encryption,Removing redundancy,Adding indexes,Creating backups,Removing redundancy
+Databases,Which normal form removes partial dependencies?,medium,1NF,2NF,3NF,BCNF,2NF
+Databases,What is a foreign key?,medium,A key from another table,A unique identifier,An encrypted key,A backup key,A key from another table
+Databases,Which SQL clause is used to filter records?,medium,GROUP BY,ORDER BY,WHERE,HAVING,WHERE
+Databases,What is the difference between DELETE and TRUNCATE?,medium,No difference,DELETE is faster,TRUNCATE removes all rows,DELETE keeps structure,TRUNCATE removes all rows
+Databases,Which join returns all records from both tables?,medium,INNER JOIN,LEFT JOIN,RIGHT JOIN,FULL OUTER JOIN,FULL OUTER JOIN
+Databases,What is an index in a database?,medium,A table reference,A performance optimization,A data type,A constraint,A performance optimization
+Databases,Which command is used to modify existing data?,medium,INSERT,UPDATE,ALTER,MODIFY,UPDATE
+Databases,What is a stored procedure?,medium,A saved query,A data type,A table constraint,A user permission,A saved query
+Databases,Which isolation level prevents dirty reads?,medium,READ UNCOMMITTED,READ COMMITTED,REPEATABLE READ,SERIALIZABLE,READ COMMITTED
+Databases,What is database denormalization?,hard,Adding redundancy for performance,Removing all keys,Encrypting data,Creating views,Adding redundancy for performance
+Databases,Which algorithm is commonly used for query optimization?,hard,Dijkstra,Cost-based optimization,Greedy,Dynamic programming,Cost-based optimization
+Databases,What is the CAP theorem?,hard,Consistency Availability Partition tolerance,Create Add Print,Central Access Point,Compressed Archive Protocol,Consistency Availability Partition tolerance
+Databases,Which concurrency control method uses timestamps?,hard,Two-phase locking,Timestamp ordering,Optimistic control,Multiversion control,Timestamp ordering
+Databases,What is a materialized view?,hard,A virtual table,A precomputed view,A temporary table,A system table,A precomputed view
+Databases,Which recovery method uses write-ahead logging?,hard,Shadow paging,REDO logging,UNDO logging,WAL,WAL
+Databases,What is database sharding?,hard,Data encryption,Horizontal partitioning,Vertical partitioning,Data compression,Horizontal partitioning
+Databases,Which consensus algorithm is used in distributed databases?,hard,Paxos,Dijkstra,QuickSort,BFS,Paxos
+Databases,What is eventual consistency?,hard,Immediate consistency,Consistency after some time,No consistency,Perfect consistency,Consistency after some time
+Databases,Which technique is used for handling large datasets?,hard,Normalization,MapReduce,Indexing,Caching,MapReduce
+Operating Systems,What is the main function of an operating system?,easy,Run applications,Manage hardware resources,Store data,Connect to internet,Manage hardware resources
+Operating Systems,Which scheduling algorithm gives equal time to all processes?,easy,FIFO,Round Robin,Priority,SJF,Round Robin
+Operating Systems,What is virtual memory?,easy,RAM only,Hard disk space used as RAM,Cache memory,ROM,Hard disk space used as RAM
+Operating Systems,What does CPU stand for?,easy,Central Processing Unit,Computer Personal Unit,Central Program Unit,Computer Processing Unit,Central Processing Unit
+Operating Systems,Which component manages file operations?,easy,CPU,File System,Memory Manager,Device Driver,File System
+Operating Systems,What is a process in operating systems?,medium,A program in execution,A file on disk,A hardware component,A network connection,A program in execution
+Operating Systems,What is the difference between process and thread?,medium,No difference,Thread is lighter than process,Process is lighter than thread,They are same,Thread is lighter than process
+Operating Systems,What is a deadlock?,medium,System crash,Circular waiting for resources,Memory overflow,Network failure,Circular waiting for resources
+Operating Systems,Which algorithm is used to avoid deadlock?,medium,Round Robin,Banker's algorithm,FIFO,LRU,Banker's algorithm
+Operating Systems,What is context switching?,medium,Changing user,Switching between processes,Changing memory,Switching computers,Switching between processes
+Operating Systems,What is the purpose of semaphores?,medium,Memory allocation,Process synchronization,File management,Network communication,Process synchronization
+Operating Systems,Which memory allocation technique reduces fragmentation?,medium,First Fit,Best Fit,Worst Fit,Paging,Paging
+Operating Systems,What is thrashing in virtual memory?,medium,Memory corruption,Excessive page swapping,Memory leak,Buffer overflow,Excessive page swapping
+Operating Systems,Which system call is used to create a new process?,medium,fork(),exec(),wait(),exit(),fork()
+Operating Systems,What is the critical section problem?,medium,Hardware failure,Concurrent access to shared resources,Network congestion,Memory shortage,Concurrent access to shared resources
+Operating Systems,What is the difference between preemptive and non-preemptive scheduling?,hard,No difference,Preemptive can interrupt processes,Non-preemptive is faster,They use different algorithms,Preemptive can interrupt processes
+Operating Systems,Which page replacement algorithm has the lowest page fault rate?,hard,FIFO,LRU,Optimal,Random,Optimal
+Operating Systems,What is a race condition?,hard,Fast execution,Concurrent processes affecting shared data,Memory race,CPU competition,Concurrent processes affecting shared data
+Operating Systems,Which technique is used to prevent priority inversion?,hard,Priority inheritance,Round robin,Time slicing,Load balancing,Priority inheritance
+Operating Systems,What is memory-mapped I/O?,hard,Virtual memory,Mapping files to memory,Cache mapping,Memory allocation,Mapping files to memory
+Operating Systems,Which algorithm is used for disk scheduling?,hard,Round Robin,SCAN,FIFO,Priority,SCAN
+Operating Systems,What is a microkernel architecture?,hard,Small kernel with minimal services,Large monolithic kernel,User-space kernel,Distributed kernel,Small kernel with minimal services
+Operating Systems,Which mechanism provides inter-process communication?,hard,Threads,Message passing,Virtual memory,File system,Message passing
+Operating Systems,What is copy-on-write in memory management?,hard,Copying all data,Copying only when modified,Write protection,Memory duplication,Copying only when modified
+Operating Systems,Which scheduling algorithm minimizes average waiting time?,hard,FIFO,Round Robin,Shortest Job First,Priority,Shortest Job First
+Networking,What does IP stand for?,easy,Internet Protocol,Internal Program,Information Processing,Internet Program,Internet Protocol
+Networking,Which protocol is used for secure web communication?,easy,HTTP,HTTPS,FTP,SMTP,HTTPS
+Networking,What is the default port for HTTP?,easy,21,22,80,443,80
+Networking,Which device connects different networks?,easy,Hub,Switch,Router,Repeater,Router
+Networking,What does DNS stand for?,easy,Data Network System,Domain Name System,Digital Network Service,Dynamic Name Server,Domain Name System
+Networking,Which OSI layer is responsible for routing?,medium,Physical,Data Link,Network,Transport,Network
+Networking,What is the difference between TCP and UDP?,medium,No difference,TCP is reliable UDP is fast,UDP is reliable TCP is fast,Both are same,TCP is reliable UDP is fast
+Networking,What is a subnet mask used for?,medium,Security,Network segmentation,Data encryption,Protocol selection,Network segmentation
+Networking,Which protocol is used for email transfer?,medium,HTTP,FTP,SMTP,DNS,SMTP
+Networking,What is the purpose of ARP?,medium,Address Resolution,Data encryption,File transfer,Email routing,Address Resolution
+Networking,Which layer handles flow control?,medium,Network,Transport,Session,Presentation,Transport
+Networking,What is a VLAN?,medium,Virtual LAN,Video LAN,Voice LAN,Verified LAN,Virtual LAN
+Networking,Which protocol uses port 443?,medium,HTTP,FTP,SMTP,HTTPS,HTTPS
+Networking,What is NAT used for?,medium,Address translation,Data encryption,File compression,Protocol conversion,Address translation
+Networking,Which algorithm is used in distance vector routing?,medium,Dijkstra,Bellman-Ford,Floyd-Warshall,A*,Bellman-Ford
+Networking,What is the maximum segment size in TCP?,hard,1024 bytes,1460 bytes,1500 bytes,2048 bytes,1460 bytes
+Networking,Which congestion control algorithm does TCP use?,hard,Slow start,Fast start,Immediate start,No control,Slow start
+Networking,What is BGP used for?,hard,Local routing,Inter-domain routing,Data encryption,File transfer,Inter-domain routing
+Networking,Which technique is used to prevent broadcast storms?,hard,Spanning Tree Protocol,VLAN,NAT,DNS,Spanning Tree Protocol
+Networking,What is Quality of Service (QoS)?,hard,Service quality,Network performance management,Data security,Protocol efficiency,Network performance management
+Networking,Which protocol is used for network time synchronization?,hard,SNMP,NTP,DHCP,DNS,NTP
+Networking,What is MPLS used for?,hard,Multi-Protocol Label Switching,Network security,Data compression,File transfer,Multi-Protocol Label Switching
+Networking,Which layer provides end-to-end communication?,hard,Network,Transport,Session,Application,Transport
+Networking,What is SDN in networking?,hard,Secure Data Network,Software Defined Networking,System Data Network,Standard Data Network,Software Defined Networking
+Networking,Which technique is used for load balancing?,hard,Round Robin,All algorithms,Least connections,Weighted algorithms,All algorithms
+Programming Languages,Which of these is a statically typed language?,easy,Python,Java,JavaScript,Ruby,Java
+Programming Languages,What does OOP stand for?,easy,Object Oriented Programming,Online Operating Program,Original Output Process,Optimized Operation Procedure,Object Oriented Programming
+Programming Languages,Which symbol is used for comments in Python?,easy,//,#,<!--,/* */,#
+Programming Languages,What is the file extension for Java source code?,easy,.java,.class,.jar,.jvm,.java
+Programming Languages,Which keyword is used to define a function in Python?,easy,function,def,func,define,def
+Programming Languages,What does polymorphism enable in OOP?,medium,Multiple inheritance,Code reuse,Same interface different implementations,Data hiding,Same interface different implementations
+Programming Languages,Which programming paradigm does Haskell primarily support?,medium,Object-oriented,Functional,Procedural,Logic,Functional
+Programming Languages,What is garbage collection?,medium,Code optimization,Automatic memory management,Error handling,File cleanup,Automatic memory management
+Programming Languages,Which access modifier makes members visible only within the class?,medium,public,private,protected,internal,private
+Programming Languages,What is method overloading?,medium,Same method different parameters,Same method same parameters,Different method same parameters,Method replacement,Same method different parameters
+Programming Languages,Which concept allows a class to inherit from multiple classes?,medium,Single inheritance,Multiple inheritance,Multilevel inheritance,Hybrid inheritance,Multiple inheritance
+Programming Languages,What is a lambda function?,medium,Named function,Anonymous function,Class method,Static function,Anonymous function
+Programming Languages,Which pattern is used to create objects without specifying exact classes?,medium,Singleton,Factory,Observer,Strategy,Factory
+Programming Languages,What is the difference between == and === in JavaScript?,medium,No difference,== checks type === doesn't,=== checks type == doesn't,Both same,=== checks type == doesn't
+Programming Languages,Which principle states that software entities should be open for extension but closed for modification?,medium,Single Responsibility,Open-Closed,Liskov Substitution,Interface Segregation,Open-Closed
+Programming Languages,What is tail recursion optimization?,hard,Memory optimization,Stack optimization,Code optimization,Performance optimization,Stack optimization
+Programming Languages,Which design pattern ensures only one instance of a class exists?,hard,Factory,Singleton,Observer,Strategy,Singleton
+Programming Languages,What is currying in functional programming?,hard,Function composition,Transforming multi-argument function,Function optimization,Parameter binding,Transforming multi-argument function
+Programming Languages,Which concept allows treating functions as first-class citizens?,hard,Higher-order functions,Method overloading,Function overriding,Static methods,Higher-order functions
+Programming Languages,What is the difference between shallow and deep copy?,hard,No difference,Shallow copies references deep copies values,Deep copies references shallow copies values,Both same,Shallow copies references deep copies values
+Programming Languages,Which technique is used to prevent callback hell?,hard,Promises,Callbacks,Events,Polling,Promises
+Programming Languages,What is reflection in programming languages?,hard,Code mirroring,Runtime type inspection,Code optimization,Memory management,Runtime type inspection
+Programming Languages,Which paradigm emphasizes immutability and pure functions?,hard,Object-oriented,Functional,Procedural,Logic,Functional
+Programming Languages,What is dependency injection?,hard,Code injection,Providing dependencies externally,Security feature,Performance optimization,Providing dependencies externally
+Programming Languages,Which concept allows modifying behavior without changing source code?,hard,Inheritance,Aspect-oriented programming,Polymorphism,Encapsulation,Aspect-oriented programming
+Artificial Intelligence,What does AI stand for?,easy,Artificial Intelligence,Automated Information,Advanced Integration,Algorithmic Intelligence,Artificial Intelligence
+Artificial Intelligence,Which technique is used for machine learning?,easy,Rule-based systems,Neural networks,Expert systems,Database queries,Neural networks
+Artificial Intelligence,What is supervised learning?,easy,Learning without data,Learning with labeled data,Learning with unlabeled data,Learning without supervision,Learning with labeled data
+Artificial Intelligence,Which algorithm is commonly used for classification?,easy,Linear regression,Decision tree,Clustering,Association rules,Decision tree
+Artificial Intelligence,What is the goal of unsupervised learning?,easy,Predict labels,Find patterns in data,Generate rules,Optimize performance,Find patterns in data
+Artificial Intelligence,What is overfitting in machine learning?,medium,Perfect model performance,Model performs well on training but poor on test data,Underfitting,Model optimization,Model performs well on training but poor on test data
+Artificial Intelligence,Which algorithm is used for clustering?,medium,Linear regression,K-means,Decision tree,SVM,K-means
+Artificial Intelligence,What is a neural network?,medium,Database structure,Network of interconnected nodes,Computer network,Decision tree,Network of interconnected nodes
+Artificial Intelligence,Which technique is used to reduce dimensionality?,medium,Classification,PCA,Regression,Clustering,PCA
+Artificial Intelligence,What is reinforcement learning?,medium,Learning with rewards and penalties,Supervised learning,Unsupervised learning,Transfer learning,Learning with rewards and penalties
+Artificial Intelligence,Which activation function is commonly used in neural networks?,medium,Linear,ReLU,Quadratic,Exponential,ReLU
+Artificial Intelligence,What is backpropagation?,medium,Forward pass,Algorithm for training neural networks,Data preprocessing,Feature selection,Algorithm for training neural networks
+Artificial Intelligence,Which metric is used to evaluate classification models?,medium,RMSE,Accuracy,Correlation,Variance,Accuracy
+Artificial Intelligence,What is cross-validation?,medium,Model validation technique,Data cleaning,Feature engineering,Model deployment,Model validation technique
+Artificial Intelligence,Which algorithm is used for regression problems?,medium,K-means,Linear regression,K-NN,Naive Bayes,Linear regression
+Artificial Intelligence,What is deep learning?,hard,Shallow networks,Neural networks with many layers,Machine learning,Data mining,Neural networks with many layers
+Artificial Intelligence,Which technique is used to prevent overfitting?,hard,Increase training data,Regularization,Reduce features,Increase complexity,Regularization
+Artificial Intelligence,What is a convolutional neural network (CNN)?,hard,Text processing network,Image processing network,Audio processing network,General purpose network,Image processing network
+Artificial Intelligence,Which optimization algorithm is commonly used in deep learning?,hard,Gradient descent,Linear search,Genetic algorithm,Simulated annealing,Gradient descent
+Artificial Intelligence,What is transfer learning?,hard,Learning multiple tasks,Using pre-trained models,Learning without data,Real-time learning,Using pre-trained models
+Artificial Intelligence,Which technique is used for natural language processing?,hard,CNN,RNN,SVM,K-means,RNN
+Artificial Intelligence,What is the vanishing gradient problem?,hard,Gradients become too large,Gradients become too small,No gradients,Gradients oscillate,Gradients become too small
+Artificial Intelligence,Which algorithm is used for dimensionality reduction?,hard,SVM,t-SNE,Decision tree,Naive Bayes,t-SNE
+Artificial Intelligence,What is generative adversarial network (GAN)?,hard,Classification network,Two networks competing,Regression network,Clustering network,Two networks competing
+Artificial Intelligence,Which technique is used for feature selection?,hard,PCA,Mutual information,Clustering,Classification,Mutual information
+Software Engineering,What is the software development life cycle (SDLC)?,easy,Hardware development,Process for developing software,Database design,Network configuration,Process for developing software
+Software Engineering,Which methodology emphasizes iterative development?,easy,Waterfall,Agile,Spiral,V-Model,Agile
+Software Engineering,What is version control?,easy,Quality control,Tracking changes in code,Performance control,Security control,Tracking changes in code
+Software Engineering,Which tool is commonly used for version control?,easy,Word,Git,Excel,PowerPoint,Git
+Software Engineering,What is the purpose of testing in software development?,easy,Writing code,Finding and fixing bugs,Designing UI,Database management,Finding and fixing bugs
+Software Engineering,What is code review?,medium,Code optimization,Examining code by peers,Code compilation,Code deployment,Examining code by peers
+Software Engineering,Which design pattern promotes loose coupling?,medium,Singleton,Observer,Factory,Strategy,Observer
+Software Engineering,What is continuous integration?,medium,One-time integration,Frequent code integration,Manual integration,Final integration,Frequent code integration
+Software Engineering,Which principle states that a class should have only one reason to change?,medium,Open-Closed,Single Responsibility,Liskov Substitution,Interface Segregation,Single Responsibility
+Software Engineering,What is refactoring?,medium,Adding features,Improving code structure without changing functionality,Bug fixing,Performance optimization,Improving code structure without changing functionality
+Software Engineering,Which testing approach tests individual components?,medium,Integration testing,Unit testing,System testing,Acceptance testing,Unit testing
+Software Engineering,What is technical debt?,medium,Financial debt,Code quality issues that slow development,Hardware costs,Software licensing costs,Code quality issues that slow development
+Software Engineering,Which metric measures code complexity?,medium,Lines of code,Cyclomatic complexity,Function count,Variable count,Cyclomatic complexity
+Software Engineering,What is pair programming?,medium,Solo programming,Two developers working together,Team programming,Remote programming,Two developers working together
+Software Engineering,Which process model follows sequential phases?,medium,Agile,Waterfall,Scrum,Kanban,Waterfall
+Software Engineering,What is DevOps?,hard,Development only,Combining development and operations,Operations only,Quality assurance,Combining development and operations
+Software Engineering,Which architectural pattern separates concerns into layers?,hard,MVC,Layered architecture,Microservices,Event-driven,Layered architecture
+Software Engineering,What is microservices architecture?,hard,Single large service,Small independent services,Desktop applications,Mobile applications,Small independent services
+Software Engineering,Which technique is used for load testing?,hard,Unit testing,Performance testing tools,Code review,Static analysis,Performance testing tools
+Software Engineering,What is the purpose of design patterns?,hard,Code generation,Reusable solutions to common problems,Database design,UI design,Reusable solutions to common problems
+Software Engineering,Which principle states that high-level modules should not depend on low-level modules?,hard,Single Responsibility,Dependency Inversion,Open-Closed,Interface Segregation,Dependency Inversion
+Software Engineering,What is test-driven development (TDD)?,hard,Testing after development,Writing tests before code,Manual testing,Automated testing,Writing tests before code
+Software Engineering,Which technique is used for measuring code coverage?,hard,Code review,Testing tools that track executed code,Static analysis,Performance profiling,Testing tools that track executed code
+Software Engineering,What is the difference between verification and validation?,hard,No difference,Verification checks requirements validation checks user needs,Validation checks requirements verification checks user needs,Both same,Verification checks requirements validation checks user needs
+Software Engineering,Which architectural style is based on message passing?,hard,Layered,Event-driven architecture,MVC,Repository,Event-driven architecture

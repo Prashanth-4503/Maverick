@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ problem.title }} - Coding Problem{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/theme/material.min.css">
+<style>
+    .CodeMirror {
+        height: 400px;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+    }
+    .test-result {
+        transition: all 0.3s ease;
+    }
+    .test-result.passed {
+        background-color: #dcfce7;
+        border-color: #16a34a;
+    }
+    .test-result.failed {
+        background-color: #fee2e2;
+        border-color: #dc2626;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Panel - Problem Description -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="mb-6">
+                <h1 class="text-2xl font-bold text-gray-900 mb-2">{{ problem.id }}. {{ problem.title }}</h1>
+                <div class="flex items-center space-x-4">
+                    <span class="px-3 py-1 text-sm font-medium rounded-full
+                        {% if problem.difficulty == 'easy' %}bg-green-100 text-green-800
+                        {% elif problem.difficulty == 'medium' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ problem.get_difficulty_display }}
+                    </span>
+                    <span class="text-sm text-gray-500">Acceptance: {{ problem.acceptance_percentage }}%</span>
+                </div>
+            </div>
+            
+            <!-- Problem Description -->
+            <div class="prose max-w-none mb-6">
+                <h3 class="text-lg font-semibold mb-3">Problem Description</h3>
+                <div class="text-gray-700 whitespace-pre-line">{{ problem.description }}</div>
+            </div>
+            
+            <!-- Example -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Example</h3>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="mb-2">
+                        <strong>Input:</strong> 
+                        <code class="bg-gray-200 px-2 py-1 rounded">{{ problem.example_input }}</code>
+                    </div>
+                    <div class="mb-2">
+                        <strong>Output:</strong> 
+                        <code class="bg-gray-200 px-2 py-1 rounded">{{ problem.example_output }}</code>
+                    </div>
+                    {% if problem.explanation %}
+                    <div>
+                        <strong>Explanation:</strong> {{ problem.explanation }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Constraints -->
+            {% if problem.constraints %}
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Constraints</h3>
+                <div class="text-gray-700 whitespace-pre-line">{{ problem.constraints }}</div>
+            </div>
+            {% endif %}
+            
+            <!-- Tags -->
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold mb-3">Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in problem_tags %}
+                    <span class="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm rounded-full">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Panel - Code Editor -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="mb-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold">Code Editor</h2>
+                    <select id="languageSelect" class="border border-gray-300 rounded px-3 py-1">
+                        <option value="python">Python</option>
+                        <option value="javascript">JavaScript</option>
+                        <option value="java">Java</option>
+                    </select>
+                </div>
+                
+                <!-- Code Editor -->
+                <textarea id="codeEditor"></textarea>
+            </div>
+            
+            <!-- Action Buttons -->
+            <div class="flex space-x-4 mb-6">
+                <button id="runCode" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-play mr-2"></i>Run Code
+                </button>
+                <button id="submitCode" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg">
+                    <i class="fas fa-check mr-2"></i>Submit
+                </button>
+            </div>
+            
+            <!-- Results Panel -->
+            <div id="resultsPanel" class="hidden">
+                <h3 class="text-lg font-semibold mb-3">Test Results</h3>
+                <div id="testResults"></div>
+            </div>
+            
+            <!-- Previous Submissions -->
+            {% if user_submissions %}
+            <div class="mt-8">
+                <h3 class="text-lg font-semibold mb-3">Your Submissions</h3>
+                <div class="space-y-2">
+                    {% for submission in user_submissions %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-3">
+                            <span class="px-2 py-1 text-xs font-medium rounded
+                                {% if submission.status == 'accepted' %}bg-green-100 text-green-800
+                                {% elif submission.status == 'wrong_answer' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ submission.get_status_display }}
+                            </span>
+                            <span class="text-sm text-gray-600">{{ submission.language|upper }}</span>
+                        </div>
+                        <span class="text-sm text-gray-500">{{ submission.submitted_at|timesince }} ago</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 flex items-center space-x-3">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+        <span>Running your code...</span>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<script id="django-data" type="application/json">
+{
+    "problemId": {{ problem.id }},
+    "codeTemplates": {{ code_templates|safe }},
+    "submitUrl": "{% url 'submit_code' %}"
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/clike/clike.min.js"></script>
+
+<script>
+// Get Django data safely
+const djangoData = JSON.parse(document.getElementById('django-data').textContent);
+const codeTemplates = djangoData.codeTemplates;
+const problemId = djangoData.problemId;
+const submitUrl = djangoData.submitUrl;
+
+let editor;
+
+// Initialize CodeMirror
+document.addEventListener('DOMContentLoaded', function() {
+    editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+        lineNumbers: true,
+        mode: 'python',
+        theme: 'material',
+        indentUnit: 4,
+        lineWrapping: true
+    });
+    
+    // Set default Python template
+    editor.setValue(codeTemplates.python);
+    
+    // Language change handler
+    document.getElementById('languageSelect').addEventListener('change', function() {
+        const language = this.value;
+        const mode = language === 'java' ? 'text/x-java' : language;
+        editor.setOption('mode', mode);
+        editor.setValue(codeTemplates[language] || '// Write your code here');
+    });
+    
+    // Submit code handler
+    document.getElementById('submitCode').addEventListener('click', submitCode);
+    document.getElementById('runCode').addEventListener('click', runCode);
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function submitCode() {
+    const code = editor.getValue();
+    const language = document.getElementById('languageSelect').value;
+    
+    if (!code.trim()) {
+        alert('Please write some code before submitting!');
+        return;
+    }
+    
+    document.getElementById('loadingModal').classList.remove('hidden');
+    
+    // Use the safely extracted data
+    fetch(submitUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            problem_id: problemId,
+            code: code,
+            language: language
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loadingModal').classList.add('hidden');
+        displayResults(data);
+    })
+    .catch(error => {
+        document.getElementById('loadingModal').classList.add('hidden');
+        console.error('Error:', error);
+        alert('An error occurred while submitting your code.');
+    });
+}
+
+function runCode() {
+    submitCode();
+}
+
+function displayResults(data) {
+    const resultsPanel = document.getElementById('resultsPanel');
+    const testResults = document.getElementById('testResults');
+    
+    resultsPanel.classList.remove('hidden');
+    
+    if (data.status === 'accepted') {
+        testResults.innerHTML = `
+            <div class="test-result passed border-2 rounded-lg p-4 mb-4">
+                <div class="flex items-center text-green-800">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <strong>Accepted!</strong>
+                </div>
+                <p class="text-green-700 mt-2">All test cases passed successfully!</p>
+            </div>
+        `;
+    } else {
+        let html = `
+            <div class="test-result failed border-2 rounded-lg p-4 mb-4">
+                <div class="flex items-center text-red-800">
+                    <i class="fas fa-times-circle mr-2"></i>
+                    <strong>${data.status.replace('_', ' ').toUpperCase()}</strong>
+                </div>
+        `;
+        
+        if (data.results && data.results.test_results) {
+            data.results.test_results.forEach((result, index) => {
+                const statusClass = result.passed ? 'text-green-700' : 'text-red-700';
+                const icon = result.passed ? 'fa-check' : 'fa-times';
+                
+                html += `
+                    <div class="mt-3 p-3 bg-gray-50 rounded">
+                        <div class="flex items-center ${statusClass}">
+                            <i class="fas ${icon} mr-2"></i>
+                            Test Case ${index + 1}: ${result.passed ? 'Passed' : 'Failed'}
+                        </div>
+                        ${!result.passed ? `
+                            <div class="mt-2 text-sm">
+                                <div><strong>Input:</strong> ${result.input}</div>
+                                <div><strong>Expected:</strong> ${result.expected}</div>
+                                <div><strong>Your Output:</strong> ${result.actual}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        }
+        
+        html += '</div>';
+        testResults.innerHTML = html;
+    }
+}
+</script>
+{% endblock %}

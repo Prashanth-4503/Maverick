@@ -1,0 +1,10 @@
+Python,Which keyword is used to handle exceptions?,medium,try,except,catch,error,except
+Python,What is the output of bool([])?,medium,True,False,[],None,False
+Python,Which module is used to generate random numbers?,easy,math,random,os,sys,random
+Python,What is the output of print(type(3.0))?,easy,int,float,str,bool,float
+Python,What is a correct syntax to define a class in Python?,medium,class MyClass:,def MyClass:,MyClass():,define class MyClass,class MyClass:
+Python,What will print(3 * 'abc') return?,medium,abcabc,abcabcabc,abc3,Error,abcabcabc
+Python,Which collection is unordered and contains unique items?,medium,list,set,tuple,dict,set
+Python,How do you create a virtual environment?,hard,python make env,python create env,python -m venv env,venv create,python -m venv env
+Python,What does the strip() function do?,easy,Removes whitespace,Trims strings,Strips variables,Deletes strings,Removes whitespace
+Python,Which keyword is used to inherit from a parent class?,medium,super,inherit,extends,class,super

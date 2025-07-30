@@ -1,0 +1,10 @@
+Java,Which operator is used for object comparison in Java?,medium,==,=,equals(),!=,equals()
+Java,What is the default value of a boolean variable in Java?,easy,true,false,null,0,false
+Java,Which class is the parent of all classes in Java?,easy,Object,String,Class,System,Object
+Java,Which exception occurs when dividing a number by zero?,easy,NullPointerException,ArithmeticException,IllegalArgumentException,ArrayIndexOutOfBoundsException,ArithmeticException
+Java,Which keyword is used to prevent inheritance?,medium,final,static,const,private,final
+Java,Which loop is guaranteed to execute at least once?,medium,for,while,do-while,foreach,do-while
+Java,Which of the following is not a primitive data type in Java?,medium,float,boolean,String,char,String
+Java,Which method is used to get the length of a string in Java?,easy,size(),length(),getSize(),count(),length()
+Java,Which memory area is used to store objects in Java?,hard,Stack,Heap,Register,Code Segment,Heap
+Java,What does the ‘this’ keyword refer to?,medium,Parent class,Child class,Current class object,Static method,Current class object

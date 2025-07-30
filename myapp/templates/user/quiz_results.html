@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Quiz Results - {{ attempt.competency.name }} - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+.result-card {
+    transition: all 0.3s ease;
+}
+.result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+.correct-answer {
+    background-color: #f0fdf4;
+    border-left: 4px solid #22c55e;
+}
+.incorrect-answer {
+    background-color: #fef2f2;
+    border-left: 4px solid #ef4444;
+}
+.answer-choice {
+    padding: 8px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    border: 1px solid #e5e7eb;
+}
+.answer-choice.selected {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+}
+.answer-choice.correct {
+    background-color: #dcfce7;
+    border-color: #22c55e;
+}
+.answer-choice.incorrect {
+    background-color: #fee2e2;
+    border-color: #ef4444;
+}
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Results Header -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <div class="text-center">
+                <div class="mx-auto w-20 h-20 mb-4 rounded-full flex items-center justify-center
+                    {% if stats.passed %}bg-green-100{% else %}bg-yellow-100{% endif %}">
+                    <i class="{% if stats.passed %}fas fa-trophy text-green-600 text-2xl{% else %}fas fa-chart-line text-yellow-600 text-2xl{% endif %}"></i>
+                </div>
+                
+                <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                    {{ attempt.competency.name }} Quiz Results
+                </h1>
+                
+                <div class="text-6xl font-bold mb-2 
+                    {% if stats.passed %}text-green-600{% else %}text-yellow-600{% endif %}">
+                    {{ stats.percentage }}%
+                </div>
+                
+                <p class="text-lg text-gray-600 mb-4">
+                    {% if stats.passed %}
+                        🎉 Congratulations! You passed the quiz!
+                    {% else %}
+                        📚 Keep practicing to improve your score!
+                    {% endif %}
+                </p>
+                
+                <div class="flex justify-center space-x-8 text-sm">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-green-600">{{ stats.correct }}</div>
+                        <div class="text-gray-500">Correct</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-red-600">{{ stats.incorrect }}</div>
+                        <div class="text-gray-500">Incorrect</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-gray-600">{{ time_taken_formatted }}</div>
+                        <div class="text-gray-500">Time Taken</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Statistics -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Performance Breakdown</h2>
+            <div class="stats-grid">
+                {% for difficulty, data in difficulty_stats.items %}
+                <div class="text-center p-4 border rounded-lg">
+                    <div class="text-lg font-semibold capitalize mb-2 
+                        {% if difficulty == 'easy' %}text-green-600
+                        {% elif difficulty == 'medium' %}text-yellow-600
+                        {% else %}text-red-600{% endif %}">
+                        {{ difficulty }} Questions
+                    </div>
+                    <div class="text-2xl font-bold text-gray-900">{{ data.percentage|floatformat:0 }}%</div>
+                    <div class="text-sm text-gray-500">{{ data.correct }}/{{ data.total }} correct</div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center p-4 border rounded-lg">
+                    <div class="text-lg font-semibold text-indigo-600 mb-2">Passing Score</div>
+                    <div class="text-2xl font-bold text-gray-900">{{ passing_score }}%</div>
+                    <div class="text-sm text-gray-500">Required to pass</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Question-by-Question Review -->
+        {% if show_correct_answers %}
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-6">Question Review</h2>
+            
+            {% for response in responses %}
+            <div class="result-card p-6 mb-6 border rounded-lg {% if response.is_correct %}correct-answer{% else %}incorrect-answer{% endif %}">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center">
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full text-white text-sm font-medium mr-3
+                            {% if response.is_correct %}bg-green-500{% else %}bg-red-500{% endif %}">
+                            {{ forloop.counter }}
+                        </span>
+                        <span class="px-2 py-1 text-xs font-medium rounded-full
+                            {% if response.question.difficulty == 'easy' %}bg-green-100 text-green-800
+                            {% elif response.question.difficulty == 'medium' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ response.question.difficulty|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center">
+                        {% if response.is_correct %}
+                            <i class="fas fa-check-circle text-green-500 text-xl mr-2"></i>
+                            <span class="text-green-700 font-medium">Correct</span>
+                        {% else %}
+                            <i class="fas fa-times-circle text-red-500 text-xl mr-2"></i>
+                            <span class="text-red-700 font-medium">Incorrect</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h3 class="text-lg font-medium text-gray-900 mb-4">{{ response.question.text }}</h3>
+                
+                <div class="space-y-2">
+                    {% for answer in response.question.answers.all %}
+                    <div class="answer-choice 
+                        {% if answer == response.answer %}selected{% endif %}
+                        {% if answer.is_correct %}correct{% endif %}
+                        {% if answer == response.answer and not answer.is_correct %}incorrect{% endif %}">
+                        
+                        <div class="flex items-center justify-between">
+                            <span class="flex-1">{{ answer.text }}</span>
+                            <div class="flex items-center space-x-2">
+                                {% if answer == response.answer %}
+                                    <span class="text-xs font-medium text-blue-600 bg-blue-100 px-2 py-1 rounded">Your Answer</span>
+                                {% endif %}
+                                {% if answer.is_correct %}
+                                    <span class="text-xs font-medium text-green-600 bg-green-100 px-2 py-1 rounded">Correct Answer</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-3 text-sm text-gray-500">
+                    Response time: {{ response.response_time|floatformat:1 }} seconds
+                    {% if response.question.points %}
+                        • Points: {{ response.points_earned }}/{{ response.question.points }}
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="{% url 'start_quiz' attempt.competency.id %}" 
+               class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <i class="fas fa-redo mr-2"></i>
+                Retake Quiz
+            </a>
+            
+            <a href="{% url 'assessment' %}" 
+               class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                <i class="fas fa-chart-bar mr-2"></i>
+                View All Assessments
+            </a>
+            
+            {% if user_competency %}
+            <a href="{% url 'dashboard' %}" 
+               class="inline-flex items-center justify-center px-6 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 transition">
+                <i class="fas fa-home mr-2"></i>
+                Back to Dashboard
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

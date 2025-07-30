@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ attempt.competency.name }} Quiz - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+.quiz-container {
+    max-width: 800px;
+}
+.question-card {
+    transition: all 0.3s ease;
+}
+.answer-option {
+    transition: all 0.2s ease;
+    padding: 12px;
+    border-radius: 8px;
+    border: 2px solid transparent;
+}
+.answer-option:hover {
+    transform: translateX(5px);
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+.answer-option.selected {
+    background-color: #eff6ff;
+    border-color: #3b82f6;
+}
+.timer {
+    font-family: 'Courier New', monospace;
+    font-size: 1.5rem;
+}
+.timer.warning {
+    color: #dc2626;
+    animation: pulse 1s infinite;
+}
+
+/* Enhanced Smooth Progress Bar */
+.progress-container {
+    position: relative;
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 8px;
+    overflow: hidden;
+    height: 12px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #4f46e5; /* Solid indigo color as requested */
+    border-radius: 8px;
+    transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* Faster transition */
+    width: 0%;
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-bar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* Progress text animation */
+.progress-text {
+    font-weight: 600;
+    color: #374151;
+    transition: all 0.3s ease;
+}
+
+.progress-percentage {
+    transition: all 0.3s ease;
+    font-weight: 600;
+}
+
+.spinner {
+    display: none;
+}
+.loading .spinner {
+    display: inline-block;
+}
+
+/* Prevent flickering during transitions */
+body {
+    overflow-x: hidden;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="quiz-container mx-auto px-4 sm:px-6">
+        <!-- Quiz Header -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="{{ attempt.competency.icon }} text-indigo-500 mr-3"></i>
+                        {{ attempt.competency.name }} Quiz
+                    </h1>
+                    <p class="text-gray-600 mt-1 progress-text">Question {{ progress.current }} of {{ progress.total }}</p>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center">
+                    <div class="bg-indigo-100 px-4 py-2 rounded-lg">
+                        <span class="text-sm text-gray-500 block">Time Remaining</span>
+                        <span class="timer font-bold text-indigo-700" id="quiz-timer">{{ time_remaining|floatformat:0 }} seconds</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Enhanced Progress Bar -->
+            <div class="mt-6">
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-sm font-medium text-gray-700 progress-text">Progress</span>
+                    <span class="text-sm font-medium text-indigo-600 progress-percentage" id="progress-percentage">{{ progress.percentage|floatformat:1 }}%</span>
+                </div>
+                <div class="progress-container">
+                    <div class="progress-bar" 
+                         id="progress-bar" 
+                         data-current="{{ progress.current }}"
+                         data-total="{{ progress.total }}"
+                         data-target-width="{{ progress.percentage|floatformat:1 }}">
+                    </div>
+                </div>
+                <div class="flex justify-between mt-2 text-xs text-gray-500">
+                    <span>Question <span id="current-question">{{ progress.current }}</span> of {{ progress.total }}</span>
+                    <span><span id="questions-completed">{{ progress.current|add:"-1" }}</span> completed</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Quiz Form -->
+        <form id="quiz-form" method="post" action="{% url 'submit_answer' attempt.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="question_id" value="{{ question.id }}">
+            <input type="hidden" name="time_used" id="time-used" value="0">
+            
+            <div class="question-card bg-white rounded-xl shadow-sm p-6 mb-4">
+                <div class="flex items-start mb-6">
+                    <span class="bg-indigo-100 text-indigo-800 font-medium rounded-full px-4 py-2 mr-4 flex-shrink-0">
+                        {{ progress.current }}
+                    </span>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-medium text-gray-900 leading-relaxed">
+                            {{ question.text }}
+                        </h3>
+                        <span class="inline-block mt-2 px-2 py-1 text-xs font-medium rounded-full
+                            {% if question.difficulty == 'easy' %}bg-green-100 text-green-800
+                            {% elif question.difficulty == 'medium' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ question.difficulty|title }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="space-y-3 ml-16">
+                    {% for answer in answers %}
+                    <div class="answer-option flex items-center cursor-pointer" data-answer-id="{{ answer.id }}">
+                        <input type="radio" 
+                               id="answer-{{ answer.id }}" 
+                               name="answer_id" 
+                               value="{{ answer.id }}"
+                               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 mr-3"
+                               required>
+                        <label for="answer-{{ answer.id }}" 
+                               class="text-gray-700 cursor-pointer flex-1 py-2">
+                            {{ answer.text }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-md p-6 mt-6">
+                <button type="submit" 
+                        id="submit-btn"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white py-3 px-4 rounded-lg font-medium transition shadow-md hover:shadow-lg disabled:cursor-not-allowed flex items-center justify-center">
+                    <span class="submit-text">Submit Answer</span>
+                    <div class="spinner ml-2">
+                        <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Enhanced Quiz Data -->
+<script id="quiz-data" type="application/json">
+{
+    "timeRemaining": {{ time_remaining|default:0 }},
+    "progressCurrent": {{ progress.current|default:0 }},
+    "progressTotal": {{ progress.total|default:1 }},
+    "progressPercentage": {{ progress.percentage|default:0 }},
+    "questionId": {{ question.id|default:0 }}
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quizData = JSON.parse(document.getElementById('quiz-data').textContent);
+    const quizForm = document.getElementById('quiz-form');
+    const timerElement = document.getElementById('quiz-timer');
+    const progressBar = document.getElementById('progress-bar');
+    const progressPercentage = document.getElementById('progress-percentage');
+    const currentQuestionSpan = document.getElementById('current-question');
+    const questionsCompletedSpan = document.getElementById('questions-completed');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    let timeLeft = Math.floor(quizData.timeRemaining);
+    let timeUsed = 0;
+    let timerInterval;
+    let isSubmitting = false;
+
+    // Get progress data from HTML attributes
+    const currentQuestion = parseInt(progressBar.getAttribute('data-current')) || 1;
+    const totalQuestions = parseInt(progressBar.getAttribute('data-total')) || 1;
+    const targetWidth = parseFloat(progressBar.getAttribute('data-target-width')) || 0;
+
+    // Optimized progress bar animation - starts from correct position
+    function initializeProgressBar() {
+        // Set the progress bar to the correct position immediately
+        progressBar.style.width = targetWidth + '%';
+        progressPercentage.textContent = targetWidth.toFixed(1) + '%';
+        
+        // Update question numbers
+        currentQuestionSpan.textContent = currentQuestion;
+        questionsCompletedSpan.textContent = Math.max(0, currentQuestion - 1);
+    }
+
+    // Initialize progress bar without animation on page load
+    initializeProgressBar();
+
+    // Format time display
+    function formatTime(seconds) {
+        if (seconds < 0) return '0:00';
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+
+    // Update timer display
+    function updateTimer() {
+        const timeDisplay = timeLeft >= 60 ? formatTime(timeLeft) : `${timeLeft} seconds`;
+        timerElement.textContent = timeDisplay;
+        
+        if (timeLeft <= 30) {
+            timerElement.classList.add('warning');
+        }
+        
+        if (timeLeft <= 10) {
+            timerElement.parentElement.style.backgroundColor = '#fef2f2';
+            timerElement.parentElement.style.borderColor = '#dc2626';
+        }
+    }
+
+    // Start timer
+    function startTimer() {
+        updateTimer();
+        
+        timerInterval = setInterval(function() {
+            timeLeft--;
+            timeUsed++;
+            document.getElementById('time-used').value = timeUsed;
+            updateTimer();
+            
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                if (!isSubmitting) {
+                    const selectedAnswer = document.querySelector('input[name="answer_id"]:checked');
+                    if (selectedAnswer) {
+                        submitQuiz('Time expired! Submitting...');
+                    } else {
+                        alert('Time expired! No answer was selected.');
+                        window.location.href = "{% url 'quiz_results' attempt.id %}";
+                    }
+                }
+            }
+        }, 1000);
+    }
+
+    // Handle answer selection visual feedback
+    document.querySelectorAll('.answer-option').forEach(option => {
+        option.addEventListener('click', function() {
+            document.querySelectorAll('.answer-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            this.classList.add('selected');
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+        });
+    });
+
+    // Optimized submit quiz function - faster transitions
+    function submitQuiz(message = null) {
+        if (isSubmitting) return;
+        
+        isSubmitting = true;
+        clearInterval(timerInterval);
+        
+        submitBtn.classList.add('loading');
+        submitBtn.disabled = true;
+        
+        if (message) {
+            const originalText = submitBtn.querySelector('.submit-text').textContent;
+            submitBtn.querySelector('.submit-text').textContent = message;
+            
+            // Faster submission for time expiry
+            setTimeout(() => {
+                quizForm.submit();
+            }, 300);
+        } else {
+            // Quick submission for normal answers - reduces flicker
+            setTimeout(() => {
+                quizForm.submit();
+            }, 150);
+        }
+    }
+
+    // Handle form submission
+    quizForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const selectedAnswer = document.querySelector('input[name="answer_id"]:checked');
+        if (!selectedAnswer) {
+            alert('Please select an answer before submitting.');
+            isSubmitting = false;
+            submitBtn.classList.remove('loading');
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        submitQuiz();
+    });
+
+    // Prevent accidental page refresh/navigation
+    window.addEventListener('beforeunload', function(e) {
+        if (!isSubmitting && timeLeft > 0) {
+            e.preventDefault();
+            e.returnValue = 'Are you sure you want to leave? Your quiz progress will be lost.';
+            return e.returnValue;
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key >= '1' && e.key <= '4') {
+            const answerIndex = parseInt(e.key) - 1;
+            const answerOptions = document.querySelectorAll('input[name="answer_id"]');
+            if (answerOptions[answerIndex]) {
+                answerOptions[answerIndex].checked = true;
+                answerOptions[answerIndex].closest('.answer-option').click();
+            }
+        }
+        
+        if (e.key === 'Enter' && e.target.tagName !== 'INPUT') {
+            e.preventDefault();
+            quizForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Start the timer
+    startTimer();
+});
+</script>
+{% endblock %}

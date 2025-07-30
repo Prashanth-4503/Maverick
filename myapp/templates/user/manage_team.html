@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Team - {{ hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users"></i> Team Management - {{ hackathon.name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if user_team %}
+                    <!-- Current Team -->
+                    <div class="alert alert-success">
+                        <h5><i class="fas fa-check-circle"></i> Your Team: {{ user_team.name }}</h5>
+                        <p class="mb-2"><strong>Invite Code:</strong> <code>{{ user_team.invite_code }}</code></p>
+                        <p class="mb-0"><strong>Leader:</strong> {{ user_team.leader.username }}</p>
+                        {% if user_team.description %}
+                        <p class="mt-2"><strong>Description:</strong> {{ user_team.description }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Team Members -->
+                    <div class="mb-4">
+                        <h6 class="text-primary">Team Members ({{ user_team.member_count }}/{{ hackathon.team_size_max }})</h6>
+                        <div class="row">
+                            {% for member in user_team.members.all %}
+                            <div class="col-md-6 mb-2">
+                                <div class="d-flex align-items-center p-2 bg-light rounded">
+                                    {% if member.profile_picture %}
+                                    <img src="{{ member.profile_picture.url }}" class="rounded-circle mr-2" width="30" height="30">
+                                    {% else %}
+                                    <div class="bg-primary rounded-circle mr-2 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div>
+                                        <strong>{{ member.username }}</strong>
+                                        {% if member == user_team.leader %}
+                                        <span class="badge badge-warning badge-sm ml-1">Leader</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Team Actions -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="text-primary">Share Invite Code</h6>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" value="{{ user_team.invite_code }}" id="inviteCode" readonly>
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="copyInviteCode()">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-danger">Leave Team</h6>
+                            <form method="post" onsubmit="return confirm('Are you sure you want to leave this team?');">
+                                {% csrf_token %}
+                                <button type="submit" name="action" value="leave_team" class="btn btn-danger">
+                                    <i class="fas fa-sign-out-alt"></i> Leave Team
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <!-- No Team - Show Options -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <!-- Create Team -->
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0"><i class="fas fa-plus"></i> Create New Team</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="{{ team_form.name.id_for_label }}">Team Name</label>
+                                            {{ team_form.name }}
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="{{ team_form.description.id_for_label }}">Description</label>
+                                            {{ team_form.description }}
+                                        </div>
+                                        <button type="submit" name="action" value="create_team" class="btn btn-primary btn-block">
+                                            <i class="fas fa-plus"></i> Create Team
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <!-- Join Team -->
+                            <div class="card border-success">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0"><i class="fas fa-sign-in-alt"></i> Join Existing Team</h6>
+                                </div>
+                                <div class="card-body">
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <div class="form-group">
+                                            <label for="{{ join_form.invite_code.id_for_label }}">Invite Code</label>
+                                            {{ join_form.invite_code }}
+                                            <small class="form-text text-muted">Get the invite code from your team leader</small>
+                                        </div>
+                                        <button type="submit" name="action" value="join_team" class="btn btn-success btn-block">
+                                            <i class="fas fa-sign-in-alt"></i> Join Team
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Teams -->
+                    {% if available_teams %}
+                    <div class="mt-4">
+                        <h6 class="text-info">Teams Looking for Members</h6>
+                        <div class="row">
+                            {% for team in available_teams %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card border-info">
+                                    <div class="card-body">
+                                        <h6 class="card-title">{{ team.name }}</h6>
+                                        {% if team.description %}
+                                        <p class="card-text text-muted">{{ team.description|truncatewords:10 }}</p>
+                                        {% endif %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">
+                                                {{ team.member_count }}/{{ hackathon.team_size_max }} members<br>
+                                                Leader: {{ team.leader.username }}
+                                            </small>
+                                            <button class="btn btn-sm btn-outline-info" onclick="useInviteCode('{{ team.invite_code }}')">
+                                                <i class="fas fa-plus"></i> Join
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Team Guidelines</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-users text-primary"></i> Team size: {{ hackathon.team_size_min }}-{{ hackathon.team_size_max }} members</li>
+                        {% if hackathon.allow_individual %}
+                        <li class="mb-2"><i class="fas fa-user text-success"></i> Individual participation allowed</li>
+                        {% endif %}
+                        <li class="mb-2"><i class="fas fa-clock text-warning"></i> Teams can be formed until hackathon starts</li>
+                        <li class="mb-2"><i class="fas fa-code text-info"></i> Use invite codes to join teams</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn btn-outline-primary btn-block mb-2">
+                        <i class="fas fa-arrow-left"></i> Back to Hackathon
+                    </a>
+                    {% if hackathon.can_submit and user_team %}
+                    <a href="{% url 'submit_hackathon_project' hackathon.id %}" class="btn btn-success btn-block">
+                        <i class="fas fa-upload"></i> Submit Project
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyInviteCode() {
+    const codeInput = document.getElementById('inviteCode');
+    codeInput.select();
+    codeInput.setSelectionRange(0, 99999);
+    document.execCommand('copy');
+    
+    // Show feedback
+    const btn = event.target.closest('button');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    btn.classList.remove('btn-outline-secondary');
+    btn.classList.add('btn-success');
+    
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-outline-secondary');
+    }, 2000);
+}
+
+function useInviteCode(code) {
+    document.querySelector('input[name="invite_code"]').value = code;
+    document.querySelector('input[name="invite_code"]').focus();
+}
+
+// Add form-control class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        if (!field.classList.contains('form-check-input')) {
+            field.classList.add('form-control');
+        }
+    });
+});
+</script>
+{% endblock %}

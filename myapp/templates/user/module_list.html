@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Available Modules - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                <i class="fas fa-cubes text-blue-500 mr-2"></i> Available Modules
+            </h1>
+            <p class="mt-2 text-gray-600">Browse and add modules to your learning path</p>
+        </div>
+        <!-- Removed "View My Path" button/link here as requested -->
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for module in modules %}
+        <div class="bg-white rounded-xl shadow-md overflow-hidden transition transform hover:-translate-y-1">
+            {% if module.thumbnail %}
+            <img class="h-48 w-full object-cover" src="{{ module.thumbnail.url }}" alt="{{ module.name }}">
+            {% else %}
+            <div class="h-48 w-full bg-blue-100 flex items-center justify-center">
+                <i class="fas fa-book-open text-blue-500 text-5xl"></i>
+            </div>
+            {% endif %}
+            
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-2">
+                    <h2 class="text-xl font-semibold text-gray-900">{{ module.name }}</h2>
+                    {% if module.id in user_paths %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Added
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ module.description }}</p>
+                
+                <div class="flex flex-wrap gap-2 mb-4">
+                    <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-800">
+                        <i class="fas fa-clock mr-1"></i> {{ module.estimated_time }}
+                    </span>
+                    <span class="text-xs px-2 py-1 rounded-full 
+                        {% if module.difficulty == 'beginner' %}bg-green-100 text-green-800
+                        {% elif module.difficulty == 'intermediate' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {{ module.get_difficulty_display }}
+                    </span>
+                    <span class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+                        {{ module.xp_reward }} XP
+                    </span>
+                    {% if module.contents_count is not None %}
+                    <span class="text-xs px-2 py-1 rounded-full bg-purple-100 text-purple-800 flex items-center">
+                        <i class="fas fa-list mr-1"></i> {{ module.contents_count }} Contents
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex justify-end items-center">
+                    {% if module.id not in user_paths %}
+                    <form method="post" action="{% url 'add_to_path' module.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">
+                            Add to Path
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
