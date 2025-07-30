@@ -8,7 +8,6 @@ This portal empowers developers to **learn, practice, and compete** with secure 
 ![Django](https://img.shields.io/badge/Django-3.2-green?style=for-the-badge\&logo=django)
 ![Python](https://img.shields.io/badge/Python-3.10-blue?style=for-the-badge\&logo=python)
 ![Bootstrap](https://img.shields.io/badge/Bootstrap-5-purple?style=for-the-badge\&logo=bootstrap)
-![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)
 
 ---
 
