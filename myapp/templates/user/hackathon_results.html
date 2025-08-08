@@ -1,0 +1,1163 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+
+{% block title %}🏆 Results - {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes shimmer {
+        0% { background-position: -200px 0; }
+        100% { background-position: calc(200px + 100%) 0; }
+    }
+
+    .animate-fadeInUp { animation: fadeInUp 0.5s ease-out forwards; }
+    .animate-scaleIn { animation: scaleIn 0.4s ease-out forwards; }
+
+    .winner-card {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b, #d97706);
+        position: relative;
+        overflow: hidden;
+        height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .winner-card::before {
+        content: '';
+        position: absolute;
+        top: -50%; left: -50%;
+        width: 200%; height: 200%;
+        background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+        animation: shimmer 3s infinite;
+    }
+
+    .winner-card-content {
+        position: relative;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        text-align: center;
+        padding: 1.5rem;
+    }
+
+    .trophy-icon {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
+    }
+
+    .winner-trophy {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+        height: 60px;
+        line-height: 60px;
+    }
+
+    .winner-title {
+        font-size: 1.125rem;
+        font-weight: bold;
+        color: white;
+        height: 3rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        margin-bottom: 0.75rem;
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .winner-team {
+        height: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+    }
+
+    .winner-score-section {
+        margin-top: auto;
+    }
+
+    .rank-badge {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        min-width: 65px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: white;
+        border-radius: 22px;
+        flex-shrink: 0;
+    }
+
+    .stats-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.7));
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.2);
+        transition: all 0.3s ease;
+        height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 1.25rem;
+    }
+
+    .stats-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+    .progress-bar {
+        background: linear-gradient(90deg, #10b981, #059669);
+        border-radius: 8px;
+        position: relative;
+        overflow: hidden;
+        transition: width 1.2s ease-out;
+    }
+
+    .progress-bar::after {
+        content: '';
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    .confetti {
+        position: absolute;
+        width: 8px; height: 8px;
+        background: #fbbf24;
+        animation: confetti-fall 3s linear infinite;
+    }
+
+    @keyframes confetti-fall {
+        0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    .leaderboard-container {
+        background: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        border: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    .leaderboard-header {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        padding: 1.25rem;
+        color: white;
+    }
+
+    .leaderboard-content {
+        padding: 0;
+    }
+
+    .table-row {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        transition: all 0.3s ease;
+        margin: 0;
+        padding: 1.25rem;
+        border-bottom: 1px solid rgba(229, 231, 235, 0.3);
+        background: white;
+    }
+
+    .table-row:last-child {
+        border-bottom: none;
+    }
+
+    .table-row:hover {
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.03), rgba(168, 85, 247, 0.03));
+        transform: scale(1.002);
+    }
+
+    .row-main {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .row-left {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        flex: 1;
+        min-width: 300px;
+    }
+
+    .row-center {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 220px;
+        align-items: center;
+    }
+
+    .row-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-shrink: 0;
+    }
+
+    .project-info {
+        flex: 1;
+    }
+
+    .project-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 0.25rem;
+        line-height: 1.3;
+    }
+
+    .project-team {
+        color: #6b7280;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* ✅ Prize Display Styles for Results Page */
+    .prize-display {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .current-prize-display {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .no-prize-display {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+    }
+
+    .prize-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .prize-badge:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .prize-badge.first-place {
+        background: linear-gradient(135deg, #ffd700, #ffed4e);
+        color: #92400e;
+        border: 2px solid #fbbf24;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    }
+
+    .prize-badge.second-place {
+        background: linear-gradient(135deg, #c0c0c0, #e5e7eb);
+        color: #374151;
+        border: 2px solid #9ca3af;
+        box-shadow: 0 4px 15px rgba(156, 163, 175, 0.4);
+    }
+
+    .prize-badge.third-place {
+        background: linear-gradient(135deg, #cd7f32, #d97706);
+        color: white;
+        border: 2px solid #f59e0b;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .prize-badge.innovation {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+        border: 2px solid #a855f7;
+        box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+    }
+
+    .prize-badge.design {
+        background: linear-gradient(135deg, #ec4899, #d946ef);
+        color: white;
+        border: 2px solid #f472b6;
+        box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+    }
+
+    .prize-badge.peoples {
+        background: linear-gradient(135deg, #06b6d4, #0891b2);
+        color: white;
+        border: 2px solid #22d3ee;
+        box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+    }
+
+    .prize-badge.special {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        color: white;
+        border: 2px solid #fbbf24;
+        box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+    }
+
+    .prize-badge.other {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+        border: 2px solid #9ca3af;
+        box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+    }
+
+    .no-prize-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        background: #f9fafb;
+        color: #6b7280;
+        border: 2px dashed #d1d5db;
+        text-align: center;
+    }
+
+    .score-breakdown {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.03), rgba(168, 85, 247, 0.03));
+        border-radius: 12px;
+        padding: 1rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+
+    .criterion-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: all 0.3s ease;
+        text-align: center;
+        height: 120px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(229, 231, 235, 0.3);
+    }
+
+    .criterion-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+    }
+
+    .score-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 110px;
+        text-align: center;
+    }
+
+    .main-score {
+        font-size: 1.4rem;
+        font-weight: bold;
+        color: #1f2937;
+        line-height: 1.1;
+    }
+
+    .percentage-display {
+        font-size: 0.8rem;
+        color: #6b7280;
+        margin-top: 2px;
+    }
+
+    .winners-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1.25rem;
+        align-items: stretch;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.25rem;
+        align-items: stretch;
+    }
+
+    .criteria-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .main-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1.5rem;
+    }
+
+    .section-spacing {
+        margin-bottom: 2rem;
+    }
+
+    .content-section {
+        margin-bottom: 1.75rem;
+    }
+
+    .action-buttons {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid rgba(229, 231, 235, 0.5);
+    }
+
+    /* ✅ IMPROVED ACTION BUTTON STYLES */
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.75rem 1.5rem;
+        margin: 0.25rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+        left: 100%;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-yellow {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: white;
+        box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+    }
+
+    .btn-yellow:hover {
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        box-shadow: 0 8px 25px rgba(251, 191, 36, 0.6);
+    }
+
+    .btn-green {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-green:hover {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-blue {
+        background: linear-gradient(135deg, #3b82f6, #2563eb);
+        color: white;
+        box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-blue:hover {
+        background: linear-gradient(135deg, #2563eb, #1d4ed8);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+    }
+
+    .btn-gray {
+        background: linear-gradient(135deg, #6b7280, #4b5563);
+        color: white;
+        box-shadow: 0 4px 15px rgba(107, 114, 128, 0.4);
+    }
+
+    .btn-gray:hover {
+        background: linear-gradient(135deg, #4b5563, #374151);
+        box-shadow: 0 8px 25px rgba(107, 114, 128, 0.6);
+    }
+
+    .status-winner {
+        background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        color: white;
+        box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4);
+    }
+
+    .status-participant {
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        color: #4b5563;
+        border: 1px solid #d1d5db;
+    }
+
+    .progress-wrapper {
+        width: 120px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        height: 12px;
+        overflow: hidden;
+        position: relative;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #10b981, #059669);
+        border-radius: 8px;
+        position: relative;
+        transition: width 1.5s ease-out;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        color: white;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .main-container {
+            padding: 1rem;
+        }
+        
+        .section-spacing {
+            margin-bottom: 1.5rem;
+        }
+        
+        .row-main {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1rem;
+        }
+        
+        .row-left, .row-center, .row-right {
+            min-width: auto;
+            width: 100%;
+        }
+        
+        .row-right {
+            justify-content: space-between;
+        }
+        
+        .rank-badge {
+            min-width: 55px;
+            height: 38px;
+        }
+        
+        .score-display {
+            min-width: 90px;
+        }
+
+        .winner-card {
+            height: 280px;
+        }
+
+        .winners-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .criteria-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .table-row {
+            padding: 1rem;
+        }
+
+        .action-btn {
+            width: 100%;
+            margin: 0.25rem 0;
+        }
+
+        .prize-badge {
+            font-size: 0.75rem;
+            padding: 0.4rem 0.8rem;
+        }
+    }
+
+    @media (min-width: 769px) and (max-width: 1024px) {
+        .winners-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .criteria-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 1025px) {
+        .winners-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .criteria-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    .header-section {
+        margin-bottom: 1.75rem;
+    }
+
+    .results-header {
+        padding: 2rem 1.5rem;
+    }
+
+    .champions-section {
+        padding: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+    <!-- Confetti Animation -->
+    <div class="fixed inset-0 pointer-events-none z-10">
+        {% for i in "123456789"|make_list %}
+        <div class="confetti" style="left: {{ i }}0%; animation-delay: {{ i }}00ms; background: {% cycle '#fbbf24' '#f59e0b' '#d97706' '#10b981' '#3b82f6' '#8b5cf6' %};"></div>
+        {% endfor %}
+    </div>
+
+    <div class="main-container">
+        
+        <!-- Header -->
+        <div class="text-center header-section animate-fadeInUp">
+            <div class="bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-700 rounded-3xl results-header text-white shadow-2xl relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-blue-600/20 backdrop-blur-sm"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center justify-center mb-3">
+                        <div class="text-5xl trophy-icon">🏆</div>
+                    </div>
+                    <h1 class="text-3xl md:text-4xl font-bold mb-3 text-white">
+                        Hackathon Results
+                    </h1>
+                    <p class="text-lg text-purple-100 mb-2">{{ hackathon.name }}</p>
+                    <div class="inline-flex items-center bg-white/20 backdrop-blur-sm rounded-full px-4 py-2">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-2 animate-pulse"></div>
+                        <span class="text-sm font-medium">Results Published</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Winners Podium -->
+        {% if winners %}
+        <div class="section-spacing animate-scaleIn">
+            <div class="bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-white/20 champions-section">
+                <h2 class="text-2xl font-bold text-center mb-3 bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
+                    🏆 Champions
+                </h2>
+                
+                <div class="winners-grid">
+                    {% for winner in winners %}
+                    <div class="winner-card rounded-2xl shadow-xl transform hover:scale-105 transition-all duration-300">
+                        <div class="winner-card-content">
+                            <!-- Top Section: Trophy -->
+                            <div class="flex-shrink-0">
+                                <div class="winner-trophy">
+                                    {% if winner.prize_category == 'first_place' %}🥇
+                                    {% elif winner.prize_category == 'second_place' %}🥈
+                                    {% elif winner.prize_category == 'third_place' %}🥉
+                                    {% elif winner.prize_category == 'best_innovation' %}💡
+                                    {% elif winner.prize_category == 'people_choice' %}👥
+                                    {% elif winner.prize_category == 'best_design' %}🎨
+                                    {% elif winner.prize_category == 'special_recognition' %}🏆
+                                    {% else %}🏆{% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Middle Section: Project Info -->
+                            <div class="flex-grow">
+                                <h3 class="winner-title">
+                                    {{ winner.project_title }}
+                                </h3>
+                                <div class="winner-team">
+    {% if winner.team %}
+        TEAM: <i class="fas fa-users mr-1"></i>{{ winner.team.name }}
+    {% else %}
+        INDIVIDUAL: <i class="fas fa-user mr-1"></i>{{ winner.individual_user.username }}
+        <!-- Debug -->
+    {% endif %}
+</div>
+
+                            </div>
+                            
+                            <!-- Bottom Section: Score & Badge -->
+                            <div class="winner-score-section">
+                                <div class="bg-white/20 backdrop-blur-sm rounded-full px-3 py-2 mb-3">
+                                    <span class="text-base font-bold text-white">{{ winner.final_score|floatformat:1 }}/100</span>
+                                    <span class="text-sm ml-1 text-orange-100">({{ winner.final_score|floatformat:1 }}%)</span>
+                                </div>
+                                <p class="text-xs font-medium bg-white/30 rounded-full px-3 py-1 inline-block text-white">
+                                    {% if winner.prize_category == 'first_place' %}First Place
+                                    {% elif winner.prize_category == 'second_place' %}Second Place  
+                                    {% elif winner.prize_category == 'third_place' %}Third Place
+                                    {% elif winner.prize_category == 'best_innovation' %}Best Innovation
+                                    {% elif winner.prize_category == 'people_choice' %}People's Choice
+                                    {% elif winner.prize_category == 'best_design' %}Best Design
+                                    {% elif winner.prize_category == 'special_recognition' %}Special Recognition
+                                    {% else %}{{ winner.prize_category|title }}{% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid content-section">
+            <div class="stats-card rounded-2xl text-center">
+                <div>
+                    <div class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                        {{ stats.total_participants }}
+                    </div>
+                    <div class="text-gray-600 font-medium text-sm">Total Participants</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div class="progress-bar h-2" style="width: 100%;"></div>
+                </div>
+            </div>
+            
+            <div class="stats-card rounded-2xl text-center">
+                <div>
+                    <div class="text-3xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent mb-2">
+                        {{ stats.total_submissions }}
+                    </div>
+                    <div class="text-gray-600 font-medium text-sm">Submissions</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div class="progress-bar h-2" style="width: {{ stats.participation_rate|floatformat:0 }}%;"></div>
+                </div>
+            </div>
+            
+            <div class="stats-card rounded-2xl text-center">
+                <div>
+                    <div class="text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent mb-2">
+                        {{ stats.average_score|floatformat:1 }}
+                    </div>
+                    <div class="text-gray-600 font-medium text-sm">Average Score</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div class="progress-bar h-2" style="width: {{ stats.average_score }}%;"></div>
+                </div>
+            </div>
+            
+            <div class="stats-card rounded-2xl text-center">
+                <div>
+                    <div class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                        {{ stats.top_score|floatformat:1 }}
+                    </div>
+                    <div class="text-gray-600 font-medium text-sm">Highest Score</div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                    <div class="progress-bar h-2" style="width: {{ stats.top_score }}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ✅ UPDATED Leaderboard with Prize Display -->
+        {% if all_submissions %}
+        <div class="leaderboard-container content-section">
+            <div class="leaderboard-header">
+                <h2 class="text-xl font-bold flex items-center">
+                    <i class="fas fa-chart-line mr-3"></i>
+                    Complete Leaderboard
+                </h2>
+                <p class="text-indigo-200 mt-1 text-sm">All submissions ranked by performance</p>
+            </div>
+            
+            <div class="leaderboard-content">
+                {% for submission in all_submissions %}
+                <div class="table-row">
+                    <!-- Main Row Content -->
+                    <div class="row-main">
+                        <!-- Left Section: Rank + Project Info -->
+                        <div class="row-left">
+                            <div class="rank-badge">#{{ forloop.counter }}</div>
+                            <div class="project-info">
+                                <h3 class="project-title">{{ submission.project_title }}</h3>
+                                {% if submission.project_description %}
+                                <p class="text-xs text-gray-500 mb-1 line-clamp-2">
+                                    Description: {{ submission.project_description|truncatewords:12 }}
+                                </p>
+                                {% endif %}
+                                <div class="project-team">
+                                    {% if submission.team %}
+                                        <i class="fas fa-users text-blue-500"></i>
+                                        <span class="font-medium">{{ submission.team.name }}</span>
+                                    {% else %}
+                                        <i class="fas fa-user text-green-500"></i>
+                                        <span class="font-medium">{{ submission.individual_user.get_full_name }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- ✅ NEW: Center Section: Prize Display -->
+                        <div class="row-center">
+                            <div class="prize-display">
+                                <label class="block text-xs font-medium text-gray-600 mb-1">Prize:</label>
+                                {% if submission.prize_category %}
+                                    <div class="current-prize-display">
+                                        {% if submission.prize_category == 'first_place' %}
+                                            <span class="prize-badge first-place">🥇 1st Place</span>
+                                        {% elif submission.prize_category == 'second_place' %}
+                                            <span class="prize-badge second-place">🥈 2nd Place</span>
+                                        {% elif submission.prize_category == 'third_place' %}
+                                            <span class="prize-badge third-place">🥉 3rd Place</span>
+                                        {% elif submission.prize_category == 'best_innovation' %}
+                                            <span class="prize-badge innovation">💡 Best Innovation</span>
+                                        {% elif submission.prize_category == 'best_design' %}
+                                            <span class="prize-badge design">🎨 Best Design</span>
+                                        {% elif submission.prize_category == 'people_choice' %}
+                                            <span class="prize-badge peoples">👥 People's Choice</span>
+                                        {% elif submission.prize_category == 'special_recognition' %}
+                                            <span class="prize-badge special">🏆 Special Recognition</span>
+                                        {% else %}
+                                            <span class="prize-badge other">🏆 {{ submission.prize_category|title }}</span>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="no-prize-display">
+                                        <span class="no-prize-badge">— No Prize —</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Right Section: Score + Progress + Badge -->
+                        <div class="row-right">
+                            {% with score=submission.ai_evaluation_score|default:submission.final_score %}
+                                <!-- SCORE & PERCENT -->
+                                <div class="score-display">
+                                    <div class="main-score">{{ score|floatformat:1 }}/100</div>
+                                    <div class="percentage-display">({{ score|floatformat:1 }}%)</div>
+                                </div>
+
+                                <!-- PROGRESS BAR -->
+                                <div class="progress-wrapper">
+                                    <div class="progress-fill" style="width: {{ score }}%;"></div>
+                                </div>
+                            {% endwith %}
+
+                            <!-- WINNER / PARTICIPANT BADGE -->
+                            <div class="flex-shrink-0">
+                                {% if submission.is_winner %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-winner">
+                                        <i class="fas fa-trophy mr-1"></i>Winner
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium status-participant">
+                                        <i class="fas fa-medal mr-1"></i>Participant
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Score Breakdown -->
+                    {% if submission.scores %}
+                    <div class="score-breakdown">
+                        <h4 class="text-base font-semibold text-gray-800 mb-3 flex items-center">
+                            <i class="fas fa-chart-bar mr-2 text-indigo-600"></i>
+                            Score Breakdown
+                        </h4>
+                        <div class="criteria-grid">
+                            {% for criterion, score in submission.scores.items %}
+                            <div class="criterion-card">
+                                <div class="text-sm font-medium text-gray-600 mb-2">{{ criterion|title }}</div>
+                                <div class="text-xl font-bold text-indigo-600 mb-2">{{ score }}/25</div>
+                                <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                                    <div class="bg-gradient-to-r from-indigo-500 to-purple-600 h-2 rounded-full transition-all duration-1000" 
+                                         style="width: {% widthratio score 25 100 %}%;"></div>
+                                </div>
+                                <div class="text-xs text-gray-500">{% widthratio score 25 100 %}% of max</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- ✅ IMPROVED Action Buttons -->
+        <div class="text-center action-buttons">
+            {% if is_creator %}
+            <div class="flex flex-wrap justify-center gap-3 mb-4">
+                <a href="{% url 'select_winners' hackathon.id %}" class="action-btn btn-yellow">
+                    <i class="fas fa-trophy mr-2"></i>Manage Winners
+                </a>
+                <a href="{% url 'evaluate_submissions' hackathon.id %}" class="action-btn btn-green">
+                    <i class="fas fa-clipboard-check mr-2"></i>Review Evaluations
+                </a>
+                <button onclick="downloadResults()" class="action-btn btn-blue">
+                    <i class="fas fa-download mr-2"></i>Download Results
+                </button>
+            </div>
+            {% endif %}
+            
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="{% url 'hackathon_detail' hackathon.id %}" class="action-btn btn-gray">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Hackathon
+                </a>
+                <button onclick="shareResults()" class="action-btn btn-blue">
+                    <i class="fas fa-share mr-2"></i>Share Results
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animation system
+    const animateElements = () => {
+        const statsCards = document.querySelectorAll('.stats-card');
+        const tableRows = document.querySelectorAll('.table-row');
+        const winnerCards = document.querySelectorAll('.winner-card');
+        
+        statsCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+
+        winnerCards.forEach((card, index) => {
+            card.style.opacity = '0';
+            card.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                card.style.transition = 'all 0.5s ease-out';
+                card.style.opacity = '1';
+                card.style.transform = 'scale(1)';
+            }, 300 + (index * 150));
+        });
+
+        tableRows.forEach((row, index) => {
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(-20px)';
+            setTimeout(() => {
+                row.style.transition = 'all 0.5s ease-out';
+                row.style.opacity = '1';
+                row.style.transform = 'translateX(0)';
+            }, 600 + (index * 80));
+        });
+
+        setTimeout(() => {
+            const progressBars = document.querySelectorAll('.progress-bar, .progress-fill');
+            progressBars.forEach((bar, index) => {
+                const targetWidth = bar.style.width;
+                bar.style.width = '0%';
+                setTimeout(() => {
+                    bar.style.width = targetWidth;
+                }, index * 80);
+            });
+        }, 1000);
+    };
+
+    animateElements();
+});
+
+document.querySelectorAll('.winner-card').forEach(card => {
+    card.addEventListener('mouseenter', function() {
+        this.style.transform = 'scale(1.05) rotate(0.5deg)';
+        this.style.boxShadow = '0 20px 40px rgba(251, 191, 36, 0.3)';
+    });
+    
+    card.addEventListener('mouseleave', function() {
+        this.style.transform = 'scale(1) rotate(0deg)';
+        this.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.1)';
+    });
+});
+
+function downloadResults() {
+    const results = {
+        hackathon: "{{ hackathon.name }}",
+        date: new Date().toLocaleDateString(),
+        statistics: {
+            totalParticipants: {{ stats.total_participants }},
+            totalSubmissions: {{ stats.total_submissions }},
+            averageScore: {{ stats.average_score|floatformat:2 }},
+            topScore: {{ stats.top_score|floatformat:2 }}
+        },
+        winners: [
+            {% for winner in winners %}
+            {
+                title: "{{ winner.project_title }}",
+                team: "{% if winner.team %}{{ winner.team.name }}{% else %}{{ winner.individual_user.get_full_name }}{% endif %}",
+                score: {{ winner.final_score }},
+                category: "{% if winner.prize_category == 'first_place' %}First Place{% elif winner.prize_category == 'second_place' %}Second Place{% elif winner.prize_category == 'third_place' %}Third Place{% elif winner.prize_category == 'best_innovation' %}Best Innovation{% elif winner.prize_category == 'people_choice' %}People's Choice{% elif winner.prize_category == 'best_design' %}Best Design{% elif winner.prize_category == 'special_recognition' %}Special Recognition{% else %}{{ winner.prize_category|title }}{% endif %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        allSubmissions: [
+            {% for submission in all_submissions %}
+            {
+                rank: {{ forloop.counter }},
+                title: "{{ submission.project_title }}",
+                participant: "{% if submission.team %}{{ submission.team.name }}{% else %}{{ submission.individual_user.get_full_name }}{% endif %}",
+                score: {{ submission.final_score }},
+                isWinner: {% if submission.is_winner %}true{% else %}false{% endif %}
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ]
+    };
+    
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(results, null, 2));
+    const downloadAnchor = document.createElement('a');
+    downloadAnchor.setAttribute("href", dataStr);
+    downloadAnchor.setAttribute("download", "{{ hackathon.name|slugify }}_results.json");
+    document.body.appendChild(downloadAnchor);
+    downloadAnchor.click();
+    downloadAnchor.remove();
+    
+    showNotification('📊 Results downloaded successfully!', 'success');
+}
+
+function shareResults() {
+    const shareText = `🏆 {{ hackathon.name }} Results\n\nCheck out the amazing results! 🚀\n📊 {{ stats.total_submissions }} submissions from {{ stats.total_participants }} participants\n\n${window.location.href}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: '🏆 {{ hackathon.name }} Results',
+            text: shareText,
+            url: window.location.href
+        }).then(() => {
+            showNotification('🔗 Results shared successfully!', 'success');
+        }).catch(console.error);
+    } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() => {
+            showNotification('🔗 Results link copied to clipboard!', 'success');
+        }).catch(() => {
+            const textarea = document.createElement('textarea');
+            textarea.value = shareText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+            showNotification('🔗 Results copied!', 'info');
+        });
+    }
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const bgColors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500',
+        warning: 'bg-yellow-500'
+    };
+    
+    notification.className = `fixed top-4 right-4 z-50 p-3 rounded-lg shadow-lg ${bgColors[type] || bgColors.info} text-white font-medium transform transition-all duration-300 translate-x-full`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => notification.classList.remove('translate-x-full'), 100);
+    setTimeout(() => {
+        notification.classList.add('translate-x-full');
+        setTimeout(() => notification.remove(), 300);
+    }, 2500);
+}
+
+function triggerCelebration() {
+    const colors = ['#fbbf24', '#f59e0b', '#d97706', '#10b981', '#3b82f6', '#8b5cf6'];
+    for (let i = 0; i < 30; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * 100 + '%';
+            confetti.style.animationDelay = Math.random() * 2 + 's';
+            confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+            document.querySelector('.fixed.inset-0').appendChild(confetti);
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 100);
+    }
+}
+
+setTimeout(() => {
+    triggerCelebration();
+    showNotification('🎉 Results are now live!', 'success');
+}, 1500);
+
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey || event.metaKey) {
+        switch(event.key) {
+            case 'd':
+                event.preventDefault();
+                downloadResults();
+                break;
+            case 's':
+                event.preventDefault();
+                shareResults();
+                break;
+        }
+    }
+});
+</script>
+
+<!-- ✅ Add CSRF Token -->
+{% csrf_token %}
+{% endblock %}

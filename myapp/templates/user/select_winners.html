@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Select Winners – {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Root theme colors */
+  :root {
+    --primary-blue: #2563eb;
+    --primary-light: #3b82f6;
+    --primary-dark: #1e40af;
+    --accent-yellow: #facc15;
+    --accent-orange: #fb923c;
+    --accent-green: #22c55e;
+    --background-gradient: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+  }
+
+  /* Full page background */
+  body {
+    background: radial-gradient(circle at top left, #0f172a, #2563eb, #9333ea);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #f9fafb;
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  /* Container */
+  .container {
+    max-width: 1200px;
+    margin: auto;
+    padding: 2rem 1rem;
+  }
+
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid rgba(255 255 255 / 0.2);
+  }
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    text-shadow: 0 0 8px rgba(255 255 255 / 0.6);
+  }
+  .header p {
+    font-size: 1rem;
+    color: #e0e7ffaa;
+    margin-top: 0.2rem;
+  }
+  .btn-back {
+    color: var(--primary-blue);
+    background: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 32px;
+    font-weight: bold;
+    box-shadow: 0 8px 15px rgba(0 0 0 / 0.2);
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .btn-back:hover {
+    background: var(--primary-blue);
+    color: white;
+  }
+
+  /* Flash messages */
+  .flash-message {
+    margin: 1rem 0 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(255 255 255 / 0.15);
+  }
+  .flash-message.success {
+    background-color: #22c55e22;
+    color: #22c55e;
+  }
+  .flash-message.error {
+    background-color: #ef444422;
+    color: #ef4444;
+  }
+
+  /* Main form card */
+  .main-form-card {
+    /* background: rgba(255 255 255 / 0.12); */
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 12px 34px rgba(0 0 0 / 0.2);
+    backdrop-filter: blur(12px);
+    margin-bottom: 2rem;
+    
+  }
+
+  /* Section headers */
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: white;
+  }
+  .section-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.75rem;
+    background: rgba(255 255 255 / 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent-yellow);
+  }
+
+  /* Wrap submissions in a separate grid container */
+  .submissions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Each submission as a card */
+  .submission-card {
+    background: rgba(255 255 255 / 0.12);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    box-shadow: 0 4px 20px rgba(0 0 0 / 0.2);
+    backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  .submission-card:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 30px rgba(255 215 0 / 0.7);
+    z-index: 10;
+  }
+
+  /* Confetti animation */
+  .submission-card:hover::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(circle, var(--accent-yellow) 2px, transparent 3px),
+      radial-gradient(circle, var(--accent-orange) 2px, transparent 3px),
+      radial-gradient(circle, var(--accent-green) 2px, transparent 3px);
+    background-position: 10px 10px, 20px 20px, 30px 30px;
+    background-repeat: repeat;
+    animation: confetti 2s linear infinite;
+    border-radius: 1rem;
+    z-index: 0;
+  }
+  @keyframes confetti {
+    0% { background-position: 10px 10px, 20px 20px, 30px 30px; }
+    100% { background-position: 10px 500px, 20px 520px, 30px 530px; }
+  }
+
+  /* Project title and description */
+  .project-title {
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: white;
+    margin-bottom: 0.5rem;
+  }
+  .project-desc {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    color: #d1d5db;
+    height: 48px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.4;
+  }
+
+  /* Team or user name */
+  .team-user {
+    margin-bottom: 1rem;
+    font-weight: 600;
+    color: #a5b4fc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Score */
+ .score {
+  margin: 0;                /* remove bottom margin */
+  font-weight: 800;
+  font-size: 1.125rem;
+  color: var(--primary-light);
+  text-align: right;        /* align text right */
+  padding: 0;               /* remove padding so no background space */
+  background: transparent;  /* remove background */
+  border-radius: 0;         /* remove rounded corners */
+  box-shadow: none;         /* remove any box-shadow if present */
+  user-select: none;
+}
+
+
+  /* Prize selection radios displayed as buttons with spacing */
+  .prize-options {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .prize-option {
+    position: relative;
+  }
+  .prize-option input[type="radio"] {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+    z-index: 10;
+  }
+  .prize-label {
+    padding: 0.6rem 1rem;
+    border-radius: 50px;
+    background: rgba(255 255 255 / 0.15);
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    user-select: none;
+    cursor: pointer;
+    box-shadow: 0 0 10px transparent;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  .prize-option input[type="radio"]:checked + .prize-label {
+    background: var(--accent-yellow);
+    color: var(--primary-dark);
+    box-shadow: 0 0 15px var(--accent-yellow);
+  }
+  .prize-label:hover {
+    background: var(--accent-orange);
+  }
+
+  /* Buttons Container with smaller aligned buttons */
+  .buttons-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .btn {
+    padding: 0.45rem 1rem;
+    border: none;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    box-shadow: 0 3px 15px rgba(0 0 0 / 0.15);
+    transition: all 0.3s;
+    min-width: 90px;
+    text-align: center;
+  }
+  .btn-save {
+    background: var(--primary-blue);
+    color: white;
+  }
+  .btn-save:hover {
+    background: var(--primary-light);
+  }
+  .btn-publish {
+    background: var(--accent-green);
+    color: white;
+  }
+  .btn-publish:hover {
+    background: #16a34a;
+  }
+
+  /* Current winners card */
+  .winners-card {
+    background: rgba(255 255 255 / 0.12);
+    border-radius: 1.25rem;
+    padding: 2rem;
+    box-shadow: 0 12px 34px rgba(0 0 0 / 0.2);
+    backdrop-filter: blur(12px);
+  }
+
+  /* Winners list */
+  .winners-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .winner-item {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+    color: #fef3c7;
+    font-weight: 600;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  .winner-item:last-child {
+    border-bottom: none;
+  }
+  .prize-display {
+    background: linear-gradient(135deg, var(--accent-yellow), var(--accent-orange));
+    color: var(--primary-dark);
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 700;
+  }
+
+  /* Responsive adjustment */
+  @media (max-width: 768px) {
+    .buttons-row {
+      justify-content: center;
+    }
+    .submission-card {
+      padding: 1rem;
+    }
+    .submissions-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Header -->
+  <header class="header" role="banner">
+    <div>
+      <h1>Select Winners 🏆</h1>
+      <p>{{ hackathon.name }}</p>
+    </div>
+    <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-back" aria-label="Back to Hackathon">← Back</a>
+  </header>
+
+  <!-- Flash messages -->
+  {% for message in messages %}
+    <div class="flash-message {{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+
+  <!-- Main Selection Form -->
+  <!-- <div class="main-form-card"> -->
+    <h2 class="section-header">
+      <span class="section-icon">
+        <i class="fas fa-list"></i>
+      </span>
+      All Submissions
+    </h2>
+
+    <form method="post" action="{% url 'select_winners' hackathon.id %}" autocomplete="off">
+      {% csrf_token %}
+
+      <div class="submissions-grid">
+        {% if submissions %}
+          {% for s in submissions %}
+          <article class="submission-card" role="group" aria-labelledby="proj-title-{{ s.id }}">
+            <div>
+              <h3 id="proj-title-{{ s.id }}" class="project-title">{{ s.project_title }}</h3>
+              <p class="project-desc">{{ s.project_description|truncatechars:80 }}</p>
+              <p class="team-user">
+                {% if s.team %}Team: {{ s.team.name }}
+                {% elif s.individual_user %}Player: {{ s.individual_user.username }}
+                {% endif %}
+              </p>
+            </div>
+
+            <div class="score" aria-label="Score" style="color: white;">{{ s.final_score|default:s.ai_evaluation_score }}/100</div>
+
+            <fieldset class="prize-options" role="radiogroup" aria-labelledby="prize-label-{{ s.id }}">
+              <legend id="prize-label-{{ s.id }}" class="sr-only">Select prize for {{ s.project_title }}</legend>
+              {% for code, label in prize_categories %}
+              <label class="prize-option" for="prize-{{ s.id }}-{{ forloop.counter }}">
+                <input type="radio" name="winner_{{ s.id }}" value="{{ code }}" id="prize-{{ s.id }}-{{ forloop.counter }}" {% if s.prize_category == code %}checked{% endif %}>
+                <span class="prize-label">{{ label }}</span>
+              </label>
+              {% endfor %}
+            </fieldset>
+          </article>
+          {% endfor %}
+        {% else %}
+          <p class="flash-message error">No eligible submissions found for winner selection.</p>
+        {% endif %}
+      </div>
+
+      <div class="buttons-row">
+        <button type="submit" class="btn btn-save" aria-label="Save winner selections">💾 Save Selections</button>
+        {% if can_publish %}
+        <button type="submit" name="publish_results" value="1" class="btn btn-publish" aria-label="Publish results"
+                onclick="return confirm('Make results public and complete the hackathon?');">🚀 Publish Results</button>
+        {% endif %}
+      </div>
+    </form>
+  <!-- </div> -->
+<br>
+  <!-- Current Winners -->
+  <div class="winners-card">
+    <h2 class="section-header">
+      <span class="section-icon">
+        <i class="fas fa-star text-yellow-400"></i>
+      </span>
+      ✨ Current Winners
+    </h2>
+
+    {% if winners %}
+      <ul class="winners-list">
+        {% for w in winners %}
+        <li class="winner-item">
+          <span class="prize-display">{{ w.get_prize_display }}</span>
+          <span class="text-gray-300">—</span>
+          <span>{% if w.team %}{{ w.team.name }}{% else %}{{ w.individual_user.username }}{% endif %}</span>
+          <span class="text-gray-300">|</span>
+          <em class="text-gray-200">{{ w.project_title }}</em>
+        </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p style="color: var(--accent-yellow); font-weight: 700;">No winners selected yet.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

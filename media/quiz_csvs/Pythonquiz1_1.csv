@@ -1,0 +1,10 @@
+Python,What is the output of print(2 ** 3)?,easy,5,6,8,9,8
+Python,Which keyword is used to define a function in Python?,easy,fun,def,function,define,def
+Python,Which of the following is a mutable data type?,easy,tuple,list,str,int,list
+Python,What is the output of len("hello")?,easy,4,5,6,0,5
+Python,How do you insert comments in Python code?,easy,//comment,#comment,/*comment*/,--comment,#comment
+Python,Which operator is used for floor division?,medium,/,//,%,**,//
+Python,What does the 'break' statement do?,medium,Skips current iteration,Stops the loop,Exits function,Restarts loop,Stops the loop
+Python,What is the result of 5 == "5"?,easy,True,False,Error,None,False
+Python,What data type is the result of input()?,easy,int,str,bool,float,str
+Python,Which function converts a string to an integer?,easy,str(),float(),int(),bool(),int()

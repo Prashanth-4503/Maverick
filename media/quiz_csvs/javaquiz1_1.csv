@@ -1,0 +1,10 @@
+Java,Which keyword is used to create a subclass in Java?,easy,super,class,extends,implements,extends
+Java,Which method is the entry point of any Java program?,easy,start(),main(),init(),run(),main()
+Java,What is the size of an int variable in Java?,easy,4 bytes,2 bytes,8 bytes,Depends on OS,4 bytes
+Java,Which collection class allows key-value pairs and does not allow duplicate keys?,easy,List,Set,Map,Queue,Map
+Java,Which Java feature allows the same method to have different behaviors?,medium,Abstraction,Encapsulation,Inheritance,Polymorphism,Polymorphism
+Java,Which exception is thrown when a negative array size is declared?,medium,NullPointerException,ArrayIndexOutOfBoundsException,NegativeArraySizeException,IllegalArgumentException,NegativeArraySizeException
+Java,What does JVM stand for?,easy,Java Verified Machine,Java Visual Machine,Java Virtual Machine,Joint Virtual Module,Java Virtual Machine
+Java,Which package contains the Scanner class?,easy,java.io,java.util,java.lang,java.text,java.util
+Java,Which interface must be implemented to create a thread?,medium,Serializable,Cloneable,Runnable,Comparable,Runnable
+Java,Which access modifier makes a member accessible only within its own class?,easy,public,protected,private,default,private

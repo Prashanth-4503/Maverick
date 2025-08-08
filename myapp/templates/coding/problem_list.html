@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Coding Problems - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+  .filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+    margin-bottom: 2rem;
+  }
+  .filter-bar select,
+  .filter-bar input[type="text"] {
+    padding: 0.5rem 1rem;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    min-width: 200px;
+  }
+  .filter-bar select:focus,
+  .filter-bar input[type="text"]:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 6px rgba(99, 102, 241, 0.5);
+  }
+  table { border-collapse: separate; border-spacing: 0 0.7rem; }
+  thead tr { background-color: #e0e7ff; border-radius: 0.75rem; }
+  th {
+    font-weight: 600;
+    color: #3730a3;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 0.95rem;
+  }
+  tbody tr {
+    cursor: pointer;
+    background-color: white;
+    box-shadow: 0 2px 6px rgb(156 163 175 / 0.1);
+    border-radius: 0.5rem;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  tbody tr:hover {
+    background-color: #6366f1;
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(99,102,241,0.4);
+  }
+  tbody tr:hover td { color: white; }
+  td { padding: 1rem; vertical-align: middle; font-size: 0.95rem; }
+  .badge {
+    padding: 0.35em 1.2em; font-size: 0.75rem; font-weight: 600;
+    border-radius: 9999px; text-transform: uppercase; display: inline-block;
+  }
+  .badge.easy { background-color: #d1fae5; color: #065f46; }
+  .badge.medium { background-color: #fef3c7; color: #78350f; }
+  .badge.hard { background-color: #fee2e2; color: #991b1b; }
+  .tick-icon {
+    color: #22c55e; font-size: 1.1rem; vertical-align: middle; display: block; text-align: center;
+  }
+  @media (max-width: 640px) {
+    .filter-bar {
+      flex-direction: column; gap: 0.75rem;
+    }
+    .filter-bar select,
+    .filter-bar input[type="text"] { min-width: 100%; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-extrabold text-indigo-600 underline decoration-indigo-400 decoration-4 underline-offset-8">
+      Coding Problems
+    </h1>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <select id="difficultyFilter" aria-label="Filter by difficulty" title="Filter by difficulty">
+      <option value="">All Difficulties</option>
+      <option value="easy">Easy</option>
+      <option value="medium">Medium</option>
+      <option value="hard">Hard</option>
+    </select>
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="Search problems..."
+      aria-label="Search problems"
+      title="Search problems"
+      autocomplete="off"
+      autofocus
+    />
+  </div>
+
+  <!-- Problems Table -->
+  <div class="bg-white rounded-lg shadow-lg overflow-hidden border border-indigo-200">
+    <table class="w-full" id="problemsTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Title</th>
+          <th class="text-center">Solved</th>
+          <th>Difficulty</th>
+          <th>Acceptance</th>
+          <th>Tags</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if problems %}
+          {% for problem in problems %}
+          <tr
+            class="hover:cursor-pointer"
+            data-problem-id="{{ problem.id }}"
+            data-difficulty="{{ problem.difficulty }}"
+            data-title="{{ problem.title|lower }}"
+            data-tags="{{ problem.tags|default:''|lower }}"
+          >
+            <td>{{ problem.id }}</td>
+            <td class="font-semibold text-indigo-700">{{ problem.title }}</td>
+            <td class="text-center">
+              {% if problem.id in accepted_problem_ids %}
+                <i class="fas fa-check tick-icon" title="Solved"></i>
+              {% endif %}
+            </td>
+            <td>
+              <span class="badge {% if problem.difficulty == 'easy' %}easy{% elif problem.difficulty == 'medium' %}medium{% else %}hard{% endif %}">
+                {{ problem.get_difficulty_display }}
+              </span>
+            </td>
+            <td>{{ problem.acceptance_percentage }}%</td>
+            <td class="text-gray-500">{{ problem.tags }}</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="6" class="text-center py-12 text-gray-400 font-semibold text-lg">
+              No problems found.
+            </td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // Row navigation
+  document.querySelectorAll('tbody tr[data-problem-id]').forEach(row => {
+    row.addEventListener('click', () => {
+      const pid = row.getAttribute('data-problem-id');
+      if (pid) window.location.href = `/problems/${pid}/`;
+    });
+  });
+
+  // Difficulty filter (client search)
+  const difficultyFilter = document.getElementById('difficultyFilter');
+  const searchInput = document.getElementById('searchInput');
+  const tableRows = Array.from(document.querySelectorAll('#problemsTable tbody tr[data-problem-id]'));
+
+  // Preselect on load (from backend, if needed)
+  {% if current_difficulty %}
+    difficultyFilter.value = "{{ current_difficulty }}";
+  {% endif %}
+  {% if search_query %}
+    searchInput.value = "{{ search_query }}";
+  {% endif %}
+
+  // Filtering function
+  function filterRows() {
+    const search = searchInput.value.trim().toLowerCase();
+    const difficulty = difficultyFilter.value;
+
+    let found = false;
+    tableRows.forEach(row => {
+      const title = row.getAttribute('data-title');
+      const tags = row.getAttribute('data-tags');
+      const rowDiff = row.getAttribute('data-difficulty');
+      const visible =
+        (difficulty === '' || difficulty === rowDiff) &&
+        (search === '' ||
+          title.includes(search) ||
+          tags.includes(search));
+      row.style.display = visible ? '' : 'none';
+      if (visible) found = true;
+    });
+
+    // Show "No problems found." row if none match client filter
+    const emptyRow = document.querySelector('#problemsTable tbody tr[data-empty-row]');
+    if (emptyRow) {
+      emptyRow.style.display = found ? 'none' : '';
+    }
+  }
+
+  difficultyFilter.addEventListener('change', filterRows);
+  searchInput.addEventListener('input', filterRows);
+
+  // Insert "No problems found" row if it doesn't exist
+  if (!document.querySelector('#problemsTable tbody tr[data-empty-row]')) {
+    const tbody = document.querySelector('#problemsTable tbody');
+    const row = document.createElement('tr');
+    row.setAttribute('data-empty-row', '1');
+    row.innerHTML = `<td colspan="6" class="text-center py-12 text-gray-400 font-semibold text-lg">No problems found.</td>`;
+    tbody.appendChild(row);
+  }
+
+  // Initial filter (to respect prefilled values)
+  filterRows();
+  searchInput.focus();
+});
+</script>
+{% endblock %}

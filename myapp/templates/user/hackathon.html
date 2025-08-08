@@ -1,0 +1,1006 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Hackathons - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    * {
+        box-sizing: border-box;
+    }
+    
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: auto;
+    }
+    
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .progress-bar {
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+        transition: width 1.5s ease-in-out;
+    }
+    
+    .status-dot {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    
+    .hackathon-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+    }
+    
+    .hackathon-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+    }
+    
+    .status-open {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .status-active {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .status-upcoming {
+        background-color: #dbeafe;
+        color: #1e40af;
+    }
+    
+    .status-completed {
+        background-color: #f3f4f6;
+        color: #374151;
+    }
+    
+    .status-evaluation {
+        background-color: #fed7aa;
+        color: #ea580c;
+    }
+    
+    .hackathon-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1.5rem;
+    }
+    
+    .participant-counter {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        color: #4338ca;
+    }
+    
+    .hackathon-thumbnail {
+        width: 100%;
+        height: 140px;
+        object-fit: cover;
+        border-radius: 0.75rem 0.75rem 0 0;
+    }
+    
+    .hackathon-placeholder {
+        width: 100%;
+        height: 140px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(79, 70, 229, 0.05) 100%);
+        border-radius: 0.75rem 0.75rem 0 0;
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .activity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 1rem;
+        margin-bottom: 0;
+    }
+    
+    .activity-item {
+        background: rgba(99, 102, 241, 0.03);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        transition: all 0.2s ease;
+        position: static !important;
+        margin-bottom: 0;
+    }
+    
+    .activity-item:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.15);
+        transform: translateY(-1px);
+    }
+
+    .quick-action-btn {
+        transition: all 0.2s ease;
+    }
+
+    .quick-action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);
+    }
+
+    .stat-item {
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        background: rgba(99, 102, 241, 0.03);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.2s ease;
+        position: static;
+    }
+
+    .stat-item:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+
+    /* Winner styles */
+    .winner-badge {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #92400e;
+        font-size: 0.6rem;
+        padding: 0.15rem 0.4rem;
+        border-radius: 9999px;
+        font-weight: 600;
+    }
+    
+    .winner-list {
+        background: rgba(251, 191, 36, 0.05);
+        border: 1px solid rgba(251, 191, 36, 0.15);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+    }
+    
+    .winner-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.25rem 0;
+        font-size: 0.75rem;
+        border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+    }
+    
+    .winner-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Fixed spacing */
+    .space-y-6 > * {
+        margin-bottom: 1.5rem;
+        position: static;
+    }
+    
+    .space-y-6 > *:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Empty state */
+    .empty-state-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 400px;
+        padding: 3rem 1rem;
+    }
+
+    .empty-state-icon {
+        margin-bottom: 2rem;
+        opacity: 0.8;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .empty-state-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #1f2937;
+        margin-bottom: 1rem;
+        line-height: 1.2;
+    }
+
+    .empty-state-description {
+        color: #6b7280;
+        margin-bottom: 2.5rem;
+        max-width: 32rem;
+        margin-left: auto;
+        margin-right: auto;
+        line-height: 1.6;
+        font-size: 1.125rem;
+    }
+
+    .empty-state-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 1rem 2.5rem;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        font-size: 1rem;
+    }
+
+    .empty-state-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -5px rgba(99, 102, 241, 0.4);
+        background: linear-gradient(135deg, #5855eb 0%, #4338ca 100%);
+    }
+
+    /* Prevent sticking issues */
+    .activity-item,
+    .stat-item,
+    .main-card,
+    .hackathon-card {
+        position: relative !important;
+        top: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        z-index: auto !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Dashboard Header -->
+    <div class="indigo-gradient rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">🚀 Hackathons</h1>
+                <p class="text-indigo-100">Join exciting coding challenges, build innovative solutions, and compete with developers worldwide</p>
+            </div>
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ open_hackathons|length|add:active_hackathons|length }}</div>
+                    <div class="text-sm text-indigo-200">Active Events</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ my_registrations|length }}</div>
+                    <div class="text-sm text-indigo-200">My Registrations</div>
+                </div>
+                <div class="text-center">
+                    <a href="{% url 'create_hackathon' %}" class="bg-white bg-opacity-20 hover:bg-opacity-30 text-white px-4 py-2 rounded-lg font-medium transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>Create Hackathon
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- My Activity Section with Winner Status -->
+            {% if my_registrations or my_teams or my_submissions %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-user-circle text-indigo-600"></i>
+                        </div>
+                        My Hackathon Activity
+                    </h2>
+                    <!-- View All button with proper toggle -->
+                    {% if show_all == 'all' %}
+                        <a href="{% url 'hackathon' %}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">← Show Less</a>
+                    {% else %}
+                        <a href="{% url 'hackathon' %}?show=all" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All →</a>
+                    {% endif %}
+                </div>
+                
+                <div class="activity-grid">
+                    {% if my_registrations %}
+                    <div class="activity-item">
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-registered text-indigo-600 mr-2"></i>
+                            My Registrations
+                        </h4>
+                        <div class="space-y-2">
+                            {% for registration in my_registrations %}
+                            <div class="text-sm">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-medium text-gray-800">{{ registration.hackathon.name }}</div>
+                                    {% if registration.has_won %}
+                                        <span class="winner-badge">🏆 Winner</span>
+                                    {% endif %}
+                                </div>
+                                {% if registration.team %}
+                                <div class="text-xs text-gray-500">Team: {{ registration.team.name }}</div>
+                                {% endif %}
+                                {% if registration.has_won %}
+                                <div class="text-xs text-yellow-600 font-medium">
+                                    {% for category in registration.prize_categories %}
+                                        {{ category|title }}{% if not forloop.last %}, {% endif %}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="text-2xl font-bold text-indigo-600">{{ my_registrations|length }}</span>
+                            <div class="text-xs text-gray-500">Total</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if my_submissions %}
+                    <div class="activity-item">
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-upload text-green-600 mr-2"></i>
+                            My Submissions
+                        </h4>
+                        <div class="space-y-2">
+                            {% for submission in my_submissions %}
+                            <div class="text-sm">
+                                <div class="flex items-center justify-between">
+                                    <div class="font-medium text-gray-800">{{ submission.project_title }}</div>
+                                    {% if submission.is_winner %}
+                                        <span class="winner-badge">🏆 {{ submission.prize_display }}</span>
+                                    {% elif submission.is_evaluated %}
+                                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">
+                                            {{ submission.final_score|floatformat:1 }}/100
+                                        </span>
+                                    {% else %}
+                                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                            Pending
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-xs text-gray-500">{{ submission.hackathon.name }}</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="mt-3 text-center">
+                            <span class="text-2xl font-bold text-green-600">{{ my_submissions|length }}</span>
+                            <div class="text-xs text-gray-500">Projects</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="activity-item">
+                        <h4 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <i class="fas fa-chart-line text-blue-600 mr-2"></i>
+                            Quick Stats
+                        </h4>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Teams Joined:</span>
+                                <span class="font-bold text-indigo-600">{{ user_stats.teams_joined|default:0 }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Projects:</span>
+                                <span class="font-bold text-green-600">{{ user_stats.total_submissions|default:0 }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Prizes Won:</span>
+                                <span class="font-bold text-yellow-600">{{ user_stats.total_prizes_won|default:0 }}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Win Rate:</span>
+                                <span class="font-bold text-green-600">{{ user_stats.win_rate|default:0 }}%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Registration Open Section -->
+            {% if open_hackathons %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-fire text-indigo-600"></i>
+                        </div>
+                        🔥 Registration Open
+                    </h2>
+                    <div class="flex items-center">
+                        <span class="status-dot w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+                        <span class="text-sm text-green-600 font-medium">{{ open_hackathons|length }} Available</span>
+                    </div>
+                </div>
+                
+                <div class="hackathon-grid">
+                    {% for hackathon in open_hackathons %}
+                    <div class="hackathon-card rounded-xl overflow-hidden">
+                        {% if hackathon.thumbnail %}
+                        <img src="{{ hackathon.thumbnail.url }}" class="hackathon-thumbnail" alt="{{ hackathon.name }}">
+                        {% else %}
+                        <div class="hackathon-placeholder">
+                            <i class="fas fa-code text-indigo-600 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 text-lg">{{ hackathon.name }}</h3>
+                                <span class="status-badge status-open">Open</span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mb-4 line-clamp-2">{{ hackathon.description|truncatewords:20 }}</p>
+                            
+                            <div class="space-y-3 mb-4">
+                                <div class="participant-counter flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-users text-indigo-600 mr-2"></i>
+                                        <span class="font-medium">{{ hackathon.participant_count }}/{{ hackathon.max_participants }}</span>
+                                    </div>
+                                    <div class="text-xs">
+                                        {% widthratio hackathon.participant_count hackathon.max_participants 100 %}% filled
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Registration ends
+                                    </div>
+                                    <div class="font-medium text-red-600">
+                                        {{ hackathon.registration_end|date:"M d, H:i" }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="quick-action-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 px-4 rounded-lg font-medium text-center block transition duration-200">
+                                <i class="fas fa-rocket mr-2"></i>Join Hackathon
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Currently Active Section -->
+            {% if active_hackathons %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-bolt text-indigo-600"></i>
+                        </div>
+                        ⚡ Currently Active
+                    </h2>
+                    <div class="flex items-center">
+                        <span class="status-dot w-3 h-3 bg-yellow-500 rounded-full mr-2"></span>
+                        <span class="text-sm text-yellow-600 font-medium">{{ active_hackathons|length }} Running</span>
+                    </div>
+                </div>
+                
+                <div class="hackathon-grid">
+                    {% for hackathon in active_hackathons %}
+                    <div class="hackathon-card rounded-xl overflow-hidden">
+                        {% if hackathon.thumbnail %}
+                        <img src="{{ hackathon.thumbnail.url }}" class="hackathon-thumbnail" alt="{{ hackathon.name }}">
+                        {% else %}
+                        <div class="hackathon-placeholder">
+                            <i class="fas fa-lightning-bolt text-indigo-600 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 text-lg">{{ hackathon.name }}</h3>
+                                <span class="status-badge status-active">Active</span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mb-4">{{ hackathon.description|truncatewords:20 }}</p>
+                            
+                            <div class="space-y-3 mb-4">
+                                <div class="participant-counter flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-users text-indigo-600 mr-2"></i>
+                                        <span class="font-medium">{{ hackathon.participant_count }} participants</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center text-gray-500">
+                                        <i class="fas fa-hourglass-half mr-1"></i>
+                                        Ends in
+                                    </div>
+                                    <div class="font-medium text-red-600">
+                                        {{ hackathon.end_date|timeuntil }}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="quick-action-btn w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2.5 px-4 rounded-lg font-medium text-center block transition duration-200">
+                                <i class="fas fa-eye mr-2"></i>View Progress
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- ✅ EVALUATION PHASE HACKATHONS -->
+            {% if evaluation_hackathons %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-clipboard-check text-indigo-600"></i>
+                        </div>
+                        📋 Evaluation Phase
+                    </h2>
+                    <div class="flex items-center">
+                        <span class="status-dot w-3 h-3 bg-orange-500 rounded-full mr-2"></span>
+                        <span class="text-sm text-orange-600 font-medium">{{ evaluation_hackathons|length }} Ready for Evaluation</span>
+                    </div>
+                </div>
+                
+                <div class="hackathon-grid">
+                    {% for hackathon in evaluation_hackathons %}
+                    <div class="hackathon-card rounded-xl overflow-hidden">
+                        {% if hackathon.thumbnail %}
+                        <img src="{{ hackathon.thumbnail.url }}" class="hackathon-thumbnail" alt="{{ hackathon.name }}">
+                        {% else %}
+                        <div class="hackathon-placeholder">
+                            <i class="fas fa-clipboard-check text-indigo-600 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 text-lg">{{ hackathon.name }}</h3>
+                                <span class="status-badge status-evaluation">Evaluation</span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mb-4">{{ hackathon.description|truncatewords:20 }}</p>
+                            
+                            <div class="space-y-3 mb-4">
+                                <div class="participant-counter flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-users text-indigo-600 mr-2"></i>
+                                        <span class="font-medium">{{ hackathon.participant_count }} participants</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center text-gray-500">
+                                        <i class="fas fa-file-alt mr-1"></i>
+                                        Submissions received
+                                    </div>
+                                    <div class="font-medium text-orange-600">
+                                        {{ hackathon.submission_count }} projects
+                                    </div>
+                                </div>
+                                
+                                {% if hackathon.unscored > 0 %}
+                                <div class="flex items-center justify-between text-sm">
+                                    <div class="flex items-center text-gray-500">
+                                        <i class="fas fa-star mr-1"></i>
+                                        Unscored
+                                    </div>
+                                    <div class="font-medium text-red-600">
+                                        {{ hackathon.unscored }} pending
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="text-center mb-4 p-3 bg-orange-50 rounded-lg">
+                                <div class="text-sm text-orange-600 font-medium">
+                                    <i class="fas fa-clipboard-check mr-1"></i>
+                                    Ready for evaluation
+                                </div>
+                                <div class="text-xs text-orange-600 mt-1">
+                                    Click "Evaluate" to review submissions
+                                </div>
+                            </div>
+                            
+                            <!-- Action Buttons -->
+                            <div class="flex space-x-2">
+                                <a href="{% url 'hackathon_detail' hackathon.id %}" 
+                                   class="flex-1 bg-gray-600 text-white text-center py-2 px-3 rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors">
+                                    <i class="fas fa-eye mr-1"></i>View Details
+                                </a>
+                                {% if hackathon.created_by == request.user %}
+                                <a href="{% url 'evaluate_submissions' hackathon.id %}" 
+                                   class="flex-1 bg-orange-500 text-white text-center py-2 px-3 rounded-lg hover:bg-orange-600 text-sm font-medium transition-colors">
+                                    <i class="fas fa-star mr-1"></i>Evaluate
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Upcoming Section -->
+            {% if upcoming_hackathons %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-calendar text-indigo-600"></i>
+                        </div>
+                        📅 Coming Soon
+                    </h2>
+                    <span class="text-sm text-blue-600 font-medium">{{ upcoming_hackathons|length }} Upcoming</span>
+                </div>
+                
+                <div class="hackathon-grid">
+                    {% for hackathon in upcoming_hackathons %}
+                    <div class="hackathon-card rounded-xl overflow-hidden">
+                        {% if hackathon.thumbnail %}
+                        <img src="{{ hackathon.thumbnail.url }}" class="hackathon-thumbnail" alt="{{ hackathon.name }}">
+                        {% else %}
+                        <div class="hackathon-placeholder">
+                            <i class="fas fa-calendar-plus text-indigo-600 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 text-lg">{{ hackathon.name }}</h3>
+                                <span class="status-badge status-upcoming">Soon</span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mb-4">{{ hackathon.description|truncatewords:20 }}</p>
+                            
+                            <div class="text-center mb-4 p-3 bg-blue-50 rounded-lg">
+                                <div class="text-sm text-blue-600 font-medium">
+                                    <i class="fas fa-calendar-check mr-1"></i>
+                                    Registration opens
+                                </div>
+                                <div class="text-lg font-bold text-blue-700 mt-1">
+                                    {{ hackathon.registration_start|date:"M d, H:i" }}
+                                </div>
+                            </div>
+                            
+                            <a href="{% url 'hackathon_detail' hackathon.id %}" class="quick-action-btn w-full bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-4 rounded-lg font-medium text-center block transition duration-200">
+                                <i class="fas fa-info-circle mr-2"></i>Learn More
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Completed Section with Winners -->
+            {% if completed_hackathons %}
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-trophy text-indigo-600"></i>
+                        </div>
+                        🏆 Recently Completed
+                    </h2>
+                    <span class="text-sm text-gray-500 font-medium">{{ completed_hackathons|length }} completed</span>
+                </div>
+                
+                <div class="hackathon-grid">
+                    {% for hackathon in completed_hackathons %}
+                    <div class="hackathon-card rounded-xl overflow-hidden">
+                        {% if hackathon.thumbnail %}
+                        <img src="{{ hackathon.thumbnail.url }}" class="hackathon-thumbnail" alt="{{ hackathon.name }}">
+                        {% else %}
+                        <div class="hackathon-placeholder">
+                            <i class="fas fa-trophy text-indigo-600 text-3xl"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="p-5">
+                            <div class="flex items-center justify-between mb-3">
+                                <h3 class="font-semibold text-gray-900 text-lg">{{ hackathon.name }}</h3>
+                                <span class="status-badge status-completed">Completed</span>
+                            </div>
+                            
+                            <p class="text-sm text-gray-600 mb-4">{{ hackathon.description|truncatewords:20 }}</p>
+                            
+                            <!-- Stats -->
+                            <div class="grid grid-cols-3 gap-2 text-center text-sm mb-3">
+                                <div class="bg-gray-50 rounded-lg p-2">
+                                    <div class="font-semibold text-gray-900">{{ hackathon.participant_count }}</div>
+                                    <div class="text-gray-500 text-xs">Participants</div>
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-2">
+                                    <div class="font-semibold text-gray-900">{{ hackathon.submission_count }}</div>
+                                    <div class="text-gray-500 text-xs">Submissions</div>
+                                </div>
+                                <div class="bg-yellow-50 rounded-lg p-2">
+                                    <div class="font-semibold text-yellow-700">{{ hackathon.winner_count }}</div>
+                                    <div class="text-yellow-600 text-xs">Winners</div>
+                                </div>
+                            </div>
+
+                            <!-- Winners Section -->
+                            {% if hackathon.winners %}
+                            <div class="winner-list">
+                                <h4 class="text-xs font-medium text-yellow-800 mb-2">🏆 Winners:</h4>
+                                <div class="space-y-1">
+                                    {% for winner in hackathon.winners|slice:":3" %}
+                                    <div class="winner-item">
+                                        <span class="flex-1 text-gray-600">
+                                            {% if winner.team %}
+                                                👥 {{ winner.team.name }}
+                                            {% else %}
+                                                👤 {{ winner.individual_user.get_full_name|default:winner.individual_user.username }}
+                                            {% endif %}
+                                        </span>
+                                        <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full font-medium text-xs">
+                                            {{ winner.prize_category|title|truncatechars:12 }}
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    {% if hackathon.winners.count > 3 %}
+                                    <div class="text-xs text-yellow-600 text-center pt-1">
+                                        +{{ hackathon.winners.count|add:"-3" }} more winners
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Actions -->
+                            <div class="flex space-x-2 mt-4">
+                                <a href="{% url 'hackathon_detail' hackathon.id %}" 
+                                   class="flex-1 bg-gray-600 text-white text-center py-2 px-3 rounded-lg hover:bg-gray-700 text-sm font-medium transition-colors">
+                                    View Details
+                                </a>
+                                <a href="{% url 'hackathon_results' hackathon.id %}" 
+                                   class="flex-1 bg-yellow-500 text-white text-center py-2 px-3 rounded-lg hover:bg-yellow-600 text-sm font-medium transition-colors">
+                                    <i class="fas fa-trophy mr-1"></i>Results
+                                </a>
+                            </div>
+                            
+                            <!-- Date Info -->
+                            <div class="text-xs text-gray-500 text-center mt-3 pt-3 border-t">
+                                <span>Completed: {{ hackathon.end_date|date:"M d, Y" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Right Sidebar -->
+        <div class="space-y-6">
+            
+            <!-- Quick Actions -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div class="feature-icon w-8 h-8 rounded-lg flex items-center justify-center mr-2">
+                        <i class="fas fa-bolt text-indigo-600 text-sm"></i>
+                    </div>
+                    Quick Actions
+                </h3>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'create_hackathon' %}" class="quick-action-btn w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg font-medium text-center block transition duration-200">
+                        <i class="fas fa-plus mr-2"></i>Create Hackathon
+                    </a>
+                    
+                    <a href="{% url 'hackathon' %}" class="quick-action-btn w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 px-4 rounded-lg font-medium text-center block transition duration-200">
+                        <i class="fas fa-refresh mr-2"></i>Refresh Page
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Hackathon Stats -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div class="feature-icon w-8 h-8 rounded-lg flex items-center justify-center mr-2">
+                        <i class="fas fa-chart-bar text-indigo-600 text-sm"></i>
+                    </div>
+                    Statistics
+                </h3>
+                
+                <div class="space-y-3">
+                    <div class="stat-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Open for Registration</span>
+                            </div>
+                            <span class="font-bold text-green-600">{{ open_hackathons|length|default:0 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Currently Active</span>
+                            </div>
+                            <span class="font-bold text-yellow-600">{{ active_hackathons|length|default:0 }}</span>
+                        </div>
+                    </div>
+
+                    <!-- ✅ ADD EVALUATION STAT -->
+                    <div class="stat-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-orange-500 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Ready for Evaluation</span>
+                            </div>
+                            <span class="font-bold text-orange-600">{{ evaluation_hackathons|length|default:0 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Coming Soon</span>
+                            </div>
+                            <span class="font-bold text-blue-600">{{ upcoming_hackathons|length|default:0 }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="stat-item">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
+                                <span class="text-sm text-gray-600">Total Completed</span>
+                            </div>
+                            <span class="font-bold text-gray-600">{{ completed_hackathons|length|default:0 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help & Support -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div class="feature-icon w-8 h-8 rounded-lg flex items-center justify-center mr-2">
+                        <i class="fas fa-question-circle text-indigo-600 text-sm"></i>
+                    </div>
+                    Need Help?
+                </h3>
+                
+                <div class="space-y-3">
+                    <div class="activity-item cursor-pointer">
+                        <div class="flex items-center text-gray-700">
+                            <i class="fas fa-info-circle mr-3 text-indigo-600"></i>
+                            <span class="text-sm">How to join a hackathon?</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item cursor-pointer">
+                        <div class="flex items-center text-gray-700">
+                            <i class="fas fa-users mr-3 text-indigo-600"></i>
+                            <span class="text-sm">Team formation guide</span>
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item cursor-pointer">
+                        <div class="flex items-center text-gray-700">
+                            <i class="fas fa-upload mr-3 text-indigo-600"></i>
+                            <span class="text-sm">Submission guidelines</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Empty State -->
+    {% if not open_hackathons and not active_hackathons and not upcoming_hackathons and not completed_hackathons and not evaluation_hackathons %}
+    <div class="main-card rounded-2xl">
+        <div class="empty-state-container">
+            <div class="empty-state-icon">
+                <i class="fas fa-rocket text-indigo-600 text-6xl"></i>
+            </div>
+            <h3 class="empty-state-title">No Hackathons Available</h3>
+            <p class="empty-state-description">
+                Be the first to create an exciting hackathon challenge and bring the community together!
+            </p>
+            <a href="{% url 'create_hackathon' %}" class="empty-state-button">
+                <i class="fas fa-plus"></i>
+                Create First Hackathon
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars on load
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 300);
+
+    // Add loading animation to action buttons
+    document.querySelectorAll('.quick-action-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const icon = this.querySelector('i');
+            if (icon && !icon.classList.contains('fa-spin')) {
+                const originalClass = icon.className;
+                icon.className = 'fas fa-spinner fa-spin mr-2';
+                
+                setTimeout(() => {
+                    icon.className = originalClass;
+                }, 2000);
+            }
+        });
+    });
+    
+    // Remove any sticking behaviors
+    const allElements = document.querySelectorAll('*');
+    allElements.forEach(el => {
+        const style = window.getComputedStyle(el);
+        if (style.position === 'fixed' || style.position === 'sticky') {
+            el.style.position = 'static';
+        }
+    });
+});
+</script>
+{% endblock %}

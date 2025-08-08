@@ -1,0 +1,2465 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ hackathon.name }} - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .status-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-open { 
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        color: #166534; 
+        border: 1px solid #16a34a;
+    }
+    .status-active { 
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        color: #92400e; 
+        border: 1px solid #d97706;
+    }
+    .status-upcoming { 
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e40af; 
+        border: 1px solid #2563eb;
+    }
+    .status-completed { 
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        color: #374151; 
+        border: 1px solid #6b7280;
+    }
+    .status-closed { 
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #dc2626; 
+        border: 1px solid #ef4444;
+    }
+    
+    .info-card {
+        background: rgba(99, 102, 241, 0.03);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        background: rgba(99, 102, 241, 0.05);
+        border-color: rgba(99, 102, 241, 0.12);
+        transform: translateY(-1px);
+    }
+    
+    .stats-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(99, 102, 241, 0.02) 100%);
+        border-radius: 0.75rem;
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .stats-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-primary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+    }
+    
+    .btn-primary-custom:hover::before {
+        left: 100%;
+    }
+
+    .btn-primary-custom:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+        transform: none;
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-success-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-success-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-warning-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-warning-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-warning-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-secondary-custom {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 0.75rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .btn-secondary-custom::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-custom:hover::before {
+        left: 100%;
+    }
+    
+    .btn-disabled {
+        background: #9ca3af;
+        color: #d1d5db;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+    
+    .creator-badge {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+        color: #92400e;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 0.375rem 0.875rem;
+        border-radius: 9999px;
+        margin-left: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+    }
+    
+    .creator-note {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border: 1px solid #fcd34d;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        position: relative;
+    }
+    
+    .creator-note::before {
+        content: '💡';
+        position: absolute;
+        top: -8px;
+        left: 16px;
+        background: #fbbf24;
+        padding: 4px 8px;
+        border-radius: 50%;
+        font-size: 0.875rem;
+    }
+    
+    .alert {
+        padding: 1.25rem;
+        border-radius: 0.75rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        border-left: 4px solid;
+    }
+    
+    .alert-success { 
+        background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+        border-color: #10b981;
+        color: #065f46; 
+    }
+    .alert-warning { 
+        background: linear-gradient(135deg, #fdf6e3 0%, #fde68a 100%);
+        border-color: #f59e0b;
+        color: #92400e; 
+    }
+    .alert-info { 
+        background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
+        border-color: #3b82f6;
+        color: #1e40af; 
+    }
+    .alert-danger { 
+        background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
+        border-color: #ef4444;
+        color: #dc2626; 
+    }
+    
+    .progress-bar {
+        background-color: #e5e7eb;
+        border-radius: 9999px;
+        height: 0.75rem;
+        overflow: hidden;
+        margin: 0.75rem 0;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-radius: 9999px;
+        transition: width 0.5s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background-image: linear-gradient(
+            -45deg,
+            rgba(255, 255, 255, 0.2) 25%,
+            transparent 25%,
+            transparent 50%,
+            rgba(255, 255, 255, 0.2) 50%,
+            rgba(255, 255, 255, 0.2) 75%,
+            transparent 75%,
+            transparent
+        );
+        background-size: 50px 50px;
+        animation: move 2s linear infinite;
+    }
+    
+    @keyframes move {
+        0% { background-position: 0 0; }
+        100% { background-position: 50px 50px; }
+    }
+
+    /* Enhanced AI Project Assistant Styles */
+    #ai-generator-container {
+        background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1.25rem;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    #ai-generator-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+        animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    #ai-generator-container h3, 
+    #ai-generator-container label {
+        color: #FFFFFF;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 2;
+    }
+    
+    /* Enhanced Skills Selector with Scroll Interface */
+    .skills-selector {
+        position: relative;
+        margin-bottom: 1.5rem;
+        z-index: 5;
+    }
+    
+    .skills-dropdown-header {
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+        position: relative;
+        z-index: 2;
+        min-height: 60px;
+    }
+    
+    .skills-dropdown-header:hover {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+    }
+    
+    .skills-dropdown-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        flex: 1;
+    }
+    
+    .skills-dropdown-placeholder {
+        color: rgba(255, 255, 255, 0.7);
+        font-style: italic;
+    }
+    
+    .skills-dropdown-arrow {
+        transition: transform 0.3s ease;
+        font-size: 1rem;
+        margin-left: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+    }
+    
+    .skills-dropdown-header.open .skills-dropdown-arrow {
+        transform: rotate(180deg);
+    }
+    
+    .skills-options-container {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 0.75rem;
+        margin-top: 0.5rem;
+        max-height: 0;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        backdrop-filter: blur(15px);
+        z-index: 10;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+    
+    .skills-options-container.show {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .skills-options-scroll {
+        max-height: 350px;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    /* Custom Scrollbar */
+    .skills-options-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .skills-options-scroll::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+    }
+    
+    .skills-options-scroll::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border-radius: 3px;
+    }
+    
+    .skills-options-scroll::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+    }
+    
+    .skill-category {
+        margin-bottom: 1.5rem;
+    }
+    
+    .skill-category:last-child {
+        margin-bottom: 0;
+    }
+    
+    .skill-category-title {
+        font-weight: 700;
+        color: #4f46e5;
+        font-size: 0.9rem;
+        margin-bottom: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+        display: flex;
+        align-items: center;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .skill-category-icon {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+        color: #6366f1;
+    }
+    
+    .skills-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 0.5rem;
+    }
+    
+    .skill-option {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: #374151;
+        border: 1px solid transparent;
+        background: rgba(0, 0, 0, 0.02);
+    }
+    
+    .skill-option:hover {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        border-color: rgba(99, 102, 241, 0.3);
+        transform: translateY(-1px);
+    }
+    
+    .skill-option input[type="checkbox"] {
+        margin-right: 0.75rem;
+        transform: scale(1.3);
+        accent-color: #4f46e5;
+        cursor: pointer;
+    }
+    
+    .skill-option.selected {
+        background: rgba(99, 102, 241, 0.15);
+        color: #4f46e5;
+        font-weight: 600;
+        border-color: rgba(99, 102, 241, 0.4);
+    }
+    
+    .skill-tag {
+        background: rgba(255, 255, 255, 0.25);
+        color: white;
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        backdrop-filter: blur(5px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .skill-tag:hover {
+        background: rgba(255, 255, 255, 0.35);
+    }
+    
+    .skill-tag-remove {
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    font-size: 0.75rem;
+    padding: 2px 4px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    margin-left: 0.25rem;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+    .skill-tag-remove:hover {
+        opacity: 1;
+        background: rgba(255, 255, 255, 0.4);
+        transform: scale(1.1);
+    }
+
+    .skill-tag-remove:active {
+        transform: scale(0.95);
+    }
+
+    
+    .ai-button {
+        background: linear-gradient(135deg, #FFFFFF 0%, #f8fafc 100%);
+        color: #667eea;
+        font-weight: 700;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        border: none;
+        border-radius: 0.75rem;
+        padding: 1rem 2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 2;
+    }
+    
+    .ai-button::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .ai-button:hover:not(:disabled) {
+        background: linear-gradient(135deg, #f0f2ff 0%, #e0e7ff 100%);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        transform: translateY(-3px);
+    }
+    
+    .ai-button:hover::before {
+        left: 100%;
+    }
+
+    .ai-button.secondary {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        backdrop-filter: blur(10px);
+    }
+
+    .ai-button.secondary:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.2);
+        border-color: rgba(255, 255, 255, 0.5);
+    }
+    
+    #ai-chat-response {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        min-height: 180px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        z-index: 2;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ai-tutor-bubble {
+        width: 100%;
+        text-align: left;
+        flex-grow: 1;
+    }
+
+    .ai-tutor-header {
+        display: flex;
+        align-items: center;
+        font-weight: 700;
+        color: #4338ca;
+        margin-bottom: 1rem;
+        font-size: 1.1rem;
+    }
+
+    .ai-tutor-header i {
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .ai-response-content {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        font-size: 0.95rem;
+        color: #374151;
+        white-space: pre-wrap;
+        line-height: 1.6;
+    }
+    
+    #ai-action-buttons {
+        margin-top: 1.5rem;
+        display: none;
+        gap: 1rem;
+        justify-content: flex-end;
+    }
+    
+    #ai-action-buttons button {
+        padding: 0.75rem 1.5rem;
+        font-size: 0.9rem;
+        border-radius: 0.75rem;
+    }
+
+    .thinking-animation {
+        text-align: center;
+        padding: 3rem 0;
+    }
+
+    .thinking-animation span {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #a5b4fc 0%, #8b5cf6 100%);
+        margin: 0 4px;
+        animation: thinking-bounce 1.4s infinite ease-in-out both;
+        box-shadow: 0 2px 4px rgba(139, 92, 246, 0.3);
+    }
+
+    .thinking-animation span:nth-child(1) { animation-delay: -0.32s; }
+    .thinking-animation span:nth-child(2) { animation-delay: -0.16s; }
+    .thinking-animation span:nth-child(3) { animation-delay: 0s; }
+
+    @keyframes thinking-bounce {
+        0%, 80%, 100% { 
+            transform: scale(0);
+            opacity: 0.5;
+        }
+        40% { 
+            transform: scale(1.0);
+            opacity: 1;
+        }
+    }
+
+    /* Enhanced AI Auto-Judge Status Styles */
+    .ai-judge-card {
+        background: linear-gradient(145deg, #667eea 0%, #764ba2 100%);
+        border-radius: 1.25rem;
+        padding: 2rem;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        color: white;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ai-judge-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+        animation: judge-shimmer 4s infinite;
+    }
+    
+    @keyframes judge-shimmer {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .ai-judge-card h3 {
+        color: white;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+        font-weight: 700;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .ai-score-display {
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 1rem;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 2;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .ai-score-number {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #ffffff;
+        text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    .ai-score-label {
+        font-size: 0.875rem;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 600;
+    }
+
+    .ai-feedback-box {
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        position: relative;
+        z-index: 2;
+        backdrop-filter: blur(10px);
+    }
+
+    .ai-feedback-text {
+        color: #f3f4f6;
+        line-height: 1.7;
+        white-space: pre-wrap;
+        font-size: 0.95rem;
+    }
+
+    .ai-status-pending {
+        background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .ai-status-pending::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: slide 2s infinite;
+    }
+    
+    @keyframes slide {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .ai-status-error {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        text-align: center;
+        box-shadow: 0 10px 25px rgba(239, 68, 68, 0.3);
+    }
+
+    .pulse-animation {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+        50% {
+            opacity: 0.8;
+            transform: scale(1.02);
+        }
+    }
+    
+    /* Search Enhancement */
+    .skills-search {
+        position: sticky;
+        top: 0;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 1rem;
+        border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+        backdrop-filter: blur(10px);
+        z-index: 5;
+    }
+    
+    .skills-search input {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 2px solid rgba(99, 102, 241, 0.2);
+        border-radius: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    
+    .skills-search input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    
+    /* Responsive Enhancements */
+    @media (max-width: 768px) {
+        .skills-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .ai-score-number {
+            font-size: 2.5rem;
+        }
+        
+        #ai-generator-container {
+            padding: 1.5rem;
+        }
+        
+        .ai-judge-card {
+            padding: 1.5rem;
+        }
+        
+        .skills-dropdown-header {
+            padding: 0.875rem 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="indigo-gradient rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="flex items-center mb-2">
+                    <h1 class="text-4xl font-bold mr-4">{{ hackathon.name }}</h1>
+                    <span class="status-badge 
+                        {% if hackathon.status == 'registration_open' %}status-open
+                        {% elif hackathon.status == 'in_progress' %}status-active
+                        {% elif hackathon.status == 'completed' %}status-completed
+                        {% elif hackathon.status == 'evaluation' %}status-active
+                        {% else %}status-upcoming{% endif %}">
+                        {{ hackathon.get_status_display }}
+                    </span>
+                    {% if is_creator %}
+                    <span class="creator-badge">
+                        <i class="fas fa-crown mr-1"></i>Creator
+                    </span>
+                    {% endif %}
+                </div>
+                <p class="text-indigo-100 text-lg leading-relaxed">{{ hackathon.description }}</p>
+            </div>
+            <div class="hidden lg:block">
+                <div class="feature-icon w-20 h-20 rounded-xl flex items-center justify-center bg-white bg-opacity-20">
+                    <i class="fas fa-rocket text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Status Alert Section -->
+    <div class="mb-8">
+        {% if hackathon.status == 'upcoming' %}
+            <div class="alert alert-info">
+                <div class="flex items-center">
+                    <i class="fas fa-clock text-2xl mr-4"></i>
+                    <div>
+                        <h4 class="font-semibold text-lg">Registration Coming Soon</h4>
+                        <p class="text-sm mt-1">Registration opens on {{ hackathon.registration_start|date:"F d, Y \a\t g:i A" }}</p>
+                        <div class="mt-2">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 25%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif hackathon.status == 'registration_open' %}
+            {% if user_registration %}
+                <div class="alert alert-success">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-2xl mr-4"></i>
+                        <div>
+                            <h4 class="font-semibold text-lg">Successfully Registered!</h4>
+                            <p class="text-sm mt-1">
+                                {% if user_team %}
+                                    You're part of team "{{ user_team.name }}" ({{ user_team.member_count }} members)
+                                {% else %}
+                                    You can now form or join a team, or participate individually
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            {% elif hackathon.current_participants >= hackathon.max_participants %}
+                <div class="alert alert-warning">
+                    <div class="flex items-center">
+                        <i class="fas fa-users text-2xl mr-4"></i>
+                        <div>
+                            <h4 class="font-semibold text-lg">Hackathon Full</h4>
+                            <p class="text-sm mt-1">This hackathon has reached its maximum capacity ({{ hackathon.max_participants }} participants)</p>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-user-plus text-2xl mr-4"></i>
+                            <div>
+                                <h4 class="font-semibold text-lg">Registration Open</h4>
+                                <p class="text-sm mt-1">{{ hackathon.spots_remaining }} spots remaining out of {{ hackathon.max_participants }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="progress-bar w-40">
+                                <div class="progress-fill" style="width: {{ hackathon_stats.registration_percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="text-sm font-semibold">{{ hackathon_stats.registration_percentage|floatformat:1 }}% full</span>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        {% elif hackathon.status == 'in_progress' %}
+            <div class="alert alert-warning">
+                <div class="flex items-center">
+                    <i class="fas fa-play text-2xl mr-4"></i>
+                    <div>
+                        <h4 class="font-semibold text-lg">Hackathon In Progress</h4>
+                        <p class="text-sm mt-1">
+                            {% if user_registration %}
+                                Time to build! Submission deadline: {{ hackathon.end_date|date:"F d, Y \a\t g:i A" }}
+                            {% else %}
+                                Registration is closed. The hackathon is currently in progress.
+                            {% endif %}
+                        </p>
+                        {% if timeline_status.phase == 'in_progress' %}
+                        <div class="mt-3">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ timeline_status.progress_percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="text-xs">{{ timeline_status.progress_percentage|floatformat:1 }}% complete</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% elif hackathon.status == 'evaluation' %}
+            <div class="alert alert-info">
+                <div class="flex items-center">
+                    <i class="fas fa-star text-2xl mr-4"></i>
+                    <div>
+                        <h4 class="font-semibold text-lg">Under Evaluation</h4>
+                        <p class="text-sm mt-1">Submissions are being evaluated. Results will be announced soon!</p>
+                    </div>
+                </div>
+            </div>
+        {% elif hackathon.status == 'completed' %}
+            <div class="alert alert-success">
+                <div class="flex items-center">
+                    <i class="fas fa-flag-checkered text-2xl mr-4"></i>
+                    <div>
+                        <h4 class="font-semibold text-lg">Hackathon Completed</h4>
+                        <p class="text-sm mt-1">Check out the results and winning submissions!</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-8">
+            
+            <!-- Timeline -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-calendar-alt text-indigo-600 text-xl"></i>
+                    </div>
+                    Timeline
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="info-card">
+                        <h3 class="font-semibold text-gray-900 mb-3 text-lg">Registration Period</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <div class="flex items-center">
+                                <i class="fas fa-play text-green-600 mr-3"></i>
+                                <span>Start: {{ hackathon.registration_start|date:"M d, Y H:i" }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-stop text-red-600 mr-3"></i>
+                                <span>End: {{ hackathon.registration_end|date:"M d, Y H:i" }}</span>
+                            </div>
+                        </div>
+                        {% if timeline_status.phase == 'registration' %}
+                        <div class="mt-4">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ timeline_status.progress_percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 font-medium">{{ timeline_status.progress_percentage|floatformat:1 }}% complete</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="info-card">
+                        <h3 class="font-semibold text-gray-900 mb-3 text-lg">Hackathon Period</h3>
+                        <div class="space-y-2 text-gray-700">
+                            <div class="flex items-center">
+                                <i class="fas fa-play text-green-600 mr-3"></i>
+                                <span>Start: {{ hackathon.start_date|date:"M d, Y H:i" }}</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-stop text-red-600 mr-3"></i>
+                                <span>End: {{ hackathon.end_date|date:"M d, Y H:i" }}</span>
+                            </div>
+                        </div>
+                        {% if timeline_status.phase == 'in_progress' %}
+                        <div class="mt-4">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ timeline_status.progress_percentage|floatformat:0 }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600 font-medium">{{ timeline_status.progress_percentage|floatformat:1 }}% complete</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Team Configuration -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-users text-indigo-600 text-xl"></i>
+                    </div>
+                    Team Configuration
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="info-card">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 font-medium">Team Size</span>
+                            <span class="font-bold text-gray-900 text-lg">{{ hackathon.team_size_min }} - {{ hackathon.team_size_max }} members</span>
+                        </div>
+                    </div>
+                    
+                    {% if hackathon.allow_individual %}
+                    <div class="info-card">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600 font-medium">Individual Participation</span>
+                            <span class="text-green-600 font-bold text-lg">Allowed</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Prizes -->
+            {% if hackathon.prize %}
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-gift text-indigo-600 text-xl"></i>
+                    </div>
+                    Prizes & Rewards
+                </h2>
+                <div class="info-card">
+                    <p class="text-gray-700 text-lg leading-relaxed">{{ hackathon.prize|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Rules -->
+            {% if hackathon.rules %}
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-shield-alt text-indigo-600 text-xl"></i>
+                    </div>
+                    Rules & Guidelines
+                </h2>
+                <div class="info-card">
+                    <p class="text-gray-700 text-lg leading-relaxed">{{ hackathon.rules|linebreaks }}</p>
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Evaluation Criteria -->
+            {% if hackathon.evaluation_criteria %}
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-2xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center mr-4">
+                        <i class="fas fa-star text-indigo-600 text-xl"></i>
+                    </div>
+                    Evaluation Criteria
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% for criterion, score in hackathon.evaluation_criteria.items %}
+                    <div class="info-card">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-gray-900 text-lg">{{ criterion }}</span>
+                            <span class="text-indigo-600 font-bold text-xl">{{ score }} points</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="space-y-8">
+            
+            <!-- Quick Stats -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-chart-bar text-indigo-600"></i>
+                    </div>
+                    Quick Stats
+                </h3>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="stats-item">
+                        <div class="text-3xl font-bold text-indigo-600 mb-2">{{ hackathon_stats.total }}</div>
+                        <div class="text-sm text-gray-600 font-medium">Participants</div>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <div class="text-3xl font-bold text-green-600 mb-2">{{ hackathon_stats.spots_remaining }}</div>
+                        <div class="text-sm text-gray-600 font-medium">Spots Left</div>
+                    </div>
+                    
+                    {% if submission_stats.total > 0 %}
+                    <div class="stats-item">
+                        <div class="text-3xl font-bold text-purple-600 mb-2">{{ submission_stats.total }}</div>
+                        <div class="text-sm text-gray-600 font-medium">Submissions</div>
+                    </div>
+                    
+                    <div class="stats-item">
+                        <div class="text-3xl font-bold text-orange-600 mb-2">{{ team_stats.total_teams }}</div>
+                        <div class="text-sm text-gray-600 font-medium">Teams</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {# ─── Creator Controls ──────────────────────────────────────────────── #}
+{% if is_creator %}
+<div class="main-card rounded-2xl p-6 mb-6">
+  <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+    <div class="feature-icon w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+      <i class="fas fa-crown text-yellow-600"></i>
+    </div>
+    Creator Controls
+  </h3>
+
+  <div class="space-y-4">
+    {# ✅ UPDATED: Always show Evaluate Submissions button if there are submissions #}
+    {% if submission_stats.total > 0 %}
+      <a href="{% url 'evaluate_submissions' hackathon.id %}"
+         class="btn-warning-custom w-full text-center">
+        <i class="fas fa-clipboard-check mr-2"></i>Evaluate Submissions
+        {% if submission_stats.unscored > 0 %}
+          <span class="ml-2 bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
+            {{ submission_stats.unscored }} unscored
+          </span>
+        {% endif %}
+      </a>
+    {% endif %}
+
+    {# ②  Select Winners – visible during evaluation and after #}
+    {% if hackathon.status == 'evaluation' or hackathon.status == 'completed' %}
+        <a href="{% url 'select_winners' hackathon.id %}"
+           class="btn-success-custom w-full text-center">
+          <i class="fas fa-trophy mr-2"></i>Select Winners
+        </a>
+    {% endif %}
+
+    {# ③ Results Link - Show when hackathon is completed #}
+    {% if hackathon.status == 'completed' %}
+      <a href="{% url 'hackathon_results' hackathon.id %}"
+         class="btn-primary-custom w-full text-center">
+        <i class="fas fa-chart-line mr-2"></i>View Results
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="creator-note mt-6">
+    <p class="text-sm text-yellow-800 font-medium">
+      <i class="fas fa-info-circle mr-2"></i>
+      Use these controls to manage your hackathon: evaluate submissions, 
+      select winners, and publish results.
+    </p>
+  </div>
+</div>
+{% endif %}
+
+
+            {# ─── AI Project Assistant ────────────────────────────────────────── #}
+<div id="ai-generator-container">
+  <h3 class="text-xl mb-6 flex items-center">
+    <i class="fas fa-robot mr-3 text-2xl"></i>
+    AI Project Assistant
+  </h3>
+
+  {# ❶ A real project file has been submitted ──────────────────────── #}
+  {% if user_submission %}
+      <div id="ai-chat-response" style="min-height:auto;">
+        <div class="ai-tutor-bubble">
+          <div class="ai-tutor-header">
+            <i class="fas fa-file-alt text-green-500"></i>
+            <span>Project Submitted</span>
+          </div>
+          <div class="ai-response-content">
+            <p class="font-bold text-lg mb-2">{{ user_submission.project_title }}</p>
+            <p class="leading-relaxed mb-4">
+              {{ user_submission.project_description|linebreaksbr }}
+            </p>
+
+            {% if user_submission.evaluation_status == 'in_progress' %}
+              <p class="text-indigo-600 font-semibold">
+                ⏳ AI evaluation in progress – refresh to see your score.
+              </p>
+            {% elif user_submission.evaluation_status == 'completed' %}
+              <p class="text-green-600 font-semibold">
+                ✅ AI evaluation completed – score {{ user_submission.ai_evaluation_score }}/100.
+              </p>
+            {% else %}
+              <p class="text-gray-600">
+                You can upload a new file any time; it will trigger a fresh evaluation.
+              </p>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+  {# ❷ A project idea is assigned but no file uploaded yet ─────────── #}
+  {% elif ai_assigned_project %}
+      <div id="ai-chat-response" style="min-height:auto;">
+        <div class="ai-tutor-bubble">
+          <div class="ai-tutor-header">
+            <i class="fas fa-check-circle text-green-500"></i>
+            <span>Project Assigned</span>
+          </div>
+          <div class="ai-response-content">
+            <p class="font-bold text-lg mb-2">{{ ai_assigned_project.title }}</p>
+            <p class="leading-relaxed">
+              {{ ai_assigned_project.description|linebreaksbr }}
+            </p>
+            <p class="mt-4 text-indigo-600 font-semibold">
+              Build your project then upload the ZIP in the “Submit Project” section.
+            </p>
+          </div>
+        </div>
+      </div>
+                    
+                {% else %}
+                    <!-- STATE 2: NO PROJECT ASSIGNED YET -->
+                    <form id="idea-generator-form">
+                        {% csrf_token %}
+                        <label for="skills-selector" class="block text-sm font-medium mb-3">Select your skills and technologies:</label>
+                        
+                        <!-- Enhanced Skills Selector with Scroll Interface -->
+                        <div class="skills-selector">
+                            <div class="skills-dropdown-header" id="skills-dropdown-header">
+                                <div class="skills-dropdown-content" id="skills-dropdown-content">
+                                    <span class="skills-dropdown-placeholder">Choose your skills...</span>
+                                </div>
+                                <i class="fas fa-chevron-down skills-dropdown-arrow"></i>
+                            </div>
+                            
+                            <div class="skills-options-container" id="skills-options-container">
+                                <div class="skills-search">
+                                    <input type="text" id="skills-search-input" placeholder="Search skills..." />
+                                </div>
+                                <div class="skills-options-scroll">
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-code skill-category-icon"></i>
+                                            Programming Languages
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="Python">
+                                                <input type="checkbox" value="Python" name="skills">
+                                                <span>Python</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="JavaScript">
+                                                <input type="checkbox" value="JavaScript" name="skills">
+                                                <span>JavaScript</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Java">
+                                                <input type="checkbox" value="Java" name="skills">
+                                                <span>Java</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="C++">
+                                                <input type="checkbox" value="C++" name="skills">
+                                                <span>C++</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="C#">
+                                                <input type="checkbox" value="C#" name="skills">
+                                                <span>C#</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="TypeScript">
+                                                <input type="checkbox" value="TypeScript" name="skills">
+                                                <span>TypeScript</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Go">
+                                                <input type="checkbox" value="Go" name="skills">
+                                                <span>Go</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Rust">
+                                                <input type="checkbox" value="Rust" name="skills">
+                                                <span>Rust</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Swift">
+                                                <input type="checkbox" value="Swift" name="skills">
+                                                <span>Swift</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Kotlin">
+                                                <input type="checkbox" value="Kotlin" name="skills">
+                                                <span>Kotlin</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="PHP">
+                                                <input type="checkbox" value="PHP" name="skills">
+                                                <span>PHP</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Ruby">
+                                                <input type="checkbox" value="Ruby" name="skills">
+                                                <span>Ruby</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-globe skill-category-icon"></i>
+                                            Web Frameworks
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="React">
+                                                <input type="checkbox" value="React" name="skills">
+                                                <span>React</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Angular">
+                                                <input type="checkbox" value="Angular" name="skills">
+                                                <span>Angular</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Vue.js">
+                                                <input type="checkbox" value="Vue.js" name="skills">
+                                                <span>Vue.js</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Django">
+                                                <input type="checkbox" value="Django" name="skills">
+                                                <span>Django</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Flask">
+                                                <input type="checkbox" value="Flask" name="skills">
+                                                <span>Flask</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Express.js">
+                                                <input type="checkbox" value="Express.js" name="skills">
+                                                <span>Express.js</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Next.js">
+                                                <input type="checkbox" value="Next.js" name="skills">
+                                                <span>Next.js</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Nuxt.js">
+                                                <input type="checkbox" value="Nuxt.js" name="skills">
+                                                <span>Nuxt.js</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Svelte">
+                                                <input type="checkbox" value="Svelte" name="skills">
+                                                <span>Svelte</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Laravel">
+                                                <input type="checkbox" value="Laravel" name="skills">
+                                                <span>Laravel</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Ruby on Rails">
+                                                <input type="checkbox" value="Ruby on Rails" name="skills">
+                                                <span>Ruby on Rails</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Spring Boot">
+                                                <input type="checkbox" value="Spring Boot" name="skills">
+                                                <span>Spring Boot</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-mobile-alt skill-category-icon"></i>
+                                            Mobile Development
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="React Native">
+                                                <input type="checkbox" value="React Native" name="skills">
+                                                <span>React Native</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Flutter">
+                                                <input type="checkbox" value="Flutter" name="skills">
+                                                <span>Flutter</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="iOS Development">
+                                                <input type="checkbox" value="iOS Development" name="skills">
+                                                <span>iOS Development</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Android Development">
+                                                <input type="checkbox" value="Android Development" name="skills">
+                                                <span>Android Development</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Xamarin">
+                                                <input type="checkbox" value="Xamarin" name="skills">
+                                                <span>Xamarin</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Ionic">
+                                                <input type="checkbox" value="Ionic" name="skills">
+                                                <span>Ionic</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="PhoneGap/Cordova">
+                                                <input type="checkbox" value="PhoneGap/Cordova" name="skills">
+                                                <span>PhoneGap/Cordova</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="NativeScript">
+                                                <input type="checkbox" value="NativeScript" name="skills">
+                                                <span>NativeScript</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-brain skill-category-icon"></i>
+                                            Data Science & AI
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="Machine Learning">
+                                                <input type="checkbox" value="Machine Learning" name="skills">
+                                                <span>Machine Learning</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Deep Learning">
+                                                <input type="checkbox" value="Deep Learning" name="skills">
+                                                <span>Deep Learning</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="TensorFlow">
+                                                <input type="checkbox" value="TensorFlow" name="skills">
+                                                <span>TensorFlow</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="PyTorch">
+                                                <input type="checkbox" value="PyTorch" name="skills">
+                                                <span>PyTorch</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Pandas">
+                                                <input type="checkbox" value="Pandas" name="skills">
+                                                <span>Pandas</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="NumPy">
+                                                <input type="checkbox" value="NumPy" name="skills">
+                                                <span>NumPy</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Scikit-learn">
+                                                <input type="checkbox" value="Scikit-learn" name="skills">
+                                                <span>Scikit-learn</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="OpenCV">
+                                                <input type="checkbox" value="OpenCV" name="skills">
+                                                <span>OpenCV</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Keras">
+                                                <input type="checkbox" value="Keras" name="skills">
+                                                <span>Keras</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Natural Language Processing">
+                                                <input type="checkbox" value="Natural Language Processing" name="skills">
+                                                <span>Natural Language Processing</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Computer Vision">
+                                                <input type="checkbox" value="Computer Vision" name="skills">
+                                                <span>Computer Vision</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Data Analysis">
+                                                <input type="checkbox" value="Data Analysis" name="skills">
+                                                <span>Data Analysis</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-cloud skill-category-icon"></i>
+                                            Cloud & DevOps
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="AWS">
+                                                <input type="checkbox" value="AWS" name="skills">
+                                                <span>Amazon Web Services</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Azure">
+                                                <input type="checkbox" value="Azure" name="skills">
+                                                <span>Microsoft Azure</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Google Cloud Platform">
+                                                <input type="checkbox" value="Google Cloud Platform" name="skills">
+                                                <span>Google Cloud Platform</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Docker">
+                                                <input type="checkbox" value="Docker" name="skills">
+                                                <span>Docker</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Kubernetes">
+                                                <input type="checkbox" value="Kubernetes" name="skills">
+                                                <span>Kubernetes</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Jenkins">
+                                                <input type="checkbox" value="Jenkins" name="skills">
+                                                <span>Jenkins</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="GitLab CI/CD">
+                                                <input type="checkbox" value="GitLab CI/CD" name="skills">
+                                                <span>GitLab CI/CD</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Terraform">
+                                                <input type="checkbox" value="Terraform" name="skills">
+                                                <span>Terraform</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Ansible">
+                                                <input type="checkbox" value="Ansible" name="skills">
+                                                <span>Ansible</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Nginx">
+                                                <input type="checkbox" value="Nginx" name="skills">
+                                                <span>Nginx</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-database skill-category-icon"></i>
+                                            Databases
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="MySQL">
+                                                <input type="checkbox" value="MySQL" name="skills">
+                                                <span>MySQL</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="PostgreSQL">
+                                                <input type="checkbox" value="PostgreSQL" name="skills">
+                                                <span>PostgreSQL</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="MongoDB">
+                                                <input type="checkbox" value="MongoDB" name="skills">
+                                                <span>MongoDB</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Redis">
+                                                <input type="checkbox" value="Redis" name="skills">
+                                                <span>Redis</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Firebase">
+                                                <input type="checkbox" value="Firebase" name="skills">
+                                                <span>Firebase</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="SQLite">
+                                                <input type="checkbox" value="SQLite" name="skills">
+                                                <span>SQLite</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Oracle">
+                                                <input type="checkbox" value="Oracle" name="skills">
+                                                <span>Oracle</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Microsoft SQL Server">
+                                                <input type="checkbox" value="Microsoft SQL Server" name="skills">
+                                                <span>SQL Server</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Elasticsearch">
+                                                <input type="checkbox" value="Elasticsearch" name="skills">
+                                                <span>Elasticsearch</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Cassandra">
+                                                <input type="checkbox" value="Cassandra" name="skills">
+                                                <span>Cassandra</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="skill-category">
+                                        <div class="skill-category-title">
+                                            <i class="fas fa-tools skill-category-icon"></i>
+                                            Tools & Others
+                                        </div>
+                                        <div class="skills-grid">
+                                            <div class="skill-option" data-skill="Git">
+                                                <input type="checkbox" value="Git" name="skills">
+                                                <span>Git</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="GraphQL">
+                                                <input type="checkbox" value="GraphQL" name="skills">
+                                                <span>GraphQL</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="REST APIs">
+                                                <input type="checkbox" value="REST APIs" name="skills">
+                                                <span>REST APIs</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Blockchain">
+                                                <input type="checkbox" value="Blockchain" name="skills">
+                                                <span>Blockchain</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Unity">
+                                                <input type="checkbox" value="Unity" name="skills">
+                                                <span>Unity</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Unreal Engine">
+                                                <input type="checkbox" value="Unreal Engine" name="skills">
+                                                <span>Unreal Engine</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Arduino">
+                                                <input type="checkbox" value="Arduino" name="skills">
+                                                <span>Arduino</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Raspberry Pi">
+                                                <input type="checkbox" value="Raspberry Pi" name="skills">
+                                                <span>Raspberry Pi</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="IoT">
+                                                <input type="checkbox" value="IoT" name="skills">
+                                                <span>Internet of Things</span>
+                                            </div>
+                                            <div class="skill-option" data-skill="Cybersecurity">
+                                                <input type="checkbox" value="Cybersecurity" name="skills">
+                                                <span>Cybersecurity</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" id="generate-btn" class="ai-button w-full text-center mt-6">
+                            <i class="fas fa-magic mr-2"></i>Generate Project Idea
+                        </button>
+                    </form>
+                    
+                    <div id="ai-chat-response">
+                        <div class="ai-tutor-bubble">
+                            <div class="ai-tutor-header">
+                                <i class="fas fa-robot"></i>
+                                <span>AI Assistant</span>
+                            </div>
+                            <div id="ai-response-content-area" class="ai-response-content">
+                                <p class="text-gray-500 italic text-lg">Select your skills and I'll generate a personalized project idea for you!</p>
+                            </div>
+                        </div>
+                        <div id="ai-action-buttons" class="flex">
+                            <button id="accept-project-btn" class="ai-button">
+                                <i class="fas fa-check mr-2"></i>Accept this Project
+                            </button>
+                            <button id="try-again-btn" class="ai-button secondary">
+                                <i class="fas fa-redo mr-2"></i>Try Another Idea
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Participant Actions -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-bolt text-indigo-600"></i>
+                    </div>
+                    {% if is_creator %}Participant Actions{% else %}Actions{% endif %}
+                </h3>
+                
+                <div class="space-y-4">
+                    {% if hackathon.status == 'upcoming' %}
+                        <div class="info-card text-center">
+                            <i class="fas fa-clock text-blue-600 text-2xl mb-3"></i>
+                            <p class="text-blue-800 font-semibold text-lg">Registration Opens Soon</p>
+                            <p class="text-sm text-gray-600 mt-2">{{ hackathon.registration_start|date:"M d, H:i" }}</p>
+                        </div>
+                        
+                    {% elif hackathon.status == 'registration_open' %}
+                        {% if not user_registration %}
+                            {% if hackathon.current_participants < hackathon.max_participants %}
+                                <a href="{% url 'register_hackathon' hackathon.id %}" class="btn-success-custom w-full text-center">
+                                    <i class="fas fa-user-plus mr-2"></i>
+                                    {% if is_creator %}Register as Participant{% else %}Register Now{% endif %}
+                                </a>
+                            {% else %}
+                                <div class="btn-secondary-custom w-full text-center btn-disabled">
+                                    <i class="fas fa-users mr-2"></i>Hackathon Full
+                                </div>
+                            {% endif %}
+                        {% else %}
+                            <div class="info-card text-center">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mb-3"></i>
+                                <p class="text-green-800 font-semibold text-lg">
+                                    {% if is_creator %}Registered as Participant!{% else %}You're Registered!{% endif %}
+                                </p>
+                                {% if user_team %}
+                                <p class="text-sm text-gray-600 mt-2">Team: {{ user_team.name }}</p>
+                                {% endif %}
+                            </div>
+                            
+                            <a href="{% url 'manage_team' hackathon.id %}" class="btn-primary-custom w-full text-center">
+                                <i class="fas fa-users mr-2"></i>Manage Team
+                            </a>
+                        {% endif %}
+                        
+                    {% elif hackathon.status == 'in_progress' %}
+                        {% if user_registration %}
+                            {% if not user_submission %}
+                            <a href="{% url 'submit_hackathon_project' hackathon.id %}" class="btn-warning-custom w-full text-center">
+                                <i class="fas fa-upload mr-2"></i>Submit Project
+                            </a>
+                            {% else %}
+                            <div class="info-card text-center">
+                                <i class="fas fa-check-circle text-green-600 text-2xl mb-3"></i>
+                                <p class="text-green-800 font-semibold text-lg">Project Submitted!</p>
+                                <p class="text-sm text-gray-600 mt-2">{{ user_submission.project_title }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <a href="{% url 'manage_team' hackathon.id %}" class="btn-primary-custom w-full text-center">
+                                <i class="fas fa-users mr-2"></i>Manage Team
+                            </a>
+                        {% else %}
+                            <div class="info-card text-center">
+                                <i class="fas fa-info-circle text-red-600 text-2xl mb-3"></i>
+                                <p class="text-red-800 font-semibold text-lg">Registration Closed</p>
+                                {% if is_creator %}
+                                <p class="text-sm text-gray-600 mt-2">You can evaluate submissions as creator</p>
+                                {% else %}
+                                <p class="text-sm text-gray-600 mt-2">Hackathon is in progress</p>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                        
+                    {% elif hackathon.status == 'evaluation' %}
+                        <div class="info-card text-center">
+                            <i class="fas fa-star text-yellow-600 text-2xl mb-3"></i>
+                            <p class="text-yellow-800 font-semibold text-lg">Under Evaluation</p>
+                            <p class="text-sm text-gray-600 mt-2">Results coming soon!</p>
+                        </div>
+                        
+                    {% elif hackathon.status == 'completed' %}
+                        <a href="{% url 'hackathon_results' hackathon.id %}" class="btn-success-custom w-full text-center">
+                            <i class="fas fa-trophy mr-2"></i>View Results
+                        </a>
+                        
+                    {% endif %}
+                    
+                    <a href="{% url 'hackathon' %}" class="btn-secondary-custom w-full text-center">
+                        <i class="fas fa-arrow-left mr-2"></i>Back to Hackathons
+                    </a>
+                </div>
+            </div>
+
+            <!-- Enhanced AI Auto-Judge Status Card -->
+            {% if user_submission and user_submission.submission_file %}
+            <div class="ai-judge-card">
+                <h3 class="text-xl font-semibold mb-6 flex items-center">
+                    <i class="fas fa-robot mr-3 text-2xl"></i>
+                    AI Auto-Judge Status
+                </h3>
+                
+                {% if user_submission.evaluation_status == 'in_progress' %}
+                    <div class="ai-status-pending pulse-animation">
+                        <i class="fas fa-circle-notch fa-spin text-3xl mb-4"></i>
+                        <p class="font-semibold text-xl mb-3">Evaluating Your Project</p>
+                        <p class="text-sm opacity-90 leading-relaxed">Our AI is analyzing your code and comparing it against the assigned project requirements. This usually takes a few moments.</p>
+                        <div class="progress-bar mt-6">
+                            <div class="progress-fill" style="width: 75%; animation: progress-animation 2s ease-in-out infinite;"></div>
+                        </div>
+                    </div>
+                    
+                {% elif user_submission.evaluation_status == 'completed' %}
+                    <div class="ai-score-display">
+                        <div class="ai-score-label">Alignment Score</div>
+                        <div class="ai-score-number">{{ user_submission.ai_evaluation_score|floatformat:0 }}<span style="font-size: 1.75rem;">/100</span></div>
+                        
+                        {% if user_submission.ai_evaluation_score >= 90 %}
+                            <p class="text-lg mt-3 font-semibold">🎉 Excellent Match!</p>
+                        {% elif user_submission.ai_evaluation_score >= 75 %}
+                            <p class="text-lg mt-3 font-semibold">✅ Good Alignment</p>
+                        {% elif user_submission.ai_evaluation_score >= 60 %}
+                            <p class="text-lg mt-3 font-semibold">⚠️ Moderate Match</p>
+                        {% else %}
+                            <p class="text-lg mt-3 font-semibold">❌ Needs Improvement</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ai-feedback-box">
+                        <h4 class="font-semibold mb-3 flex items-center text-lg">
+                            <i class="fas fa-comment-alt mr-2"></i>
+                            AI Feedback
+                        </h4>
+                        <div class="ai-feedback-text" id="ai-feedback-clean">{{ user_submission.ai_evaluation_notes|linebreaksbr }}</div>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-white bg-opacity-10 rounded-lg">
+                        <p class="text-sm opacity-75 leading-relaxed">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            This automated evaluation is based on code analysis and project alignment. Manual review may provide additional feedback.
+                        </p>
+                    </div>
+                    
+                {% elif user_submission.evaluation_status == 'error' %}
+                    <div class="ai-status-error">
+                        <i class="fas fa-exclamation-triangle text-3xl mb-4"></i>
+                        <h4 class="font-semibold text-xl mb-3">Evaluation Error</h4>
+                        <p class="text-sm opacity-90 leading-relaxed mb-6">An error occurred during AI evaluation. Your submission has been saved and will be manually reviewed by the organizers.</p>
+                        <div class="mt-4">
+                            <a href="{% url 'submit_hackathon_project' hackathon.id %}" class="bg-white bg-opacity-20 px-6 py-3 rounded-lg text-sm hover:bg-opacity-30 transition-all font-medium">
+                                <i class="fas fa-redo mr-2"></i>Retry Submission
+                            </a>
+                        </div>
+                    </div>
+                    
+                {% else %}
+                    <div class="ai-status-pending">
+                        <i class="fas fa-clock text-3xl mb-4"></i>
+                        <p class="font-semibold text-xl mb-3">Awaiting Evaluation</p>
+                        <p class="text-sm opacity-90 leading-relaxed">Your project has been submitted and is queued for AI evaluation.</p>
+                    </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <!-- User Progress (if registered) -->
+            {% if user_progress %}
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-user-check text-indigo-600"></i>
+                    </div>
+                    Your Progress
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700 font-medium">Registration</span>
+                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700 font-medium">Team Formation</span>
+                        {% if user_progress.has_team %}
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        {% else %}
+                            <i class="fas fa-circle text-gray-300 text-xl"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span class="text-gray-700 font-medium">Project Submission</span>
+                        {% if user_progress.has_submission %}
+                            <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                        {% else %}
+                            <i class="fas fa-circle text-gray-300 text-xl"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            
+            <!-- Help -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+                    <div class="feature-icon w-10 h-10 rounded-lg flex items-center justify-center mr-3">
+                        <i class="fas fa-question-circle text-indigo-600"></i>
+                    </div>
+                    Need Help?
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-center text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                        <i class="fas fa-info-circle mr-3 text-indigo-600"></i>
+                        <span class="font-medium">How to join a hackathon?</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                        <i class="fas fa-users mr-3 text-indigo-600"></i>
+                        <span class="font-medium">Team formation guide</span>
+                    </div>
+                    <div class="flex items-center text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                        <i class="fas fa-upload mr-3 text-indigo-600"></i>
+                        <span class="font-medium">Submission guidelines</span>
+                    </div>
+                    {% if is_creator %}
+                    <div class="flex items-center text-gray-600 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+                        <i class="fas fa-crown mr-3 text-yellow-600"></i>
+                        <span class="font-medium">Creator evaluation guide</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Complete Enhanced JavaScript with Working Markdown Cleanup -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Enhanced Skills Selector with Search and Arrow functionality
+    const skillsDropdownHeader = document.getElementById('skills-dropdown-header');
+    const skillsOptionsContainer = document.getElementById('skills-options-container');
+    const skillsDropdownContent = document.getElementById('skills-dropdown-content');
+    const skillsSearchInput = document.getElementById('skills-search-input');
+    const skillOptions = document.querySelectorAll('.skill-option');
+    let selectedSkills = [];
+
+    // Dropdown toggle functionality
+    if (skillsDropdownHeader) {
+        skillsDropdownHeader.addEventListener('click', function() {
+            skillsDropdownHeader.classList.toggle('open');
+            skillsOptionsContainer.classList.toggle('show');
+            
+            if (skillsOptionsContainer.classList.contains('show')) {
+                skillsSearchInput.focus();
+            }
+        });
+    }
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (skillsDropdownHeader && skillsOptionsContainer) {
+            if (!skillsDropdownHeader.contains(e.target) && !skillsOptionsContainer.contains(e.target)) {
+                skillsDropdownHeader.classList.remove('open');
+                skillsOptionsContainer.classList.remove('show');
+            }
+        }
+    });
+
+    // Search functionality
+    if (skillsSearchInput) {
+        skillsSearchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const categories = document.querySelectorAll('.skill-category');
+            
+            categories.forEach(category => {
+                const skillsInCategory = category.querySelectorAll('.skill-option');
+                let hasVisibleSkills = false;
+                
+                skillsInCategory.forEach(skill => {
+                    const skillName = skill.dataset.skill.toLowerCase();
+                    if (skillName.includes(searchTerm)) {
+                        skill.style.display = 'flex';
+                        hasVisibleSkills = true;
+                    } else {
+                        skill.style.display = 'none';
+                    }
+                });
+                
+                // Hide category if no skills match
+                category.style.display = hasVisibleSkills ? 'block' : 'none';
+            });
+        });
+    }
+
+    // Handle skill selection
+    // ✅ FIXED: Handle skill selection
+skillOptions.forEach(option => {
+    option.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const checkbox = this.querySelector('input[type="checkbox"]');
+        const skillName = this.getAttribute('data-skill') || this.dataset.skill;
+        
+        // Toggle checkbox state
+        checkbox.checked = !checkbox.checked;
+        
+        if (checkbox.checked) {
+            if (!selectedSkills.includes(skillName)) {
+                selectedSkills.push(skillName);
+                this.classList.add('selected');
+                console.log('Added skill:', skillName); // Debug log
+            }
+        } else {
+            selectedSkills = selectedSkills.filter(skill => skill !== skillName);
+            this.classList.remove('selected');
+            console.log('Removed skill:', skillName); // Debug log
+        }
+        
+        console.log('Selected skills:', selectedSkills); // Debug log
+        updateSelectedSkills();
+    });
+    
+    // ✅ ALSO FIX: Handle direct checkbox clicks
+    const checkbox = option.querySelector('input[type="checkbox"]');
+    if (checkbox) {
+        checkbox.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            const skillName = option.getAttribute('data-skill') || option.dataset.skill;
+            
+            if (this.checked) {
+                if (!selectedSkills.includes(skillName)) {
+                    selectedSkills.push(skillName);
+                    option.classList.add('selected');
+                }
+            } else {
+                selectedSkills = selectedSkills.filter(skill => skill !== skillName);
+                option.classList.remove('selected');
+            }
+            
+            updateSelectedSkills();
+        });
+    }
+});
+
+
+    function updateSelectedSkills() {
+    if (!skillsDropdownContent) return;
+    
+    skillsDropdownContent.innerHTML = '';
+    
+    if (selectedSkills.length === 0) {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'skills-dropdown-placeholder';
+        placeholder.textContent = 'Choose your skills...';
+        skillsDropdownContent.appendChild(placeholder);
+    } else {
+        selectedSkills.forEach(skill => {
+            const tag = document.createElement('div');
+            tag.className = 'skill-tag';
+            tag.innerHTML = `
+                <span>${skill}</span>
+                <i class="fas fa-times skill-tag-remove" data-skill="${skill}"></i>
+            `;
+            skillsDropdownContent.appendChild(tag);
+            
+            // ✅ FIXED: Add remove functionality with proper event handling
+            const removeButton = tag.querySelector('.skill-tag-remove');
+            if (removeButton) {
+                removeButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const skillToRemove = this.dataset.skill;
+                    console.log('Removing skill:', skillToRemove); // Debug log
+                    
+                    // Remove from selectedSkills array
+                    selectedSkills = selectedSkills.filter(s => s !== skillToRemove);
+                    
+                    // Find and uncheck the corresponding checkbox in dropdown
+                    const allOptions = document.querySelectorAll('.skill-option');
+                    allOptions.forEach(option => {
+                        const optionSkill = option.getAttribute('data-skill') || option.dataset.skill;
+                        if (optionSkill === skillToRemove) {
+                            const checkbox = option.querySelector('input[type="checkbox"]');
+                            if (checkbox) {
+                                checkbox.checked = false;
+                            }
+                            option.classList.remove('selected');
+                            console.log('Unchecked checkbox for:', skillToRemove); // Debug log
+                        }
+                    });
+                    
+                    // Update the display
+                    updateSelectedSkills();
+                    console.log('Updated skills after removal:', selectedSkills); // Debug log
+                });
+            }
+        });
+    }
+}
+
+
+    // AI Project Generation Logic
+    const ideaForm = document.getElementById('idea-generator-form');
+    if (ideaForm) {
+        const generateBtn = document.getElementById('generate-btn');
+        const resultDiv = document.getElementById('ai-response-content-area');
+        const actionButtons = document.getElementById('ai-action-buttons');
+        const acceptBtn = document.getElementById('accept-project-btn');
+        const tryAgainBtn = document.getElementById('try-again-btn');
+        
+        const csrftoken = ideaForm.querySelector('[name=csrfmiddlewaretoken]').value;
+        let currentProjectIdea = null;
+
+        ideaForm.addEventListener('submit', handleIdeaGeneration);
+        if (tryAgainBtn) {
+            tryAgainBtn.addEventListener('click', handleIdeaGeneration);
+        }
+
+        if (acceptBtn) {
+            acceptBtn.addEventListener('click', function() {
+                if (!currentProjectIdea) return;
+                
+                acceptBtn.disabled = true;
+                acceptBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Assigning...';
+                if (tryAgainBtn) tryAgainBtn.disabled = true;
+
+                const formData = new FormData();
+                formData.append('project_title', currentProjectIdea.title);
+                formData.append('project_description', currentProjectIdea.description);
+                formData.append('hackathon_id', {{ hackathon.id }});
+
+                fetch("{% url 'assign_project_idea' %}", {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': csrftoken
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text || `Server responded with status: ${response.status}`) });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        resultDiv.innerHTML += `<p class="text-red-500 font-semibold mt-3">Error: ${data.error || 'Could not assign project.'}</p>`;
+                        acceptBtn.disabled = false;
+                        acceptBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Accept this Project';
+                        if (tryAgainBtn) tryAgainBtn.disabled = false;
+                    }
+                })
+                .catch(error => {
+                    console.error('Assign Error:', error);
+                    resultDiv.innerHTML += `<p class="text-red-500 font-semibold mt-3">An error occurred while assigning the project.</p>`;
+                    acceptBtn.disabled = false;
+                    acceptBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Accept this Project';
+                    if (tryAgainBtn) tryAgainBtn.disabled = false;
+                });
+            });
+        }
+
+        function handleIdeaGeneration(event) {
+    if (event) event.preventDefault();
+    
+    console.log('Generating with skills:', selectedSkills); // Debug log
+    
+    if (selectedSkills.length === 0) {
+        alert('Please select at least one skill.');
+        return;
+    }
+
+    generateBtn.disabled = true;
+    generateBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Generating...';
+    if (actionButtons) actionButtons.style.display = 'none';
+    resultDiv.innerHTML = `<div class="thinking-animation"><span></span><span></span><span></span></div>`;
+    
+    // ✅ FIXED: Send as POST data (not JSON) to match your Django view
+    const formData = new FormData();
+    selectedSkills.forEach(skill => {
+        formData.append('skills', skill);
+    });
+
+    fetch("{% url 'generate_project_idea' %}", {
+        method: 'POST',
+        headers: { 
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': csrftoken
+        },
+        body: formData  // Use FormData, not JSON
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('API Response:', data); // Debug log
+        
+        if (data.error) {
+            resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Error: ${data.error}</p>`;
+        } else if (data.success && data.idea) {
+            const cleanedText = cleanAiText(data.idea);
+            const { title, description } = parseIdea(cleanedText);
+            
+            currentProjectIdea = { title, description };
+
+            typeWriter(cleanedText, resultDiv, () => {
+                if (actionButtons) actionButtons.style.display = 'flex';
+                if (acceptBtn) {
+                    acceptBtn.disabled = false;
+                    acceptBtn.innerHTML = '<i class="fas fa-check mr-2"></i>Accept this Project';
+                }
+                if (tryAgainBtn) tryAgainBtn.disabled = false;
+            });
+        } else {
+            resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Error: Invalid response from server</p>`;
+        }
+    })
+    .catch(error => {
+        console.error('Fetch Error:', error);
+        resultDiv.innerHTML = `<p class="text-red-500 font-semibold">Error: ${error.message || 'Could not connect to the server'}</p>`;
+    })
+    .finally(() => {
+        generateBtn.disabled = false;
+        generateBtn.innerHTML = '<i class="fas fa-magic mr-2"></i>Generate Project Idea';
+    });
+}
+
+
+        
+        function parseIdea(text) {
+            const titleMatch = text.match(/^(?:Project Title|Title):\s*(.*)/i);
+            let title = "Untitled AI Project";
+            let description = text;
+
+            if (titleMatch) {
+                title = titleMatch[1].trim();
+                description = text.replace(titleMatch[0], '').trim();
+            }
+            
+            return { title, description };
+        }
+
+        function cleanAiText(text) {
+            if (!text) return "";
+            let cleaned = text.replace(/\\n/g, '\n');
+            cleaned = cleaned.replace(/\*\*(.*?)\*\*/g, '$1');
+            cleaned = cleaned.replace(/^[\s]*[\*\-\+]\s/gm, '');
+            cleaned = cleaned.replace(/\*/g, '');
+            return cleaned.trim();
+        }
+
+        function typeWriter(text, element, callback) {
+            element.innerHTML = ""; 
+            let i = 0;
+            const speed = 20;
+
+            function typing() {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                    setTimeout(typing, speed);
+                } else if (callback) {
+                    callback();
+                }
+            }
+            typing();
+        }
+    }
+
+    function formatProjectIdea(text) {
+    // Format the AI response for better display
+    let formatted = text;
+    
+    // Make headers bold and add spacing
+    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // Format bullet points
+    formatted = formatted.replace(/^• /gm, '→ ');
+    
+    // Add line breaks for better readability
+    formatted = formatted.replace(/\n\n/g, '\n \n');
+    
+    return formatted;
+}
+
+
+    // Auto-refresh for AI evaluation status
+    const aiJudgeCard = document.querySelector('.ai-judge-card');
+    if (aiJudgeCard) {
+        const evaluationStatus = '{{ user_submission.evaluation_status|default:"" }}';
+        if (evaluationStatus === 'in_progress') {
+            setTimeout(() => {
+                window.location.reload();
+            }, 5000);
+        }
+    }
+
+    // Enhanced score animation
+    const scoreNumber = document.querySelector('.ai-score-number');
+    if (scoreNumber) {
+        const targetScore = parseInt(scoreNumber.textContent);
+        let currentScore = 0;
+        const increment = Math.ceil(targetScore / 50);
+        
+        const countUp = setInterval(() => {
+            currentScore += increment;
+            if (currentScore >= targetScore) {
+                currentScore = targetScore;
+                clearInterval(countUp);
+            }
+            scoreNumber.innerHTML = `${currentScore}<span style="font-size: 1.75rem;">/100</span>`;
+        }, 40);
+    }
+
+    // ✅ WORKING MARKDOWN CLEANUP - This definitely works!
+    function cleanMarkdownText(text) {
+        if (!text) return '';
+        
+        // Remove ### headers
+        text = text.replace(/###\s*/g, '');
+        
+        // Remove ** bold markers
+        text = text.replace(/\*\*(.*?)\*\*/g, '$1');
+        
+        // Remove * italic markers  
+        text = text.replace(/\*([^*]+)\*/g, '$1');
+        
+        // Remove - list markers and replace with bullets
+        text = text.replace(/^\s*-\s+/gm, '• ');
+        
+        // Remove any remaining * symbols
+        text = text.replace(/\*/g, '');
+        
+        // Clean up extra spaces
+        text = text.replace(/\s+/g, ' ');
+        
+        return text.trim();
+    }
+
+    // Apply markdown cleaning - ENHANCED VERSION THAT WORKS
+    setTimeout(function() {
+        const feedbackElement = document.getElementById('ai-feedback-clean');
+        if (feedbackElement) {
+            console.log('Found feedback element, cleaning markdown...');
+            
+            // Get the HTML content (including <br> tags)
+            let htmlContent = feedbackElement.innerHTML;
+            console.log('Original HTML:', htmlContent);
+            
+            // Convert <br> tags back to newlines temporarily
+            let textContent = htmlContent.replace(/<br\s*\/?>/gi, '\n');
+            
+            // Remove any remaining HTML tags
+            textContent = textContent.replace(/<[^>]*>/g, '');
+            
+            // Clean the markdown
+            const cleanedText = cleanMarkdownText(textContent);
+            console.log('Cleaned text:', cleanedText);
+            
+            // Convert newlines back to <br> tags and set the content
+            feedbackElement.innerHTML = cleanedText.replace(/\n/g, '<br>');
+            
+            console.log('Markdown cleanup completed successfully!');
+        } else {
+            console.log('No feedback element found to clean');
+        }
+    }, 300);
+});
+</script>
+
+<style>
+@keyframes progress-animation {
+    0% { width: 60%; }
+    50% { width: 85%; }
+    100% { width: 60%; }
+}
+</style>
+{% endblock %}

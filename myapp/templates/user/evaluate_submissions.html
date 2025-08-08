@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Evaluate – {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Colors */
+  :root {
+    --primary-purple: #7c3aed;
+    --primary-purple-dark: #5b21b6;
+    --background-gradient: linear-gradient(135deg, #2563eb 0%, #9333ea 100%);
+    --text-light: #f3e8ff;
+    --text-muted: #c4b5fd;
+    --green: #22c55e;
+    --yellow: #eab308;
+    --red: #dc2626;
+    --input-bg: #ebe6f9;
+    --input-border: #a78bfa;
+  }
+
+  body {
+    background: var(--background-gradient);
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-light);
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 3rem auto;
+    padding: 0 1rem;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.1rem;
+  }
+  header p {
+    color: var(--text-muted);
+    font-size: 1.15rem;
+    font-weight: 500;
+  }
+  .btn-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: var(--text-light);
+    color: var(--primary-purple-dark);
+    padding: 0.5rem 1.2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 20px rgb(124 58 173 / 0.35);
+    transition: background-color 0.3s, color 0.3s;
+  }
+  .btn-back:hover {
+    background: var(--primary-purple);
+    color: var(--text-light);
+  }
+
+  /* Flash messages */
+  .alert {
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.1);
+  }
+  .alert.success {
+    background-color: #dcfce7;
+    color: var(--green);
+  }
+  .alert.error {
+    background-color: #fee2e6;
+    color: var(--red);
+  }
+
+
+  /* Card style submission container replacing table */
+  .submissions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+  }
+
+  .submission-card {
+    background: rgba(255 255 255 / 0.15);
+    padding: 1.8rem 2rem;
+    border-radius: 1.25rem;
+    box-shadow: 0 12px 34px rgba(124, 58, 173, 0.35);
+    transition: transform 0.3s, box-shadow 0.3s ease;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+  }
+  .submission-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 52px rgba(124, 58, 173, 0.55);
+  }
+
+  /* Project info */
+  .proj-info {
+    flex: 2 1 240px;
+  }
+  .proj-title {
+    font-size: 1.375rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-light);
+  }
+  .proj-desc {
+    margin-top: 0.4rem;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    max-height: 3rem;
+    line-height: 1.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Submitter */
+  .submitter {
+    flex: 1 1 150px;
+    white-space: nowrap;
+    color: var(--text-muted);
+    font-weight: 600;
+    font-size: 1rem;
+  }
+
+  /* Scores */
+  .scores {
+    flex: 1 1 140px;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  /* Final score badge */
+  .final-score {
+    flex: 0 0 60px;
+    text-align: center;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.3rem 0.85rem;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #fff;
+    width: 56px;
+  }
+  .badge.green {
+    background-color: var(--green);
+  }
+  .badge.yellow {
+    background-color: var(--yellow);
+  }
+  .badge.red {
+    background-color: var(--red);
+  }
+
+  /* Evaluation form inputs & button */
+  .eval-form {
+    flex: 1 1 270px;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  .score-input {
+    width: 75px;
+    padding: 0.4rem 0.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid var(--input-border);
+    background-color: var(--input-bg);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--primary-purple-dark);
+    text-align: center;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  }
+  .score-input:focus {
+    border-color: var(--primary-purple);
+    outline: none;
+    box-shadow: 0 0 5px var(--primary-purple);
+  }
+  .eval-form button {
+    background: var(--primary-purple);
+    border: none;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.45rem 1.25rem;
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(124, 58, 173, 0.45);
+    transition: background-color 0.3s ease;
+  }
+  .eval-form button:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  .eval-form button:hover:enabled {
+    background: var(--primary-purple-dark);
+  }
+
+  /* Responsive */
+  @media (max-width: 720px) {
+    .submission-card {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .proj-info, .submitter, .scores, .final-score, .eval-form {
+      width: 100%;
+      text-align: left;
+    }
+    .scores {
+      font-size: 1rem;
+    }
+    .final-score {
+      margin-top: 0.2rem;
+    }
+    .eval-form {
+      justify-content: flex-start;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .eval-form button {
+      width: 100%;
+      padding: 0.6rem;
+      font-size: 1.1rem;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Header -->
+  <header>
+    <h1>📋 Evaluate Submissions</h1>
+    <p>Hackathon • {{ hackathon.name }}</p>
+    <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-back" aria-label="Back to Hackathon">← Back</a>
+  </header>
+
+  <!-- Flash messages -->
+  {% for message in messages %}
+    <div class="alert {{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+
+  <!-- Submissions as cards -->
+  <div class="submissions-list">
+    {% for s in submissions %}
+    <article class="submission-card" role="group" aria-labelledby="proj-title-{{ s.id }}">
+      <div class="proj-info">
+        <h2 id="proj-title-{{ s.id }}" class="proj-title">{{ s.project_title }}</h2>
+        {% if s.project_description %}
+        <p class="proj-desc">{{ s.project_description }}</p>
+        {% endif %}
+      </div>
+
+      <div class="submitter" title="{% if s.team %}{{ s.team.name }}{% elif s.individual_user %}{{ s.individual_user.username }}{% else %}—{% endif %}">
+        {% if s.team %}
+          {{ s.team.name }}
+        {% elif s.individual_user %}
+          {{ s.individual_user.username }}
+        {% else %}
+          &mdash;
+        {% endif %}
+      </div>
+
+      <div class="scores">
+        {% if s.final_score %}
+          {{ s.innovation_score|floatformat:1 }} / {{ s.feasibility_score|floatformat:1 }} / {{ s.impact_score|floatformat:1 }}
+        {% else %}
+          &mdash;
+        {% endif %}
+      </div>
+
+      <div class="final-score" title="Final Score">
+        {% if s.final_score %}
+          <span class="badge {% if s.final_score >= 80 %}green{% elif s.final_score >= 50 %}yellow{% else %}red{% endif %}">
+            {{ s.final_score|floatformat:1 }}
+          </span>
+        {% else %}
+          &mdash;
+        {% endif %}
+      </div>
+
+      <div class="proj-info">
+        {% if s.submission_file %}
+            <a href="{{ s.submission_file.url }}"
+               target="_blank"
+               style="color:var(--text-light);font-size:0.95em;text-decoration:underline;"
+               download
+               title="Download submitted ZIP">
+                📦 Download ZIP
+            </a>
+        {% endif %}
+      </div>
+
+      <form method="post" class="eval-form" oninput="this.querySelector('button').disabled=false;">
+        {% csrf_token %}
+        <input type="hidden" name="submission_id" value="{{ s.id }}">
+        <input type="number" name="innovation_score" class="score-input" min="0" max="100" step="0.1" placeholder="I" value="{{ s.innovation_score|default_if_none:'' }}">
+        <input type="number" name="feasibility_score" class="score-input" min="0" max="100" step="0.1" placeholder="F" value="{{ s.feasibility_score|default_if_none:'' }}">
+        <input type="number" name="impact_score" class="score-input" min="0" max="100" step="0.1" placeholder="Im" value="{{ s.impact_score|default_if_none:'' }}">
+        <button type="submit" class="btn btn-primary" disabled>Save</button>
+      </form>
+    </article>
+    {% empty %}
+    <p class="text-center text-gray-300">No submissions yet.</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

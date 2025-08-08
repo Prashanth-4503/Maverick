@@ -1,0 +1,525 @@
+<!-- templates/user/evaluation_form.html -->
+{% extends 'base.html' %}
+
+{% load static custom_filters %}
+
+{% block title %}Evaluate Submission - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --primary-light: #818cf8;
+        --primary-soft: rgba(99, 102, 241, 0.1);
+    }
+
+    .evaluation-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+    }
+
+    .evaluation-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        border-radius: 12px 12px 0 0;
+        padding: 1.5rem 2rem;
+        color: white;
+    }
+
+    .submission-sidebar {
+        background: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        padding: 2rem;
+    }
+
+    .submission-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .submission-meta {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .meta-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: var(--primary);
+    }
+
+    .meta-label {
+        font-size: 0.875rem;
+        color: #64748b;
+        margin-bottom: 0.25rem;
+    }
+
+    .meta-value {
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .resource-btn {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 500;
+        text-align: center;
+        margin-bottom: 0.75rem;
+        transition: background-color 0.2s;
+    }
+
+    .github-btn {
+        background-color: #1e293b;
+        color: white;
+    }
+
+    .github-btn:hover {
+        background-color: #0f172a;
+    }
+
+    .demo-btn {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .demo-btn:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .download-btn {
+        background-color: white;
+        border: 1px solid #e2e8f0;
+        color: #475569;
+    }
+
+    .download-btn:hover {
+        background-color: #f8fafc;
+    }
+
+    .evaluation-form {
+        padding: 2rem;
+    }
+
+    .criteria-card {
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .criteria-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .criteria-title {
+        font-weight: 600;
+        color: #1e293b;
+        display: flex;
+        align-items: center;
+    }
+
+    .criteria-title i {
+        margin-right: 0.5rem;
+        color: var(--primary-light);
+    }
+
+    .score-badge {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+    }
+
+    .criteria-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .slider-container {
+        padding: 0 0.5rem;
+    }
+
+    .slider-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: #64748b;
+        margin-top: 0.5rem;
+    }
+
+    .custom-slider {
+        -webkit-appearance: none;
+        width: 100%;
+        height: 6px;
+        border-radius: 3px;
+        background: #e2e8f0;
+        outline: none;
+    }
+
+    .custom-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--primary);
+        cursor: pointer;
+        border: 3px solid white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .total-score-card {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .total-score-label {
+        display: flex;
+        align-items: center;
+    }
+
+    .total-score-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: var(--primary);
+    }
+
+    .total-score-text {
+        font-weight: 500;
+        color: #1e293b;
+    }
+
+    .total-score-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .feedback-container {
+        margin-bottom: 2rem;
+    }
+
+    .feedback-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .feedback-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(99, 102, 241, 0.1);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: var(--primary);
+    }
+
+    .feedback-title {
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    .feedback-hint {
+        display: flex;
+        align-items: center;
+        color: #64748b;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .feedback-hint i {
+        margin-right: 0.5rem;
+        color: #f59e0b;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1.5rem;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-outline {
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        background: white;
+    }
+
+    .btn-outline:hover {
+        background: rgba(99, 102, 241, 0.05);
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        border: none;
+        box-shadow: 0 2px 4px rgba(99, 102, 241, 0.3);
+    }
+
+    .btn-primary:hover {
+        box-shadow: 0 4px 8px rgba(99, 102, 241, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="evaluation-container bg-white rounded-xl shadow-lg overflow-hidden">
+    <!-- Header -->
+    <div class="evaluation-header">
+        <div class="flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-semibold flex items-center">
+                    <i class="fas fa-clipboard-check mr-2"></i>
+                    Evaluate Submission
+                </h2>
+                <p class="text-sm opacity-90 mt-1 flex items-center">
+                    <i class="fas fa-trophy mr-1"></i> {{ submission.hackathon.name }}
+                </p>
+            </div>
+            <span class="bg-white text-sm text-gray-800 px-3 py-1 rounded-full font-medium">
+                Max Score: {{ max_score }} per criteria
+            </span>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row">
+        <!-- Submission Info Column -->
+        <div class="submission-sidebar md:w-1/3">
+            <div class="text-center mb-6">
+                <div class="w-20 h-20 mx-auto mb-3 bg-indigo-50 rounded-xl flex items-center justify-center text-indigo-600">
+                    <i class="fas fa-file-code text-2xl"></i>
+                </div>
+                <h3 class="submission-title">{{ submission.project_title }}</h3>
+                <p class="text-sm text-gray-500">Project Submission</p>
+            </div>
+
+            <div class="mb-8">
+                <div class="submission-meta">
+                    <div class="meta-icon">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <div class="meta-label">Submitted by</div>
+                        <div class="meta-value">
+                            {% if submission.team %}
+                                {{ submission.team.name }} <span class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full ml-1">Team</span>
+                            {% else %}
+                                {{ submission.individual_user.get_full_name }}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="submission-meta">
+                    <div class="meta-icon">
+                        <i class="far fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="meta-label">Submitted on</div>
+                        <div class="meta-value">{{ submission.submitted_at|date:"M d, Y H:i" }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-xs font-semibold text-gray-500 uppercase tracking-wider text-center mb-3">Project Resources</h4>
+                <div>
+                    {% if submission.github_url %}
+                    <a href="{{ submission.github_url }}" target="_blank" class="github-btn">
+                        <i class="fab fa-github mr-2"></i> View Repository
+                    </a>
+                    {% endif %}
+                    
+                    {% if submission.demo_url %}
+                    <a href="{{ submission.demo_url }}" target="_blank" class="demo-btn">
+                        <i class="fas fa-external-link-alt mr-2"></i> Live Demo
+                    </a>
+                    {% endif %}
+                    
+{% if submission.submission_file %}
+    <a href="{{ submission.submission_file.url }}" class="download-btn" download>
+        <i class="fas fa-download mr-2"></i> Download Files
+    </a>
+{% else %}
+    <p class="text-danger">No file uploaded.</p>
+{% endif %}
+
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Evaluation Form Column -->
+        <div class="evaluation-form md:w-2/3">
+            <form method="post" id="evaluationForm">
+                {% csrf_token %}
+                
+                <div class="mb-8">
+                    <div class="flex items-center mb-6">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 mr-3">
+                            <i class="fas fa-tasks text-lg"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Evaluation Criteria</h3>
+                            <p class="text-sm text-gray-500">Score each criterion from 0 (poor) to {{ max_score }} (excellent)</p>
+                        </div>
+                    </div>
+
+                    {% for field in form %}
+                        {% if field.name|startswith:"score_" %}
+                        <div class="criteria-card">
+                            <div class="criteria-header">
+                                <div class="criteria-title">
+                                    <i class="fas fa-circle-notch"></i>
+                                    {{ field.label }}
+                                </div>
+                                <div id="{{ field.name }}_value" class="score-badge">
+                                    {{ field.value|default:0 }}
+                                </div>
+                            </div>
+                            <p class="criteria-description">
+                                {{ criteria|get_item:field.name|clean_markdown }}
+                            </p>
+                            <div class="slider-container">
+                                <input type="range" 
+                                       name="{{ field.name }}"
+                                       value="{{ field.value|default:0 }}"
+                                       min="0"
+                                       max="{{ field.field.max_value }}"
+                                       class="custom-slider"
+                                       oninput="updateScoreDisplay(this)"
+                                       data-target="{{ field.name }}_value">
+                                <div class="slider-labels">
+                                    <span>0 (Poor)</span>
+                                    <span>{{ field.field.max_value }} (Excellent)</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    {% endfor %}
+
+                    <div class="total-score-card">
+                        <div class="total-score-label">
+                            <div class="total-score-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div>
+                                <div class="text-sm text-gray-500">Total Score</div>
+                                <div class="total-score-text">Sum of all criteria scores</div>
+                            </div>
+                        </div>
+                        <div class="total-score-value" id="totalScore">0</div>
+                    </div>
+                </div>
+
+                <div class="feedback-container">
+                    <div class="feedback-header">
+                        <div class="feedback-icon">
+                            <i class="fas fa-comment-alt"></i>
+                        </div>
+                        <div>
+                            <h3 class="feedback-title">Evaluation Feedback</h3>
+                            <p class="text-sm text-gray-500">Provide constructive feedback for improvement</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-floating">
+                        {{ form.comments }}
+                        <label for="{{ form.comments.id_for_label }}">Your detailed evaluation comments...</label>
+                    </div>
+                    <div class="feedback-hint">
+                        <i class="fas fa-lightbulb"></i>
+                        Highlight strengths and specific areas for improvement
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'evaluate_submissions' submission.hackathon.id %}" class="btn btn-outline">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Submissions
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-check-circle mr-2"></i> Submit Evaluation
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block javascript %}
+<script>
+// Update score display
+function updateScoreDisplay(slider) {
+    const targetId = slider.getAttribute('data-target');
+    const displayElement = document.getElementById(targetId);
+    displayElement.textContent = slider.value;
+    calculateTotalScore();
+}
+
+// Calculate and display total score
+function calculateTotalScore() {
+    const sliders = document.querySelectorAll('.custom-slider');
+    let total = 0;
+    sliders.forEach(slider => {
+        total += parseInt(slider.value);
+    });
+    document.getElementById('totalScore').textContent = total;
+}
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const sliders = document.querySelectorAll('.custom-slider');
+    sliders.forEach(slider => {
+        slider.addEventListener('input', function() {
+            updateScoreDisplay(this);
+        });
+    });
+    
+    // Initial calculation
+    calculateTotalScore();
+});
+</script>
+{% endblock %}
+{% endblock %}

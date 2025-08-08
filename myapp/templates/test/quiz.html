@@ -1,0 +1,447 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Quiz Generator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  crossorigin="anonymous"
+/>
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #3a86ff;
+            --success: #4cc9f0;
+            --success-bg: #f0fdf4;
+            --error: #f72585;
+            --error-bg: #fef2f2;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --card: #ffffff;
+            --border: #e5e7eb;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem 1rem;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            max-width: 700px;
+            width: 100%;
+            background: var(--card);
+            border-radius: 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            padding: 2.5rem 2rem;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .header h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.03em;
+        }
+        .header p {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+
+        /* Language selection */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+        select {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            font-size: 1rem;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            appearance: none;
+            background-color: white;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234361ee' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        select:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+        }
+
+        .btn {
+            display: inline-block;
+            width: 60%;
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary);
+            color: white;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            user-select: none;
+            margin-top: 0.5rem;
+            /* Add these lines to center horizontally */
+    margin-left: auto;
+    margin-right: auto;
+    display: block; /* change inline-block to block for margin auto to work */
+        }
+        .btn:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Quiz Questions */
+        .question-container {
+            margin-top: 2rem;
+        }
+        .question {
+            font-weight: 600;
+            font-size: 1.15rem;
+            margin: 1.5rem 0 0.8rem 0;
+            color: var(--text);
+        }
+        .options {
+            margin-left: 1rem;
+        }
+        .option {
+            display: block;
+            position: relative;
+            padding-left: 2.8rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            font-size: 1rem;
+            color: var(--text-light);
+            user-select: none;
+            transition: color 0.3s ease;
+        }
+        .option:hover {
+            color: var(--primary);
+        }
+        .option input {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            opacity: 0;
+            cursor: pointer;
+            width: 1.4rem;
+            height: 1.4rem;
+            margin: 0;
+        }
+        .checkmark {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 1.6rem;
+            height: 1.6rem;
+            background: white;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            transition: all 0.25s ease;
+        }
+        .option input:checked ~ .checkmark {
+            background-color: var(--primary);
+            border-color: var(--primary);
+        }
+        .checkmark::after {
+            content: "";
+            position: absolute;
+            display: none;
+            top: 50%;
+            left: 50%;
+            width: 0.6rem;
+            height: 0.6rem;
+            border-radius: 50%;
+            background: white;
+            transform: translate(-50%, -50%);
+        }
+        .option input:checked ~ .checkmark::after {
+            display: block;
+        }
+
+        /* Results Section */
+        .result-section {
+            margin-top: 3rem;
+        }
+        .result-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .result-item {
+            margin-bottom: 1.25rem;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            border-left: 6px solid transparent;
+            box-shadow: 0 3px 15px rgb(0 0 0 / 0.05);
+            background-color: white;
+            transition: border-color 0.3s ease, background-color 0.3s ease;
+        }
+        .correct {
+            border-left-color: var(--success);
+            background-color: var(--success-bg);
+            color: #166534;
+        }
+        .wrong {
+            border-left-color: var(--error);
+            background-color: var(--error-bg);
+            color: #9f1239;
+        }
+        .result-question {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.3rem;
+        }
+        .result-answer {
+            font-size: 1rem;
+            margin-bottom: 0.3rem;
+        }
+        .correct-answer {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--error);
+        }
+
+        /* Error message */
+        .error-message {
+            margin-top: 2rem;
+            padding: 1rem 1.5rem;
+            background-color: var(--error-bg);
+            color: var(--error);
+            border-radius: 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: 0 2px 15px rgb(247 37 133 / 0.15);
+        }
+
+        /* Friendly message */
+        .friendly-message {
+            margin-top: 2rem;
+            font-size: 1.1rem;
+            color: var(--text-light);
+            font-style: italic;
+            text-align: center;
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 10000;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.1rem;
+            color: var(--primary);
+        }
+        .spinner {
+            border: 6px solid #f3f3f3;
+            border-top: 6px solid var(--primary);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg);}
+            100% { transform: rotate(360deg);}
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+            .header h2 {
+                font-size: 1.6rem;
+            }
+            .btn {
+                font-size: 1rem;
+            }
+            .result-title {
+                font-size: 1.4rem;
+            }
+            .question {
+                font-size: 1rem;
+            }
+        }
+
+        .back-button {
+            
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background-color: #4f46e5; /* indigo-600 */
+    color: white;
+    font-weight: 600;
+    border-radius: 20px; /* 6px */
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+    transition: background-color 0.3s, box-shadow 0.3s;
+}
+.back-button:hover {
+    background-color: #4338ca; /* indigo-700 */
+    box-shadow: 0 6px 12px rgba(67, 56, 202, 0.4);
+}
+.back-button-container {
+    display: flex;
+    justify-content: flex-end;
+}
+
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>AI-Powered MCQ Quiz Generator</h2>
+            <p>Test your programming knowledge with AI-generated questions</p>
+        </div>
+
+        <div class="back-button-container">
+            <div class="mb-6">
+                 <a href="{% url 'learning_path' %}" class="back-button">&larr; Back</a>
+             </div>
+        </div>
+
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay">
+            <div class="spinner"></div>
+            <p>Generating quiz, please wait...</p>
+        </div>
+
+        <!-- Language Selection Form -->
+        <form method="post" action="{% url 'generate_quiz' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="language">Choose a programming language:</label>
+                <select name="language" id="language" required>
+                    <option value="" disabled {% if not selected_language %}selected{% endif %}>Select a language</option>
+                    <option value="Python" {% if selected_language == "Python" %}selected{% endif %}>Python</option>
+                    <option value="JavaScript" {% if selected_language == "JavaScript" %}selected{% endif %}>JavaScript</option>
+                    <option value="C++" {% if selected_language == "C++" %}selected{% endif %}>C++</option>
+                    <option value="Java" {% if selected_language == "Java" %}selected{% endif %}>Java</option>
+                    <option value="C" {% if selected_language == "C" %}selected{% endif %}>C</option>
+                    <option value="SQL" {% if selected_language == "SQL" %}selected{% endif %}>SQL</option>
+                </select>
+            </div>
+            <button class="btn" type="submit">Generate Quiz</button>
+        </form>
+
+        <!-- Quiz Questions, Results, or Initial Message -->
+        {% if results %}
+            <!-- Show Results ONLY -->
+            <div id="quiz-results" class="result-section">
+                <h3 class="result-title">Quiz Results</h3>
+                {% for r in results %}
+                    <div class="result-item {% if r.is_correct %}correct{% else %}wrong{% endif %}">
+                        <div class="result-question">{{ forloop.counter }}. {{ r.question }}</div>
+                        <div class="result-answer">Your answer: <strong>{{ r.selected }}</strong></div>
+                        {% if not r.is_correct %}
+                            <div class="correct-answer">Correct answer: <strong>{{ r.correct_answer }}</strong></div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            {% if quiz_data %}
+                <!-- Show quiz questions -->
+                <div class="question-container">
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for q in quiz_data %}
+                            <div class="question">{{ forloop.counter }}. {{ q.question }}</div>
+                            <div class="options">
+                                {% for opt in q.choices %}
+                                    <label class="option">
+                                        <input type="radio" name="q_{{ forloop.parentloop.counter0 }}" value="{{ opt }}" required />
+                                        <span class="checkmark"></span>
+                                        {{ opt }}
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                        <button class="btn" type="submit" style="border-radius: 20px; width: 50%;">
+  <i class="fas fa-paper-plane" style="margin-right: 0.5rem;"></i>
+  Submit Answers
+</button>
+                    </form>
+                </div>
+            {% else %}
+                <!-- Friendly initial message -->
+                <p class="friendly-message">Please select a programming language above and click "Generate Quiz" to start.</p>
+            {% endif %}
+        {% endif %}
+
+        <!-- Error Message -->
+        {% if error %}
+            <div class="error-message">{{ error }}</div>
+        {% endif %}
+    </div>
+
+    <script>
+        const quizFormAction = "{% url 'generate_quiz' %}";
+        const generateForm = document.querySelector(`form[action='${quizFormAction}']`);
+        const loadingOverlay = document.getElementById('loading-overlay');
+
+        if (generateForm) {
+            generateForm.addEventListener('submit', () => {
+                loadingOverlay.style.display = 'flex';
+            });
+        }
+
+        // Scroll to results after they are rendered
+        document.addEventListener('DOMContentLoaded', () => {
+            const resultsSection = document.getElementById('quiz-results');
+            if (resultsSection) {
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    </script>
+</body>
+</html>

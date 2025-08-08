@@ -1,0 +1,719 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% if hackathon.end_date < now %}true{% else %}false{% endif %}
+{% block title %}Submit Project - {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Main container styles */
+    .submission-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+    
+    /* Card styles */
+    .submission-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    /* Header styles */
+    .submission-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .submission-header h1 {
+        font-size: 2.25rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+    .submission-header p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    /* Alert messages */
+    .alert {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+    .alert-error {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        border-left: 4px solid #b91c1c;
+    }
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border-left: 4px solid #166534;
+    }
+    
+    /* Verification section */
+    .verification-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+    .verification-item {
+        margin-bottom: 1rem;
+    }
+    .verification-label {
+        font-weight: 600;
+        color: #444;
+        margin-bottom: 0.25rem;
+    }
+    .verification-value {
+        color: #222;
+    }
+    
+    /* Team display */
+    .team-badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .team-members {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    .team-members ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    .team-members li {
+        padding: 0.25rem 0;
+        display: flex;
+        align-items: center;
+    }
+    .leader-badge {
+        background: #e0e7ff;
+        color: #4f46e5;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        margin-left: 0.5rem;
+    }
+    
+    /* Form styles */
+    .form-group {
+        margin-bottom: 1.75rem;
+    }
+    .form-label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: #333;
+    }
+    .form-control {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    .form-control:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        outline: none;
+    }
+    textarea.form-control {
+        min-height: 150px;
+    }
+    
+    /* Character counters */
+    .char-counter {
+        text-align: right;
+        font-size: 0.875rem;
+        color: #666;
+        margin-top: 0.25rem;
+    }
+    .char-counter.warning {
+        color: #d97706;
+    }
+    .char-counter.error {
+        color: #dc2626;
+    }
+    
+    /* File upload area */
+    .file-upload-area {
+        border: 2px dashed #ccc;
+        border-radius: 8px;
+        padding: 2.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .file-upload-area:hover {
+        border-color: #4f46e5;
+        background-color: #f8f9fe;
+    }
+    .file-upload-icon {
+        font-size: 2.5rem;
+        color: #999;
+        margin-bottom: 1rem;
+    }
+    .upload-text {
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    .file-requirements {
+        color: #666;
+        font-size: 0.875rem;
+    }
+    
+    /* Current file display */
+    .current-file {
+        background: #f0f9ff;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    .current-file i {
+        margin-right: 0.5rem;
+        color: #3b82f6;
+    }
+    
+    /* Selected file display */
+    .selected-file {
+        display: none;
+        background: #f0fdf4;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        align-items: center;
+    }
+    .selected-file i {
+        margin-right: 0.5rem;
+        color: #10b981;
+    }
+    
+    /* Button styles */
+    .btn-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2.5rem;
+    }
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .btn i {
+        margin-right: 0.5rem;
+    }
+    .btn-primary {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        border: none;
+    }
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+    .btn-primary:disabled {
+        background: #ddd;
+        transform: none;
+        box-shadow: none;
+        cursor: not-allowed;
+    }
+    .btn-secondary {
+        background: white;
+        color: #4f46e5;
+        border: 1px solid #ddd;
+    }
+    .btn-secondary:hover {
+        background: #f8f9fe;
+    }
+    
+    /* Checkbox styles */
+    .checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        cursor: pointer;
+    }
+    .checkbox-label input {
+        margin-right: 0.75rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* File upload states */
+    .file-upload-area.dragover {
+        border-color: #4f46e5;
+        background-color: #f8f9fe;
+    }
+    
+    /* Error message */
+    .file-error {
+        color: #dc2626;
+        margin-top: 0.5rem;
+        display: none;
+        font-size: 0.875rem;
+    }
+    
+    /* Remove file button */
+    .remove-file-btn {
+        margin-left: auto;
+        color: #ef4444;
+        cursor: pointer;
+        background: none;
+        border: none;
+        padding: 0.25rem;
+    }
+    .remove-file-btn:hover {
+        color: #dc2626;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .submission-container {
+            padding: 1rem;
+        }
+        .submission-card {
+            padding: 1.5rem;
+        }
+        .btn-group {
+            flex-direction: column;
+        }
+        .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+
+{% if form.errors %}
+<div class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    Please correct the errors below:
+    {{ form.errors }}
+</div>
+{% endif %}
+
+<div class="submission-container">
+    <div class="submission-header">
+        <h1>Submit to {{ hackathon.name }}</h1>
+        <p>Deadline: {{ hackathon.end_date|date:"F j, Y H:i" }}</p>
+        {% if hackathon.end_date < now %}
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle mr-1"></i>
+            The submission deadline has passed
+        </div>
+        {% endif %}
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags == 'error' %}error{% else %}success{% endif %}">
+            <i class="fas {% if message.tags == 'error' %}fa-exclamation-circle{% else %}fa-check-circle{% endif %} mr-1"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="submission-card">
+        <h2 class="section-title">📋 Participant Verification</h2>
+        <div class="verification-grid">
+            <div class="verification-item">
+                <div class="verification-label">Registered Name</div>
+                <div class="verification-value">{{ user.get_full_name|default:user.username }}</div>
+            </div>
+            <div class="verification-item">
+                <div class="verification-label">Submission Account</div>
+                <div class="verification-value">{{ user.username }}</div>
+            </div>
+            <div class="verification-item">
+                <div class="verification-label">Submission Type</div>
+                <div class="verification-value">
+                    {% if user_registration.team %}
+                        <div class="team-badge" style="background: #e0e7ff; color: #4f46e5;">
+                            <i class="fas fa-users mr-1"></i> Team: {{ user_registration.team.name }}
+                        </div>
+                        <div class="team-members">
+                            <p class="members-title">Team Members:</p>
+                            <ul>
+                                {% for member in user_registration.team.members.all %}
+                                    <li>
+                                        <i class="fas fa-user mr-1"></i>
+                                        {{ member.get_full_name|default:member.username }}
+                                        {% if member == user_registration.team.leader %}
+                                            <span class="leader-badge">(Leader)</span>
+                                        {% endif %}
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% else %}
+                        <div class="team-badge" style="background: #ecfccb; color: #65a30d;">
+                            <i class="fas fa-user mr-1"></i> Individual Submission
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="verification-item">
+                <div class="verification-label">Contact Email</div>
+                <div class="verification-value">{{ user.email }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="submission-card">
+        <h2 class="section-title">📜 Competition Rules & Terms</h2>
+        <div class="rules-content">
+            {{ hackathon.rules|default:"Please follow all competition guidelines and rules."|linebreaks }}
+        </div>
+    </div>
+
+    <div class="submission-card">
+        <h2 class="section-title">🚀 Project Submission</h2>
+        
+        <form method="post" enctype="multipart/form-data" id="submissionForm">
+            {% csrf_token %}
+            
+             <!-- Add these hidden fields
+    {% if user_registration.team %}
+        <input type="hidden" name="team_id" value="{{ user_registration.team.id }}">
+    {% else %}
+        <input type="hidden" name="individual_user_id" value="{{ user.id }}">
+    {% endif %} -->
+            
+            <div class="form-group">
+                <label class="form-label">Project Title *</label>
+                <input type="text" name="project_title" required maxlength="100" 
+                       class="form-control" 
+                       value="{{ existing_submission.project_title|default:'' }}"
+                       placeholder="Enter your project name">
+                <div class="char-counter">
+                    <span id="title-counter">{{ existing_submission.project_title|default:""|length|default:"0" }}/100</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Project Description *</label>
+                <textarea name="project_description" required rows="6" maxlength="2000"
+                          class="form-control"
+                          placeholder="Describe your project in detail">{{ existing_submission.project_description|default:'' }}</textarea>
+                <div class="char-counter">
+                    <span id="desc-counter">{{ existing_submission.project_description|default:""|length|default:"0" }}/2000</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Repository URL (Optional)</label>
+                <input type="url" name="github_url" 
+                       class="form-control" 
+                       value="{{ existing_submission.github_url|default:'' }}"
+                       placeholder="https://github.com/yourusername/yourrepo">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">
+                    Project Files {% if not existing_submission %}*{% endif %}
+                </label>
+                
+                {% if existing_submission and existing_submission.submission_file %}
+                <div class="current-file">
+                    <i class="fas fa-file-archive"></i>
+                    <span>Current file: {{ existing_submission.submission_file.name|cut:"hackathon_submissions/" }}</span>
+                    <a href="{{ existing_submission.submission_file.url }}" class="ml-2 text-blue-600 hover:underline" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                    <button type="button" class="remove-file-btn" onclick="confirmFileRemoval()">
+                        <i class="fas fa-trash"></i> Remove
+                    </button>
+                </div>
+                {% endif %}
+                
+                <div class="file-upload-area" id="uploadArea">
+                    <input type="file" name="submission_file" id="fileInput" 
+                           accept=".zip,.rar,.tar.gz,.7z" 
+                           style="display: none;" 
+                           {% if not existing_submission %}required{% endif %}>
+                    <div id="uploadContent">
+                        <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                        <p class="upload-text">Click to select files or drag and drop</p>
+                        <p class="file-requirements">ZIP, RAR, or project files (max 25MB)</p>
+                    </div>
+                    <div id="selectedFile" class="selected-file">
+                        <i class="fas fa-file-archive"></i>
+                        <span id="selectedFileName"></span>
+                        <button type="button" id="removeFile" class="remove-file-btn">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                    </div>
+                </div>
+                <div id="fileError" class="file-error"></div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Or provide a Project URL</label>
+                <input type="url" name="submission_url" 
+                       class="form-control" 
+                       value="{{ existing_submission.submission_url|default:'' }}"
+                       placeholder="https://yourprojectdomain.com">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Demo Video URL (Optional)</label>
+                <input type="url" name="video_demo_url" 
+                       class="form-control" 
+                       value="{{ existing_submission.video_demo_url|default:'' }}"
+                       placeholder="https://youtube.com/yourdemo">
+            </div>
+            
+            <div class="form-group terms-checkbox">
+                <label class="checkbox-label">
+                    <input type="checkbox" name="agree_rules" required {% if existing_submission %}checked{% endif %}>
+                    <span>I agree to the competition rules and confirm this is my original work</span>
+                </label>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn btn-primary" id="submitBtn" {% if hackathon.end_date < now %}disabled{% endif %}>
+                    <i class="fas fa-paper-plane"></i>
+                    {% if existing_submission %}Update Entry{% else %}Submit Entry{% endif %}
+                </button>
+                <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Character counters
+    const titleInput = document.querySelector('[name="project_title"]');
+    const descInput = document.querySelector('[name="project_description"]');
+    const titleCounter = document.getElementById('title-counter');
+    const descCounter = document.getElementById('desc-counter');
+    
+    // Initialize counters
+    if (titleInput && titleCounter) {
+        updateCounter(titleInput, titleCounter, 100);
+        titleInput.addEventListener('input', function() {
+            updateCounter(this, titleCounter, 100);
+        });
+    }
+    
+    if (descInput && descCounter) {
+        updateCounter(descInput, descCounter, 2000);
+        descInput.addEventListener('input', function() {
+            updateCounter(this, descCounter, 2000);
+        });
+    }
+    
+    // Update counter with warning/error states
+    function updateCounter(input, counterElement, maxLength) {
+        const length = input.value.length;
+        counterElement.textContent = `${length}/${maxLength}`;
+        
+        // Remove all classes first
+        counterElement.classList.remove('warning', 'error');
+        
+        // Add appropriate class based on length
+        if (length > maxLength * 0.9) {
+            counterElement.classList.add('warning');
+        }
+        if (length > maxLength) {
+            counterElement.classList.add('error');
+        }
+    }
+    
+    // File upload elements
+    const fileInput = document.getElementById('fileInput');
+    const uploadArea = document.getElementById('uploadArea');
+    const uploadContent = document.getElementById('uploadContent');
+    const selectedFile = document.getElementById('selectedFile');
+    const selectedFileName = document.getElementById('selectedFileName');
+    const removeFileBtn = document.getElementById('removeFile');
+    const fileError = document.getElementById('fileError');
+    
+    // Initialize file display if there's already a file
+    if (fileInput.files.length > 0) {
+        handleFileSelection(fileInput.files[0]);
+    }
+    
+    // File upload handling
+    if (fileInput && uploadArea) {
+        // Click anywhere in the upload area to trigger file selection
+        uploadArea.addEventListener('click', function(e) {
+            // Only trigger if not clicking on the remove button
+            if (e.target !== removeFileBtn && !removeFileBtn.contains(e.target)) {
+                fileInput.click();
+            }
+        });
+        
+        // Handle file selection
+        fileInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                handleFileSelection(e.target.files[0]);
+            }
+        });
+        
+        // Handle drag and drop
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                handleFileSelection(e.dataTransfer.files[0]);
+            }
+        });
+        
+        // Remove file button
+        if (removeFileBtn) {
+            removeFileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                resetFileInput();
+            });
+        }
+    }
+    
+    // Handle file selection and validation
+    function handleFileSelection(file) {
+        if (!file) return;
+        
+        const maxSizeMB = 25; // Set your maximum file size here
+        const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+        const validExtensions = ['.zip', '.rar', '.tar.gz', '.7z'];
+        const isValidExtension = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+        
+        // Clear previous errors
+        if (fileError) {
+            fileError.textContent = '';
+            fileError.style.display = 'none';
+        }
+        
+        // Validate file size
+        if (fileSizeMB > maxSizeMB) {
+            showError(`File size (${fileSizeMB}MB) exceeds maximum of ${maxSizeMB}MB`);
+            resetFileInput();
+            return;
+        }
+        
+        // Validate file extension
+        if (!isValidExtension) {
+            showError(`Invalid file type. Allowed: ${validExtensions.join(', ')}`);
+            resetFileInput();
+            return;
+        }
+        
+        // Valid file - show in UI
+        selectedFileName.textContent = file.name;
+        uploadContent.style.display = 'none';
+        selectedFile.style.display = 'flex';
+    }
+    
+    // Reset file input
+    function resetFileInput() {
+        fileInput.value = '';
+        uploadContent.style.display = 'block';
+        selectedFile.style.display = 'none';
+        if (fileError) fileError.style.display = 'none';
+    }
+    
+    // Show error message
+    function showError(message) {
+        if (!fileError) return;
+        fileError.textContent = message;
+        fileError.style.display = 'block';
+    }
+    
+    // Form submission handling
+    const form = document.getElementById('submissionForm');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    if (form && submitBtn) {
+        form.addEventListener('submit', function(e) {
+            // Validate file or URL is provided for new submissions
+            if (!{{ existing_submission|yesno:"true,false" }}) {
+                const fileProvided = fileInput.files.length > 0;
+                const urlProvided = document.querySelector('[name="submission_url"]').value.trim() !== '';
+                
+                if (!fileProvided && !urlProvided) {
+                    e.preventDefault();
+                    showError('Please provide either a project file or URL');
+                    return;
+                }
+            }
+            
+            // Disable button during submission
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+        });
+    }
+    
+    // Deadline check
+    const deadlinePassed = new Date("{{ hackathon.end_date|date:'Y-m-d H:i:s' }}") < new Date();
+    if (deadlinePassed) {
+        const deadlineAlert = document.createElement('div');
+        deadlineAlert.className = 'alert alert-error';
+        deadlineAlert.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> The submission deadline has passed. You can view but not modify your submission.';
+        form.insertBefore(deadlineAlert, form.firstChild);
+        
+        // Disable all form inputs
+        const inputs = form.querySelectorAll('input, textarea, button, select');
+        inputs.forEach(input => {
+            if (input.id !== 'submitBtn') {
+                input.disabled = true;
+            }
+        });
+    }
+});
+
+function confirmFileRemoval() {
+    if (confirm('Are you sure you want to remove this file? You will need to upload a new file if you continue.')) {
+        // Add a hidden input to indicate file removal
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'remove_file';
+        input.value = 'true';
+        document.getElementById('submissionForm').appendChild(input);
+        
+        // Hide the current file display
+        document.querySelector('.current-file').style.display = 'none';
+        
+        // Make file input required again
+        document.getElementById('fileInput').required = true;
+    }
+}
+</script>
+{% endblock %}

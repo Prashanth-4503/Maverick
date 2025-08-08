@@ -1,0 +1,1138 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ problem.title }} - Coding Problem{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/theme/material.min.css">
+<style>
+    /* Your existing styles */
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+    }
+    
+    .CodeMirror {
+        height: 420px; /* Reduced height to make room for chatbot */
+        border: 1px solid rgba(99, 102, 241, 0.15);
+        border-radius: 0.5rem;
+        font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
+        font-size: 14px;
+    }
+    
+    @media (max-width: 768px) {
+        .CodeMirror {
+            height: 300px;
+            font-size: 12px;
+        }
+    }
+    
+    .test-result {
+        margin-bottom: 0.75rem;
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .test-result {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    .test-result.passed {
+        background-color: #dcfce7;
+        border-color: #16a34a;
+    }
+    
+    .test-result.failed {
+        background-color: #fee2e2;
+        border-color: #dc2626;
+    }
+    
+    .difficulty-badge {
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+    }
+    
+    .code-editor-container {
+        background: rgba(99, 102, 241, 0.02);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+    
+    @media (max-width: 768px) {
+        .code-editor-container {
+            padding: 0.75rem;
+        }
+    }
+    
+    .action-btn {
+        transition: background-color 0.2s ease;
+    }
+    
+    .action-btn:hover {
+        opacity: 0.9;
+    }
+    
+    @media (max-width: 768px) {
+        .action-btn {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+    }
+    
+    .problem-content {
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+    
+    .coding-panel {
+        max-height: calc(100vh - 150px);
+        overflow-y: auto;
+    }
+    
+    @media (max-width: 768px) {
+        .problem-content {
+            max-height: none;
+            overflow-y: visible;
+            padding-right: 0;
+        }
+        
+        .coding-panel {
+            max-height: none;
+            overflow-y: visible;
+        }
+    }
+    
+    /* Custom scrollbar */
+    .problem-content::-webkit-scrollbar,
+    .coding-panel::-webkit-scrollbar,
+    .chat-messages::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .problem-content::-webkit-scrollbar-track,
+    .coding-panel::-webkit-scrollbar-track,
+    .chat-messages::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+    
+    .problem-content::-webkit-scrollbar-thumb,
+    .coding-panel::-webkit-scrollbar-thumb,
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 3px;
+    }
+    
+    .problem-content::-webkit-scrollbar-thumb:hover,
+    .coding-panel::-webkit-scrollbar-thumb:hover,
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
+    .section-header {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #4f46e5;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+    }
+    
+    @media (max-width: 768px) {
+        .section-header {
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+    }
+    
+    .section {
+        margin-bottom: 1.5rem;
+    }
+    
+    .section:last-child {
+        margin-bottom: 0;
+    }
+    
+    @media (max-width: 768px) {
+        .section {
+            margin-bottom: 1rem;
+        }
+        
+        .main-card {
+            margin-bottom: 1rem;
+        }
+        
+        .text-xl {
+            font-size: 1.125rem !important;
+        }
+        
+        .text-lg {
+            font-size: 1rem !important;
+        }
+        
+        .mb-4 {
+            margin-bottom: 0.75rem !important;
+        }
+        
+        .mb-6 {
+            margin-bottom: 1rem !important;
+        }
+        
+        .button-container {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .button-container button {
+            width: 100%;
+        }
+    }
+
+    /* ✨ CHATBOT STYLES - Integrated with your existing design */
+    .ai-tutor-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 0.75rem;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .ai-tutor-section {
+            padding: 0.75rem;
+            margin-bottom: 1rem;
+        }
+    }
+    
+    .chat-header {
+        display: flex;
+        align-items: center;
+        justify-content: between;
+        margin-bottom: 1rem;
+        color: white;
+    }
+    
+    .chat-stats {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        color: white;
+        font-size: 0.875rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .chat-messages {
+        height: 280px;
+        overflow-y: auto;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: blur(10px);
+    }
+    
+    @media (max-width: 768px) {
+        .chat-messages {
+            height: 220px;
+            padding: 0.75rem;
+        }
+    }
+    
+    .chat-message {
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        max-width: 85%;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .chat-message.user {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: white;
+        margin-left: auto;
+        text-align: right;
+        box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+    }
+    
+    .chat-message.assistant {
+        background: #f8fafc;
+        color: #334155;
+        margin-right: auto;
+        border: 1px solid #e2e8f0;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .chat-message.assistant .chat-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .chat-input-container {
+        display: flex;
+        gap: 0.5rem;
+        align-items: flex-end;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    @media (max-width: 768px) {
+        .chat-input-container {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+    
+    .chat-input {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 0.5rem;
+        resize: none;
+        min-height: 44px;
+        max-height: 120px;
+        background: rgba(255, 255, 255, 0.9);
+        color: #1f2937;
+        font-size: 0.875rem;
+        backdrop-filter: blur(10px);
+        transition: all 0.2s ease;
+    }
+
+    .chat-input::placeholder {
+    color: #9ca3af;
+}
+
+    
+    .chat-input:focus {
+        outline: none;
+        border-color: rgba(255, 255, 255, 0.6);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+    }
+    
+    @media (max-width: 768px) {
+        .chat-input {
+            width: 100%;
+        }
+    }
+    
+    .chat-button {
+        padding: 0.75rem 1.25rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+    
+    .chat-button:hover:not(:disabled) {
+        background: linear-gradient(135deg, #059669, #047857);
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.4);
+        transform: translateY(-1px);
+    }
+    
+    .chat-button:disabled {
+        background: linear-gradient(135deg, #9ca3af, #6b7280);
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+    }
+    
+    @media (max-width: 768px) {
+        .chat-button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+    
+    .typing-indicator {
+        display: none;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        background: #f8fafc;
+        border-radius: 0.75rem;
+        margin-bottom: 1rem;
+        max-width: 85%;
+        border: 1px solid #e2e8f0;
+        animation: fadeInUp 0.3s ease-out;
+    }
+    
+    .typing-dots {
+        display: flex;
+        gap: 0.25rem;
+    }
+    
+    .typing-dot {
+        width: 8px;
+        height: 8px;
+        background: #6366f1;
+        border-radius: 50%;
+        animation: typing 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes typing {
+        0%, 80%, 100% {
+            transform: scale(0.8);
+            opacity: 0.5;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+    
+    .clear-chat-btn {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        backdrop-filter: blur(10px);
+    }
+    
+    .clear-chat-btn:hover {
+        background: rgba(255, 255, 255, 0.25);
+        border-color: rgba(255, 255, 255, 0.4);
+    }
+    
+    .robot-icon {
+        color: #6366f1;
+        font-size: 1rem;
+        margin-right: 0.25rem;
+    }
+    
+    /* Code formatting in chat messages */
+    .chat-message code {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        padding: 0.125rem 0.375rem;
+        border-radius: 0.25rem;
+        font-size: 0.8rem;
+        font-family: 'Fira Code', 'Monaco', 'Menlo', monospace;
+    }
+    
+    .chat-message strong {
+        font-weight: 600;
+        color: inherit;
+    }
+    
+    .chat-message em {
+        font-style: italic;
+        color: inherit;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Fully responsive layout -->
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-2 sm:px-4 py-2 sm:py-4">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 lg:gap-6 min-h-screen lg:h-screen">
+            
+            <!-- Left Panel - Problem Description -->
+            <div class="lg:col-span-5">
+                <div class="main-card rounded-lg p-3 sm:p-5 h-auto lg:h-full">
+                    <div class="problem-content">
+                        <!-- Compact Header -->
+                        <div class="mb-3 sm:mb-4">
+                            <h1 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">{{ problem.id }}. {{ problem.title }}</h1>
+                            <div class="flex items-center space-x-2 sm:space-x-3">
+                                <span class="difficulty-badge
+                                    {% if problem.difficulty == 'easy' %}bg-green-100 text-green-800
+                                    {% elif problem.difficulty == 'medium' %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ problem.get_difficulty_display }}
+                                </span>
+                                <span class="text-xs text-gray-500">
+                                    <i class="fas fa-chart-line mr-1"></i>
+                                    Acceptance: {{ problem.acceptance_percentage|floatformat:1 }}%
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- ✨ AI Programming Tutor Section -->
+                        <div class="ai-tutor-section">
+                            <div class="chat-header">
+                                <div class="flex items-center">
+                                    <i class="fas fa-robot mr-2 text-xl"></i>
+                                    <h3 class="font-semibold text-lg">AI Programming Tutor</h3>
+                                </div>
+                                <button id="clearChat" class="clear-chat-btn ml-auto">
+                                    <i class="fas fa-trash mr-1"></i>Clear
+                                </button>
+                            </div>
+                            
+                            <div id="chatStats" class="chat-stats" style="display: none;">
+                                <div class="flex justify-between items-center text-sm">
+                                    <span><i class="fas fa-lightbulb mr-1"></i>Hints used: <span id="hintsUsed">0</span></span>
+                                    <span><i class="fas fa-comments mr-1"></i>Messages: <span id="messageCount">0</span></span>
+                                </div>
+                            </div>
+                            
+                            <div id="chatMessages" class="chat-messages">
+                                <div class="chat-message assistant">
+                                    <div class="chat-content">
+                                        <i class="fas fa-robot robot-icon mt-1"></i>
+                                        <div>
+                                            <strong>AI Tutor:</strong> Hi! I'm here to help you solve "<strong>{{ problem.title }}</strong>" step by step. I won't give you the complete solution, but I'll guide you through the thinking process. 
+                                            <br><br>
+                                            <em>What would you like to start with? Ask me about approaches, algorithms, or any concepts you're unsure about!</em>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="typingIndicator" class="typing-indicator">
+                                <i class="fas fa-robot robot-icon"></i>
+                                <span class="text-sm text-gray-600">AI Tutor is thinking...</span>
+                                <div class="typing-dots">
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                    <div class="typing-dot"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="chat-input-container">
+                                <textarea 
+                                    id="chatInput" 
+                                    class="chat-input" 
+                                    placeholder="Ask me about approaches, algorithms, time complexity, or any concepts..."
+                                    rows="1"></textarea>
+                                <button id="sendChat" class="chat-button">
+                                    <i class="fas fa-paper-plane"></i>
+                                    <span>Send</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Problem Description -->
+                        <div class="section">
+                            <h3 class="section-header">Description</h3>
+                            <div class="text-gray-700 text-sm leading-relaxed whitespace-pre-line">{{ problem.description }}</div>
+                        </div>
+                        
+                        <!-- Example -->
+                        <div class="section">
+                            <h3 class="section-header">Example</h3>
+                            <div class="bg-gray-50 rounded-lg p-3 border text-sm">
+                                <div class="mb-2">
+                                    <strong class="text-gray-800">Input:</strong> 
+                                    <code class="bg-indigo-100 text-indigo-800 px-2 py-1 rounded ml-1 text-xs break-all">{{ problem.example_input }}</code>
+                                </div>
+                                <div class="mb-2">
+                                    <strong class="text-gray-800">Output:</strong> 
+                                    <code class="bg-green-100 text-green-800 px-2 py-1 rounded ml-1 text-xs break-all">{{ problem.example_output }}</code>
+                                </div>
+                                {% if problem.explanation %}
+                                <div>
+                                    <strong class="text-gray-800">Explanation:</strong> 
+                                    <span class="text-gray-700">{{ problem.explanation }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Constraints -->
+                        {% if problem.constraints %}
+                        <div class="section">
+                            <h3 class="section-header">Constraints</h3>
+                            <div class="bg-yellow-50 rounded-lg p-3 border-l-4 border-yellow-400">
+                                <div class="text-gray-700 text-sm whitespace-pre-line">{{ problem.constraints }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Tags -->
+                        <div class="section">
+                            <h3 class="section-header">Tags</h3>
+                            <div class="flex flex-wrap gap-1">
+                                {% for tag in problem_tags %}
+                                <span class="px-2 py-1 bg-indigo-100 text-indigo-800 text-xs rounded-full">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Panel - Code Editor -->
+            <div class="lg:col-span-7">
+                <div class="main-card rounded-lg p-3 sm:p-5 h-auto lg:h-full">
+                    <div class="coding-panel">
+                        <!-- Editor Header -->
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0">
+                            <h2 class="text-base sm:text-lg font-semibold text-gray-900">
+                                <i class="fas fa-code mr-2 text-indigo-600"></i>Code Editor
+                            </h2>
+                            <div class="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                                <select id="languageSelect" class="border border-gray-300 rounded px-3 py-2 bg-white text-sm w-full sm:w-auto">
+                                    <option value="python">🐍 Python</option>
+                                    <option value="javascript">🟨 JavaScript</option>
+                                    <option value="java">☕ Java</option>
+                                </select>
+                                <span class="text-xs text-gray-500 hidden sm:block">
+                                    <i class="fas fa-keyboard mr-1"></i>
+                                    Ctrl+Space for autocomplete
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Code Editor Container -->
+                        <div class="code-editor-container mb-3 sm:mb-4">
+                            <textarea id="codeEditor"></textarea>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="button-container flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3 mb-4 sm:mb-6">
+                            <button id="runCode" class="action-btn bg-gray-600 hover:bg-gray-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium">
+                                <i class="fas fa-play mr-2"></i>Run Code
+                            </button>
+                            <button id="submitCode" class="action-btn bg-indigo-600 hover:bg-indigo-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium">
+                                <i class="fas fa-check mr-2"></i>Submit Solution
+                            </button>
+                            <button id="resetCode" class="action-btn bg-yellow-600 hover:bg-yellow-700 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg font-medium">
+                                <i class="fas fa-undo mr-2"></i>Reset
+                            </button>
+                        </div>
+                        
+                        <!-- Results Panel -->
+                        <div id="resultsPanel" class="hidden mb-4 sm:mb-6">
+                            <h3 class="text-base sm:text-lg font-semibold mb-3">
+                                <i class="fas fa-flask mr-2 text-indigo-600"></i>Test Results
+                            </h3>
+                            <div id="testResults" class="space-y-2 sm:space-y-3"></div>
+                        </div>
+                        
+                        <!-- Submissions -->
+                        {% if user_submissions %}
+                        <div class="section">
+                            <h3 class="section-header">Your Submissions</h3>
+                            <div class="space-y-2 max-h-48 overflow-y-auto">
+                                {% for submission in user_submissions %}
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between p-2 bg-gray-50 rounded border text-xs space-y-1 sm:space-y-0">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="px-2 py-1 text-xs font-medium rounded
+                                            {% if submission.status == 'accepted' %}bg-green-100 text-green-800
+                                            {% elif submission.status == 'wrong_answer' %}bg-red-100 text-red-800
+                                            {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                            {{ submission.get_status_display }}
+                                        </span>
+                                        <span class="text-gray-600 font-medium">{{ submission.language|upper }}</span>
+                                    </div>
+                                    <span class="text-gray-500">{{ submission.submitted_at|timesince }} ago</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div id="loadingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-4 sm:p-6 flex items-center space-x-3 mx-4">
+        <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-indigo-600"></div>
+        <span class="text-sm sm:text-base">Running your code...</span>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<script id="django-data" type="application/json">
+{
+    "problemId": {{ problem.id }},
+    "codeTemplates": {{ code_templates|safe }},
+    "submitUrl": "{% url 'submit_code' %}",
+    "chatbotUrl": "{% url 'chatbot_ask' %}",
+    "chatHistoryUrl": "/api/chatbot/history/{{ problem.id }}/",
+    "clearChatUrl": "/api/chatbot/clear/{{ problem.id }}/"
+}
+</script>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/python/python.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.0/mode/clike/clike.min.js"></script>
+
+<script>
+// Get Django data safely
+const djangoData = JSON.parse(document.getElementById('django-data').textContent);
+const codeTemplates = djangoData.codeTemplates;
+const problemId = djangoData.problemId;
+const submitUrl = djangoData.submitUrl;
+const chatbotUrl = djangoData.chatbotUrl;
+const chatHistoryUrl = djangoData.chatHistoryUrl;
+const clearChatUrl = djangoData.clearChatUrl;
+
+let editor;
+let originalTemplates = {};
+
+// Initialize everything when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCodeMirror();
+    initializeChatbot();
+    loadChatHistory();
+});
+
+function initializeCodeMirror() {
+    editor = CodeMirror.fromTextArea(document.getElementById('codeEditor'), {
+        lineNumbers: true,
+        mode: 'python',
+        theme: 'material',
+        indentUnit: 4,
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        extraKeys: {
+            "Ctrl-Space": "autocomplete"
+        }
+    });
+    
+    // Store original templates
+    originalTemplates = { ...codeTemplates };
+    
+    // Set default Python template
+    editor.setValue(codeTemplates.python);
+    
+    // Language change handler
+    document.getElementById('languageSelect').addEventListener('change', function() {
+        const language = this.value;
+        const mode = language === 'java' ? 'text/x-java' : language;
+        editor.setOption('mode', mode);
+        editor.setValue(codeTemplates[language] || '// Write your code here');
+    });
+    
+    // Event handlers
+    document.getElementById('submitCode').addEventListener('click', submitCode);
+    document.getElementById('runCode').addEventListener('click', runCode);
+    document.getElementById('resetCode').addEventListener('click', resetCode);
+}
+
+function initializeChatbot() {
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.getElementById('sendChat');
+    const clearButton = document.getElementById('clearChat');
+    
+    // Send message on button click
+    sendButton.addEventListener('click', sendChatMessage);
+    
+    // Send message on Enter (but allow Shift+Enter for new lines)
+    chatInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendChatMessage();
+        }
+    });
+    
+    // Auto-resize textarea
+    chatInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+    
+    // Clear chat handler
+    clearButton.addEventListener('click', clearChatHistory);
+}
+
+function sendChatMessage() {
+    const chatInput = document.getElementById('chatInput');
+    const question = chatInput.value.trim();
+    
+    if (!question) return;
+    
+    // Add user message to chat
+    addChatMessage('user', question);
+    
+    // Clear input and show typing indicator
+    chatInput.value = '';
+    chatInput.style.height = 'auto';
+    showTypingIndicator();
+    
+    // Disable input while processing
+    setInputDisabled(true);
+    
+    // Send to chatbot API
+    fetch(chatbotUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            problem_id: problemId,
+            question: question
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        hideTypingIndicator();
+        setInputDisabled(false);
+        
+        if (data.error) {
+            addChatMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+        } else {
+            addChatMessage('assistant', data.response);
+            updateChatStats(data.summary);
+        }
+    })
+    .catch(error => {
+        hideTypingIndicator();
+        setInputDisabled(false);
+        console.error('Chatbot Error:', error);
+        addChatMessage('assistant', 'Sorry, I\'m having trouble right now. Please try again in a moment.');
+    });
+}
+
+function addChatMessage(role, content) {
+    const messagesContainer = document.getElementById('chatMessages');
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${role}`;
+    
+    if (role === 'user') {
+        messageDiv.innerHTML = `<strong>You:</strong> ${escapeHtml(content)}`;
+    } else {
+        messageDiv.innerHTML = `
+            <div class="chat-content">
+                <i class="fas fa-robot robot-icon mt-1"></i>
+                <div><strong>AI Tutor:</strong> ${formatChatMessage(content)}</div>
+            </div>
+        `;
+    }
+    
+    messagesContainer.appendChild(messageDiv);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function formatChatMessage(content) {
+    // Convert markdown-style formatting to HTML
+    let formatted = escapeHtml(content);
+    
+    // Bold text **text** or __text__
+    formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    formatted = formatted.replace(/__(.*?)__/g, '<strong>$1</strong>');
+    
+    // Italic text *text* or _text_
+    formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    formatted = formatted.replace(/_(.*?)_/g, '<em>$1</em>');
+    
+    // Code blocks `code`
+    formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+    
+    // Preserve line breaks
+    formatted = formatted.replace(/\n/g, '<br>');
+    
+    return formatted;
+}
+
+function showTypingIndicator() {
+    document.getElementById('typingIndicator').style.display = 'flex';
+    const messagesContainer = document.getElementById('chatMessages');
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function hideTypingIndicator() {
+    document.getElementById('typingIndicator').style.display = 'none';
+}
+
+function setInputDisabled(disabled) {
+    const chatInput = document.getElementById('chatInput');
+    const sendButton = document.getElementById('sendChat');
+    
+    chatInput.disabled = disabled;
+    sendButton.disabled = disabled;
+    
+    if (disabled) {
+        chatInput.placeholder = 'Thinking...';
+    } else {
+        chatInput.placeholder = 'Ask me about approaches, algorithms, time complexity, or any concepts...';
+        chatInput.focus();
+    }
+}
+
+function updateChatStats(summary) {
+    if (!summary) return;
+    
+    document.getElementById('hintsUsed').textContent = summary.hints_used || 0;
+    document.getElementById('messageCount').textContent = summary.total_messages || 0;
+    document.getElementById('chatStats').style.display = 'block';
+}
+
+function loadChatHistory() {
+    fetch(chatHistoryUrl)
+    .then(response => response.json())
+    .then(data => {
+        if (data.messages && data.messages.length > 0) {
+            // Clear initial message
+            document.getElementById('chatMessages').innerHTML = '';
+            
+            data.messages.forEach(msg => {
+                if (msg.role !== 'system') {
+                    addChatMessage(msg.role, msg.content);
+                }
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading chat history:', error);
+    });
+}
+
+function clearChatHistory() {
+    if (!confirm('Are you sure you want to clear the chat history? This cannot be undone.')) {
+        return;
+    }
+    
+    fetch(clearChatUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Clear messages and reset to initial state
+            const messagesContainer = document.getElementById('chatMessages');
+            messagesContainer.innerHTML = `
+                <div class="chat-message assistant">
+                    <div class="chat-content">
+                        <i class="fas fa-robot robot-icon mt-1"></i>
+                        <div>
+                            <strong>AI Tutor:</strong> Hi! I'm here to help you solve "<strong>{{ problem.title }}</strong>" step by step. I won't give you the complete solution, but I'll guide you through the thinking process. 
+                            <br><br>
+                            <em>What would you like to start with? Ask me about approaches, algorithms, or any concepts you're unsure about!</em>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Hide stats
+            document.getElementById('chatStats').style.display = 'none';
+        }
+    })
+    .catch(error => {
+        console.error('Error clearing chat history:', error);
+        alert('Error clearing chat history. Please try again.');
+    });
+}
+
+// Utility functions
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Your existing code editor functions
+function resetCode() {
+    const language = document.getElementById('languageSelect').value;
+    editor.setValue(originalTemplates[language] || '// Write your code here');
+}
+
+function submitCode() {
+    const code = editor.getValue();
+    const language = document.getElementById('languageSelect').value;
+    
+    if (!code.trim()) {
+        alert('Please write some code before submitting!');
+        return;
+    }
+    
+    if (code.trim() === originalTemplates[language]?.trim()) {
+        alert('Please write your solution before submitting!');
+        return;
+    }
+    
+    document.getElementById('loadingModal').classList.remove('hidden');
+    
+    fetch(submitUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            problem_id: problemId,
+            code: code,
+            language: language
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        document.getElementById('loadingModal').classList.add('hidden');
+        
+        if (data.error) {
+            alert('Submission Error: ' + data.error);
+            return;
+        }
+        
+        displayResults(data);
+    })
+    .catch(error => {
+        document.getElementById('loadingModal').classList.add('hidden');
+        console.error('Submission Error:', error);
+        alert('An error occurred while submitting your code: ' + error.message);
+    });
+}
+
+function runCode() {
+    submitCode();
+}
+
+function displayResults(data) {
+    const resultsPanel = document.getElementById('resultsPanel');
+    const testResults = document.getElementById('testResults');
+    
+    resultsPanel.classList.remove('hidden');
+    
+    const status = data.status || (data.results && data.results.status) || 'unknown';
+    const results = data.results || data;
+    
+    function formatExecutionTime(timeMs) {
+        if (!timeMs || timeMs < 0) return '0ms';
+        
+        if (timeMs < 1) {
+            return `${(timeMs * 1000).toFixed(0)}μs`;
+        } else if (timeMs < 1000) {
+            return `${Math.round(timeMs)}ms`;
+        } else {
+            return `${(timeMs / 1000).toFixed(2)}s`;
+        }
+    }
+    
+    if (status === 'accepted') {
+        testResults.innerHTML = `
+            <div class="test-result passed border-2 rounded-lg p-3 sm:p-4">
+                <div class="flex items-center text-green-800">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    <strong>🎉 Accepted!</strong>
+                </div>
+                <p class="text-green-700 mt-2 text-sm">All test cases passed successfully!</p>
+                <p class="text-xs text-gray-600 mt-1">
+                    Execution time: ${formatExecutionTime(results.execution_time)} | 
+                    Tests passed: ${results.tests_passed || 0}/${results.total_tests || 0}
+                </p>
+            </div>
+        `;
+    } else {
+        let html = `
+            <div class="test-result failed border-2 rounded-lg p-3 sm:p-4">
+                <div class="flex items-center text-red-800">
+                    <i class="fas fa-times-circle mr-2"></i>
+                    <strong>${(status || 'ERROR').replace('_', ' ').toUpperCase()}</strong>
+                </div>
+        `;
+        
+        const testResultsArray = results.test_results || [];
+        
+        if (testResultsArray.length > 0) {
+            testResultsArray.forEach((result, index) => {
+                const statusClass = result.passed ? 'text-green-700' : 'text-red-700';
+                const icon = result.passed ? 'fa-check' : 'fa-times';
+                
+                html += `
+                    <div class="mt-3 p-2 sm:p-3 bg-gray-50 rounded border">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center ${statusClass}">
+                                <i class="fas ${icon} mr-2"></i>
+                                Test Case ${index + 1}: ${result.passed ? 'Passed' : 'Failed'}
+                            </div>
+                            ${result.execution_time ? `<span class="text-xs text-gray-500">${formatExecutionTime(result.execution_time)}</span>` : ''}
+                        </div>
+                        ${!result.passed ? `
+                            <div class="mt-2 text-xs sm:text-sm">
+                                <div class="mb-1"><strong>Input:</strong> <code class="bg-gray-200 px-1 rounded break-all">${result.input || 'N/A'}</code></div>
+                                <div class="mb-1"><strong>Expected:</strong> <code class="bg-green-100 px-1 rounded break-all">${result.expected || 'N/A'}</code></div>
+                                <div class="mb-1"><strong>Your Output:</strong> <code class="bg-red-100 px-1 rounded break-all">${result.actual || 'undefined'}</code></div>
+                                ${result.error ? `<div class="text-red-600 text-xs mt-1"><strong>Error:</strong> ${result.error}</div>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            html += `
+                <div class="mt-3 p-2 sm:p-3 bg-gray-50 rounded border">
+                    <div class="text-red-700">
+                        ${results.error || data.error || 'Test execution failed - no detailed results available'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        html += '</div>';
+        testResults.innerHTML = html;
+    }
+}
+</script>
+{% endblock %}

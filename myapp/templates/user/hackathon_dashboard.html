@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ hackathon.name }} - Dashboard - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .green-gradient {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .orange-gradient {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+    
+    .red-gradient {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    }
+    
+    .section-divider {
+        border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .section-divider::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+        border-radius: 1px;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-success-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-warning-custom {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-warning-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(245, 158, 11, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .stats-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1);
+    }
+    
+    .countdown-timer {
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        font-size: 1.5rem;
+    }
+    
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    
+    .status-upcoming {
+        background: rgba(245, 158, 11, 0.1);
+        color: #d97706;
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+    
+    .status-completed {
+        background: rgba(99, 102, 241, 0.1);
+        color: #4f46e5;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    
+    .progress-bar {
+        background: #e5e7eb;
+        border-radius: 9999px;
+        overflow: hidden;
+        height: 0.5rem;
+    }
+    
+    .progress-fill {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        height: 100%;
+        transition: width 0.3s ease;
+    }
+    
+    .team-member {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .team-member:hover {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.2);
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header with Hackathon Status -->
+    <div class="{% if hackathon.status == 'in_progress' %}green-gradient{% elif hackathon.status == 'upcoming' %}orange-gradient{% else %}indigo-gradient{% endif %} rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="flex items-center mb-2">
+                    <h1 class="text-3xl font-bold mr-4">🏆 {{ hackathon.name }}</h1>
+                    <span class="status-badge {% if hackathon.status == 'in_progress' %}status-active{% elif hackathon.status == 'upcoming' %}status-upcoming{% else %}status-completed{% endif %}">
+                        {{ hackathon.get_status_display }}
+                    </span>
+                </div>
+                <p class="text-white text-opacity-90">Your participant dashboard</p>
+                
+                <!-- Countdown Timer -->
+                {% if time_remaining %}
+                <div class="mt-4 flex items-center">
+                    <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center bg-white bg-opacity-20 mr-4">
+                        <i class="fas fa-clock text-white text-xl pulse-animation"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-white text-opacity-75">Time Remaining:</p>
+                        <div class="countdown-timer text-white" id="countdown">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            <div class="hidden lg:block">
+                <div class="feature-icon w-20 h-20 rounded-xl flex items-center justify-center bg-white bg-opacity-20">
+                    <i class="fas fa-tachometer-alt text-white text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Participants</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ dashboard_stats.total_participants }}</p>
+                </div>
+                <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-users text-indigo-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Submissions</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ dashboard_stats.total_submissions }}</p>
+                </div>
+                <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-code text-indigo-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Team Size</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ dashboard_stats.my_team_size }}</p>
+                </div>
+                <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center">
+                    <i class="fas fa-user-friends text-indigo-600"></i>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Status</p>
+                    <p class="text-lg font-semibold {% if user_submission %}text-green-600{% else %}text-orange-600{% endif %}">
+                        {{ dashboard_stats.submission_status }}
+                    </p>
+                </div>
+                <div class="feature-icon w-12 h-12 rounded-xl flex items-center justify-center">
+                    <i class="fas {% if user_submission %}fa-check-circle text-green-600{% else %}fa-clock text-orange-600{% endif %}"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        
+        <!-- Left Column -->
+        <div class="space-y-8">
+            
+            <!-- Team Information -->
+            {% if user_registration.team %}
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-users text-indigo-600"></i>
+                    </div>
+                    Team: {{ user_registration.team.name }}
+                </h2>
+                
+                <div class="space-y-3">
+                    {% for member in team_members %}
+                    <div class="team-member flex items-center">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                            {% if member.profile_picture %}
+                                <img src="{{ member.profile_picture.url }}" alt="{{ member.username }}" class="w-10 h-10 rounded-full object-cover">
+                            {% else %}
+                                <i class="fas fa-user text-indigo-600"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-medium text-gray-900">{{ member.get_full_name|default:member.username }}</p>
+                            <p class="text-sm text-gray-600">
+                                {% if member == user_registration.team.leader %}
+                                    <i class="fas fa-crown text-yellow-500 mr-1"></i>Team Leader
+                                {% else %}
+                                    <i class="fas fa-user text-gray-400 mr-1"></i>Member
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {% if member == user %}
+                                <span class="text-indigo-600 font-medium">You</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6 flex items-center justify-between">
+                    <div class="text-sm text-gray-600">
+                        <p><strong>Invite Code:</strong> <code class="bg-gray-100 px-2 py-1 rounded">{{ user_registration.team.invite_code }}</code></p>
+                    </div>
+                    <a href="{% url 'manage_team' hackathon.id %}" class="btn-primary-custom">
+                        <i class="fas fa-cog mr-2"></i>Manage Team
+                    </a>
+                </div>
+            </div>
+            
+            {% else %}
+            <!-- No Team -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-user text-indigo-600"></i>
+                    </div>
+                    Individual Participant
+                </h2>
+                
+                <div class="text-center py-6">
+                    <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-user-circle text-indigo-600 text-2xl"></i>
+                    </div>
+                    <p class="text-gray-600 mb-4">You're participating as an individual</p>
+                    {% if hackathon.team_size_max > 1 %}
+                    <a href="{% url 'manage_team' hackathon.id %}" class="btn-primary-custom">
+                        <i class="fas fa-users mr-2"></i>Join or Create Team
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick Actions -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-bolt text-indigo-600"></i>
+                    </div>
+                    Quick Actions
+                </h2>
+                
+                <div class="grid grid-cols-1 gap-4">
+                    {% if can_submit %}
+                    <a href="{% url 'submit_hackathon_project' hackathon.id %}" class="btn-success-custom text-center">
+                        <i class="fas fa-upload mr-2"></i>Submit Project
+                    </a>
+                    {% endif %}
+                    
+                    {% if hackathon.team_size_max > 1 %}
+                    <a href="{% url 'manage_team' hackathon.id %}" class="btn-primary-custom text-center">
+                        <i class="fas fa-users mr-2"></i>Manage Team
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-warning-custom text-center">
+                        <i class="fas fa-info-circle mr-2"></i>Hackathon Details
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="space-y-8">
+            
+            <!-- Submission Status -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-code text-indigo-600"></i>
+                    </div>
+                    Submission Status
+                </h2>
+                
+                {% if user_submission %}
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                        <div class="flex-1">
+                            <h3 class="font-medium text-green-900">{{ user_submission.project_title }}</h3>
+                            <p class="text-sm text-green-700 mt-1">Submitted {{ user_submission.submitted_at|naturaltime }}</p>
+                            
+                            {% if user_submission.github_url %}
+                            <div class="mt-2">
+                                <a href="{{ user_submission.github_url }}" target="_blank" class="text-sm text-green-600 hover:text-green-800">
+                                    <i class="fab fa-github mr-1"></i>View Repository
+                                </a>
+                            </div>
+                            {% endif %}
+                            
+                            {% if user_submission.demo_url %}
+                            <div class="mt-1">
+                                <a href="{{ user_submission.demo_url }}" target="_blank" class="text-sm text-green-600 hover:text-green-800">
+                                    <i class="fas fa-external-link-alt mr-1"></i>View Demo
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% else %}
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle text-orange-500 mr-3"></i>
+                        <div>
+                            <p class="font-medium text-orange-900">No submission yet</p>
+                            <p class="text-sm text-orange-700">
+                                {% if can_submit %}
+                                    You can submit your project now!
+                                {% else %}
+                                    Submission period has {% if hackathon.status == 'completed' %}ended{% else %}not started{% endif %}.
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Evaluation Criteria -->
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-star text-indigo-600"></i>
+                    </div>
+                    Evaluation Criteria
+                </h2>
+                
+                <div class="space-y-3">
+                    {% for criterion, max_score in hackathon.evaluation_criteria.items %}
+                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span class="font-medium text-gray-900">{{ criterion }}</span>
+                        <span class="text-sm text-gray-600 bg-indigo-100 px-2 py-1 rounded">{{ max_score }} points</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Hackathon Rules -->
+            {% if hackathon.rules %}
+            <div class="main-card rounded-2xl p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+                    <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                        <i class="fas fa-file-alt text-indigo-600"></i>
+                    </div>
+                    Rules & Guidelines
+                </h2>
+                
+                <div class="prose prose-sm max-w-none text-gray-700">
+                    {{ hackathon.rules|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Countdown Timer
+    {% if time_remaining %}
+    const targetDate = new Date('{{ hackathon.end_date|date:"c" }}').getTime();
+    
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+        
+        if (distance > 0) {
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            document.getElementById('countdown').innerHTML = 
+                `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        } else {
+            document.getElementById('countdown').innerHTML = 'EXPIRED';
+            document.getElementById('countdown').classList.add('text-red-400');
+        }
+    }
+    
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+    {% endif %}
+    
+    // Auto-refresh stats every 30 seconds
+    setInterval(function() {
+        // You can add AJAX call here to refresh stats
+        console.log('Auto-refreshing stats...');
+    }, 30000);
+});
+</script>
+{% endblock %}

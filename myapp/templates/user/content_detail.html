@@ -1,0 +1,592 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% load content_filters %}
+{% block title %}{{ content.title }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  <!-- Hero Header Section -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-blue-50 rounded-xl p-6 shadow-sm border border-blue-100">
+    <div>
+      <div class="flex items-center mb-2">
+        <span class="bg-blue-100 p-2 rounded-lg mr-3">
+          <i class="fas fa-book-open text-blue-600 text-xl"></i>
+        </span>
+        <h1 class="text-3xl font-bold text-gray-900">
+          {{ content.title }}
+        </h1>
+      </div>
+      <p class="text-gray-600 ml-12">
+        Part of: <a href="{% url 'module_detail' module.id %}" class="text-blue-600 hover:underline font-medium">{{ module.name }}</a>
+      </p>
+    </div>
+    <div class="mt-4 md:mt-0">
+      <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-500 text-white shadow-md">
+        <i class="fas fa-{{ content.content_type|content_type_icon }} mr-2"></i>
+        {{ content.content_type|title }}
+      </span>
+    </div>
+  </div>
+
+  <div class="flex flex-col md:flex-row gap-8">
+    <!-- Main Content Area -->
+    <div class="md:w-2/3">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden mb-6 border border-gray-200">
+        <!-- Content Type Sections -->
+        {# --- Video Content --- #}
+        {% if content.content_type == 'video' %}
+          <div class="p-1 bg-blue-500"></div>
+          <div class="p-6">
+            {% if embed_url %}
+              <div class="relative overflow-hidden rounded-xl shadow-lg" style="padding-top: 56.25%;"> {# 16:9 Aspect Ratio #}
+                <iframe src="{{ embed_url }}" frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen
+                        class="absolute top-0 left-0 w-full h-full">
+                </iframe>
+              </div>
+            {% elif content.video_url %}
+              <div class="bg-gray-50 rounded-xl p-1 shadow-inner">
+                <video controls class="w-full h-auto rounded-lg" preload="metadata">
+                  <source src="{{ content.video_url }}" type="video/mp4" />
+                  Your browser does not support the video tag.
+                </video>
+                <div class="mt-3 flex justify-center">
+                  <a href="{{ content.video_url }}" class="inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium bg-gray-100 text-gray-800 hover:bg-gray-200 transition" target="_blank" rel="noopener noreferrer">
+                    <i class="fas fa-external-link-alt mr-2"></i> Open video in new tab
+                  </a>
+                </div>
+              </div>
+            {% else %}
+              <div class="bg-red-50 border-l-4 border-red-500 p-4">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-red-500 text-xl mt-0.5"></i>
+                  </div>
+                  <div class="ml-3">
+                    <p class="text-sm text-red-700">
+                      Video URL not available. Please contact support if this issue persists.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+              {% csrf_token %}
+              {% if not completed %}
+                <button type="submit" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                  <i class="fas fa-check-circle mr-2"></i> Mark as Completed
+                </button>
+              {% else %}
+                <div class="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center">
+                  <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
+                  <span class="text-green-800 font-medium">You've completed this content</span>
+                </div>
+              {% endif %}
+            </form>
+          </div>
+
+        {# --- PDF Content --- #}
+        {% elif content.content_type == 'pdf' %}
+          <div class="p-1 bg-red-500"></div>
+          <div class="p-6">
+            {% if pdf_url %}
+              <div class="mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                  <h3 class="text-lg font-semibold text-gray-900 flex items-center">
+                    <i class="fas fa-file-pdf text-red-500 mr-2"></i> PDF Document
+                  </h3>
+                  <div class="flex flex-wrap gap-2">
+                    <a href="{{ pdf_url }}" 
+                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-500 hover:bg-red-600 transition" 
+                       download>
+                      <i class="fas fa-download mr-2"></i> Download
+                    </a>
+                    <a href="{{ pdf_url }}" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">
+                      <i class="fas fa-external-link-alt mr-2"></i> Open in New Tab
+                    </a>
+                  </div>
+                </div>
+
+                {# PDF Preview Section #}
+                <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50 min-h-[600px] shadow-inner">
+                  {% if pdf_size and pdf_size < 10000000 %}  {# 10MB limit for preview #}
+                    <object id="pdf-viewer" 
+                            data="{{ pdf_url }}#toolbar=0&navpanes=0&scrollbar=0" 
+                            type="application/pdf" 
+                            class="w-full h-[600px]" >
+                      <div class="p-8 text-center">
+                        <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                          <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                        </div>
+                        <p class="text-gray-700 mb-4">Your browser doesn't support PDF viewing.</p>
+                        <div class="flex flex-col sm:flex-row justify-center gap-3">
+                          <a href="{{ pdf_url }}" 
+                             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-500 hover:bg-red-600 transition"
+                             download>
+                            <i class="fas fa-download mr-2"></i> Download PDF
+                          </a>
+                          <a href="https://docs.google.com/viewer?url={{ request.build_absolute_uri|urlencode }}{{ pdf_url|urlencode }}" 
+                             target="_blank"
+                             rel="noopener noreferrer"
+                             class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">
+                            <i class="fab fa-google-drive mr-2"></i> View with Google
+                          </a>
+                        </div>
+                      </div>
+                    </object>
+                  {% else %}
+                    <div class="p-8 text-center">
+                      <div class="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-file-pdf text-red-500 text-2xl"></i>
+                      </div>
+                      <p class="text-gray-700 mb-4">
+                        This PDF is too large to preview ({{ pdf_size|filesizeformat }}). 
+                        Please download to view.
+                      </p>
+                      <div class="flex flex-col sm:flex-row justify-center gap-3">
+                        <a href="{{ pdf_url }}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-500 hover:bg-red-600 transition"
+                           download>
+                          <i class="fas fa-download mr-2"></i> Download PDF
+                        </a>
+                        <a href="https://docs.google.com/viewer?url={{ request.build_absolute_uri|urlencode }}{{ pdf_url|urlencode }}" 
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 transition">
+                          <i class="fab fa-google-drive mr-2"></i> View with Google
+                        </a>
+                      </div>
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+                {% csrf_token %}
+                {% if not completed %}
+                  <button type="submit" class="mt-6 w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                    <i class="fas fa-check-circle mr-2"></i> Mark as Completed
+                  </button>
+                {% else %}
+                  <div class="mt-6 p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
+                    <span class="text-green-800 font-medium">You've completed this content</span>
+                  </div>
+                {% endif %}
+              </form>
+            {% else %}
+              <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                <div class="flex">
+                  <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-red-500 text-xl mt-0.5"></i>
+                  </div>
+                  <div class="ml-3">
+                    <h3 class="text-sm font-medium text-red-800">PDF Unavailable</h3>
+                    <div class="mt-1 text-sm text-red-700">
+                      <p>The PDF file is currently not available. Please try again later or contact support.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+
+        {# --- Quiz Content --- #}
+        {% elif content.content_type == 'quiz' %}
+          <div class="p-1 bg-indigo-500"></div>
+          <div class="p-6">
+            <div class="bg-indigo-50 rounded-xl p-6 mb-6 border border-indigo-100">
+              <div class="flex items-center mb-4">
+                <div class="bg-indigo-100 p-2 rounded-lg mr-3">
+                  <i class="fas fa-question-circle text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">Quiz: {{ content.title }}</h3>
+              </div>
+
+              {% if quiz_questions %}
+                <form id="quiz-form" method="POST" action="{% url 'submit_quiz_form' content.id %}">
+                  {% csrf_token %}
+                  {% for question in quiz_questions %}
+                    {% with q_index=forloop.counter0 %}
+                    <div class="question-block mb-6 p-5 bg-white rounded-xl shadow-sm border border-gray-200 hover:border-indigo-300 transition">
+                      <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-3 gap-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                          {{ question.category }}
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                          {{ question.difficulty }}
+                        </span>
+                      </div>
+                      <p class="mb-4 font-semibold text-gray-800 text-lg">Q{{ forloop.counter }}: {{ question.question_text }}</p>
+
+                      <fieldset class="space-y-3">
+                        {% for option in question.options %}
+                          {% with o_index=forloop.counter0 %}
+                            {% if quiz_taken %}
+                              {% if option == question.correct_answer %}
+                                {% if user_quiz_answers|get_item:q_index == option %}
+                                  <input 
+                                    type="radio" 
+                                    id="q{{ q_index }}_option{{ o_index }}" 
+                                    name="q{{ q_index }}" 
+                                    value="{{ option }}" 
+                                    class="peer hidden" 
+                                    checked 
+                                    disabled 
+                                  />
+                                  <label for="q{{ q_index }}_option{{ o_index }}" 
+                                         class="flex items-center cursor-default rounded-xl border-2 border-green-500 bg-green-50 p-4 text-green-800 transition">
+                                    <span class="w-6 h-6 rounded-full border-2 border-green-500 flex items-center justify-center mr-3 text-white bg-green-500">
+                                      <i class="fas fa-check text-xs"></i>
+                                    </span>
+                                    <span class="flex-grow">{{ option }}</span>
+                                  </label>
+                                {% else %}
+                                  <input 
+                                    type="radio" 
+                                    id="q{{ q_index }}_option{{ o_index }}" 
+                                    name="q{{ q_index }}" 
+                                    value="{{ option }}" 
+                                    class="peer hidden" 
+                                    disabled 
+                                  />
+                                  <label for="q{{ q_index }}_option{{ o_index }}" 
+                                         class="flex items-center cursor-default rounded-xl border border-green-300 bg-green-50 p-4 text-green-700 transition">
+                                    <span class="w-6 h-6 rounded-full border-2 border-green-300 flex items-center justify-center mr-3 text-green-300">
+                                      <i class="fas fa-check text-xs"></i>
+                                    </span>
+                                    <span class="flex-grow">{{ option }}</span>
+                                  </label>
+                                {% endif %}
+                              {% elif user_quiz_answers|get_item:q_index == option %}
+                                <input 
+                                  type="radio" 
+                                  id="q{{ q_index }}_option{{ o_index }}" 
+                                  name="q{{ q_index }}" 
+                                  value="{{ option }}" 
+                                  class="peer hidden" 
+                                  checked 
+                                  disabled 
+                                />
+                                <label for="q{{ q_index }}_option{{ o_index }}" 
+                                       class="flex items-center cursor-default rounded-xl border-2 border-red-500 bg-red-50 p-4 text-red-800 transition">
+                                  <span class="w-6 h-6 rounded-full border-2 border-red-500 flex items-center justify-center mr-3 text-white bg-red-500">
+                                    <i class="fas fa-times text-xs"></i>
+                                  </span>
+                                  <span class="flex-grow">{{ option }}</span>
+                                </label>
+                              {% else %}
+                                <input 
+                                  type="radio" 
+                                  id="q{{ q_index }}_option{{ o_index }}" 
+                                  name="q{{ q_index }}" 
+                                  value="{{ option }}" 
+                                  class="peer hidden" 
+                                  disabled 
+                                />
+                                <label for="q{{ q_index }}_option{{ o_index }}" 
+                                       class="flex items-center cursor-default rounded-xl border border-gray-200 bg-gray-50 p-4 text-gray-600 transition">
+                                  <span class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center mr-3"></span>
+                                  <span class="flex-grow">{{ option }}</span>
+                                </label>
+                              {% endif %}
+
+                            {% else %}
+                              <div class="quiz-option">
+                                <input 
+                                  type="radio" 
+                                  id="q{{ q_index }}_option{{ o_index }}" 
+                                  name="q{{ q_index }}" 
+                                  value="{{ option }}" 
+                                  class="peer hidden" 
+                                  required 
+                                />
+                                <label for="q{{ q_index }}_option{{ o_index }}" 
+                                       class="flex items-center cursor-pointer rounded-xl border border-gray-200 p-4 text-gray-800 transition hover:border-indigo-300 hover:bg-indigo-50 peer-checked:border-indigo-500 peer-checked:bg-indigo-50 peer-checked:ring-2 peer-checked:ring-indigo-200"
+                                       tabindex="0">
+                                  <span class="w-6 h-6 rounded-full border-2 border-gray-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500 flex items-center justify-center mr-3 text-white">
+                                    <i class="fas fa-dot-circle peer-checked:inline hidden text-xs"></i>
+                                  </span>
+                                  <span class="flex-grow">{{ option }}</span>
+                                </label>
+                              </div>
+                            {% endif %}
+                          {% endwith %}
+                        {% endfor %}
+                      </fieldset>
+
+                      {% if quiz_taken and user_quiz_answers|get_item:q_index != question.correct_answer %}
+                        <div class="mt-3 p-3 bg-red-50 rounded-lg border border-red-200">
+                          <p class="text-sm font-semibold text-red-600 flex items-center">
+                            <i class="fas fa-times-circle mr-2"></i> Incorrect
+                          </p>
+                          <p class="mt-1 text-sm font-medium text-gray-700">
+                            Correct Answer: <span class="text-green-600">{{ question.correct_answer }}</span>
+                          </p>
+                        </div>
+                      {% endif %}
+                    </div>
+                    {% endwith %}
+                  {% endfor %}
+
+                  {% if not quiz_taken %}
+                    <button type="submit" 
+                            class="mt-6 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                      <i class="fas fa-paper-plane mr-2"></i> Submit Quiz
+                    </button>
+                  {% else %}
+                    <div class="mt-6 p-4 bg-indigo-50 rounded-xl border border-indigo-200 text-center">
+                      <p class="text-gray-700 font-medium mb-2">You have already taken this quiz</p>
+                      <div class="inline-flex items-center px-4 py-2 bg-white rounded-full shadow-sm">
+                        <span class="text-indigo-800 font-bold text-lg">Score: {{ attempt.score }} / {{ attempt.total }}</span>
+                        <span class="ml-2 px-2 py-1 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">
+                          {{ attempt.score_percentage }}%
+                        </span>
+                      </div>
+                    </div>
+                  {% endif %}
+                </form>
+              {% else %}
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
+                  <div class="flex">
+                    <div class="flex-shrink-0">
+                      <i class="fas fa-exclamation-circle text-yellow-500 text-xl mt-0.5"></i>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm text-yellow-700">
+                        No quiz questions available. Please check back later or contact your instructor.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+
+        {# --- Assignment Content --- #}
+        {% elif content.content_type == 'assignment' %}
+          <div class="p-1 bg-teal-500"></div>
+          <div class="p-6">
+            <div class="bg-teal-50 rounded-xl p-6 mb-6 border border-teal-100">
+              <div class="flex items-center mb-4">
+                <div class="bg-teal-100 p-2 rounded-lg mr-3">
+                  <i class="fas fa-tasks text-teal-600 text-xl"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">Assignment: {{ content.title }}</h3>
+              </div>
+
+              <div class="prose max-w-none text-gray-700 mb-6">
+                {{ content.content_text|safe }}
+              </div>
+
+              {% if user_assignment_submission %}
+                <div class="mb-6 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <h4 class="font-medium text-gray-900 mb-1">Your Submission</h4>
+                      <p class="text-sm text-gray-600">
+                        Submitted on {{ user_assignment_submission.submitted_at|date:"F j, Y" }}
+                      </p>
+                    </div>
+                    <a href="{{ user_assignment_submission.uploaded_file.url }}" 
+                       target="_blank" 
+                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 transition">
+                      <i class="fas fa-eye mr-2"></i> View
+                    </a>
+                  </div>
+                </div>
+
+                {% if not completed %}
+                  <form method="POST" action="{% url 'mark_content_as_read' content.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                      <i class="fas fa-check-circle mr-2"></i> Mark as Completed
+                    </button>
+                  </form>
+                {% endif %}
+                {% if completed %}
+                  <div class="p-3 bg-green-50 border border-green-200 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-500 text-xl mr-3"></i>
+                    <span class="text-green-800 font-medium">You've completed this assignment</span>
+                  </div>
+                {% endif %}
+              {% else %}
+                <form method="post" enctype="multipart/form-data" action="{% url 'submit_assignment' content.id %}" class="space-y-4">
+                  {% csrf_token %}
+                  
+                  <!-- Enhanced File Input Container -->
+                  <div class="space-y-2">
+                    <label for="assignment_zip" class="block text-sm font-medium text-gray-700">Upload your solution (ZIP file)</label>
+                    
+                    <div class="mt-1 relative">
+                      <input type="file" id="assignment_zip" name="assignment_zip" accept=".zip" required
+                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer peer">
+                      
+                      <div class="flex flex-col items-center justify-center px-6 py-12 bg-white border-2 border-dashed border-gray-300 rounded-xl hover:border-teal-400 peer-focus:border-teal-500 peer-focus:ring-2 peer-focus:ring-teal-200 transition-all duration-200">
+                        <div class="text-center">
+                          <i class="fas fa-file-archive text-4xl text-teal-500 mb-3"></i>
+                          <p id="file-name" class="text-sm text-gray-500">
+                            <span class="block font-medium text-gray-700">Drag and drop files here</span>
+                            <span class="block">or click to browse</span>
+                          </p>
+                          <p class="mt-2 text-xs text-gray-400">.zip format only (max 20MB)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <button type="submit" 
+                          class="w-full bg-teal-500 hover:bg-teal-600 text-white font-medium py-3 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center justify-center">
+                    <i class="fas fa-cloud-upload-alt mr-2"></i> Submit Assignment
+                  </button>
+                </form>
+
+                <script>
+                  document.getElementById('assignment_zip').addEventListener('change', function(e) {
+                    const fileName = e.target.files[0] ? e.target.files[0].name : 'Drag and drop files here or click to browse';
+                    document.getElementById('file-name').innerHTML = `<span class="font-medium text-teal-600">${fileName}</span>`;
+                  });
+                </script>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+
+        <!-- Additional Content Description -->
+        {% if content.content_text and content.content_type not in 'quiz assignment' %}
+          <div class="prose max-w-none mt-8">
+            <h3 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+             &nbsp; <i class="fas fa-align-left text-blue-500 mr-2"></i> Description
+            </h3>
+            <div class="border-t border-gray-200 pt-4" style="padding: 5px;">
+              {{ content.content_text|safe }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="md:w-1/3">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden sticky top-4 border border-gray-200">
+        <div class="p-1 bg-blue-500"></div>
+        <div class="p-6">
+          <h2 class="text-xl font-semibold text-gray-900 mb-6 flex items-center">
+            <i class="fas fa-info-circle text-blue-500 mr-2"></i> Content Details
+          </h2>
+          
+          <div class="space-y-6">
+            <div>
+              <div class="flex items-center text-sm text-gray-500 mb-1">
+                <i class="fas fa-clock mr-2"></i>
+                <span>Duration</span>
+              </div>
+              <p class="text-sm font-medium text-gray-900 ml-5">{{ content.duration_minutes }} minutes</p>
+            </div>
+            
+            <div>
+              <div class="flex items-center text-sm text-gray-500 mb-1">
+                <i class="fas fa-cubes mr-2"></i>
+                <span>Module</span>
+              </div>
+              <p class="text-sm font-medium text-blue-600 hover:text-blue-800 ml-5">
+                <a href="{% url 'module_detail' module.id %}" class="hover:underline">{{ module.name }}</a>
+              </p>
+            </div>
+            
+            <div>
+              <div class="flex items-center text-sm text-gray-500 mb-1">
+                <i class="fas fa-tag mr-2"></i>
+                <span>Content Type</span>
+              </div>
+              <p class="text-sm font-medium text-gray-900 ml-5 capitalize">{{ content.content_type }}</p>
+            </div>
+            
+            {% if content.content_type == 'video' and content.video_url %}
+              <div>
+                <div class="flex items-center text-sm text-gray-500 mb-1">
+                  <i class="fas fa-video mr-2"></i>
+                  <span>Video Source</span>
+                </div>
+                <p class="text-sm font-medium text-gray-900 ml-5">
+                  <a href="{{ content.video_url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                    {% if content.is_youtube_video %}
+                      <i class="fab fa-youtube text-red-500 mr-1"></i> YouTube
+                    {% elif content.is_vimeo_video %}
+                      <i class="fab fa-vimeo-v text-blue-400 mr-1"></i> Vimeo
+                    {% else %}
+                      <i class="fas fa-external-link-alt mr-1"></i> External Video
+                    {% endif %}
+                  </a>
+                </p>
+              </div>
+            {% endif %}
+            
+            {% if content.content_type == 'pdf' and content.pdf_file %}
+              <div>
+                <div class="flex items-center text-sm text-gray-500 mb-1">
+                  <i class="fas fa-file-download mr-2"></i>
+                  <span>File Size</span>
+                </div>
+                {% if content.pdf_file and content.pdf_file.size %}
+                  <p class="text-sm font-medium text-gray-900 ml-5">{{ content.pdf_file.size|filesizeformat }}</p>
+                {% else %}
+                  <p class="text-sm font-medium text-red-600 ml-5">Not available</p>
+                {% endif %}
+              </div>
+            {% endif %}
+            
+            <div class="pt-4 border-t border-gray-200">
+              {% if next_content %}
+                <a href="{% url 'content_detail' next_content.id %}" class="w-full inline-flex items-center justify-center bg-blue-500 hover:bg-blue-600 text-white font-medium py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                  Next: {{ next_content.title|truncatechars:30 }}
+                  <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+              {% else %}
+                <a href="{% url 'module_detail' module.id %}" class="w-full inline-flex items-center justify-center bg-green-500 hover:bg-green-600 text-white font-medium py-2.5 px-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200">
+                  <i class="fas fa-check-circle mr-2"></i> Complete Module
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quiz option selection animation script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Add click handlers for quiz options
+  const quizOptions = document.querySelectorAll('.quiz-option label');
+  
+  quizOptions.forEach(option => {
+    option.addEventListener('click', function(e) {
+      // Get the radio input associated with this label
+      const radioId = this.getAttribute('for');
+      const radioInput = document.getElementById(radioId);
+      
+      // Check the radio input
+      radioInput.checked = true;
+      
+      // Update visual styling
+      const questionOptions = this.closest('fieldset').querySelectorAll('.quiz-option label');
+      questionOptions.forEach(opt => {
+        opt.classList.remove('border-indigo-500', 'bg-indigo-50', 'ring-2', 'ring-indigo-200');
+        opt.querySelector('span').classList.remove('border-indigo-500', 'bg-indigo-500');
+      });
+      
+      this.classList.add('border-indigo-500', 'bg-indigo-50', 'ring-2', 'ring-indigo-200');
+      this.querySelector('span').classList.add('border-indigo-500', 'bg-indigo-500');
+    });
+  });
+});
+</script>
+{% endblock %}

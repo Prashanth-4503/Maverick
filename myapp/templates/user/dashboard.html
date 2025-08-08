@@ -1,0 +1,382 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+
+{% block title %}Dashboard - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    .progress-bar {
+        background: #e5e7eb;
+        overflow: hidden;
+    }
+    .progress-fill {
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+        transition: width 1.5s ease-in-out;
+    }
+    .status-dot {
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    .hackathon-timer {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+    }
+    .competency-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.75rem;
+    }
+    .competency-item {
+        background: rgba(99, 102, 241, 0.03);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.2s ease;
+    }
+    .competency-item:hover {
+        background: rgba(99, 102, 241, 0.08);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    .difficulty-easy {
+        background-color: #dbeafe;
+        color: #1e40af;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .difficulty-medium {
+        background-color: #fef3c7;
+        color: #92400e;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .difficulty-hard {
+        background-color: #fee2e2;
+        color: #b91c1c;
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .problem-card {
+        border: 1px solid #e0e7ff;
+        background: rgba(255, 255, 255, 0.98);
+        transition: all 0.2s ease;
+        cursor: pointer;
+    }
+    .problem-card:hover {
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.15);
+        border-color: rgba(99, 102, 241, 0.2);
+        transform: translateY(-1px);
+    }
+    .problem-title {
+        font-weight: 600;
+        color: #3730a3;
+    }
+    .acceptance-rate {
+        font-size: 0.75rem;
+        color: #4c51bf;
+    }
+    .tags {
+        font-size: 0.7rem;
+        color: #818cf8;
+    }
+    .today-challenge {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.05) 0%, rgba(79, 70, 229, 0.03) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Dashboard Header -->
+    <div class="indigo-gradient rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Welcome back, {{ user.username }}!</h1>
+                <p class="text-indigo-100">Track your progress across assessments, learning paths, hackathons, and coding challenges</p>
+            </div>
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ total_xp }}</div>
+                    <div class="text-sm text-indigo-200">Total XP</div>
+                </div>
+                <div class="text-center">
+                     <div class="text-2xl font-bold">{{ streak }}</div>
+                    <div class="text-sm text-indigo-200">Day Streak</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold">{{ problems_solved }}</div>
+                    <div class="text-sm text-indigo-200">Problems Solved</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content: 2/3 columns -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Assessment/Quiz Section -->
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-brain text-indigo-600"></i>
+                        </div>
+                        Skill Assessment
+                    </h2>
+                    <a href="{% url 'assessment' %}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All →</a>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    <div class="bg-gradient-to-br from-indigo-50 to-blue-50 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+            <span class="text-sm font-medium text-gray-700">Completed Assessments</span>
+            <span class="text-2xl font-bold text-indigo-600">{{ completed_assessments }}</span>
+        </div>
+        <div class="progress-bar rounded-full h-2">
+            <div class="progress-fill rounded-full h-2" style="width: {{ completion_percentage }}%"></div>
+        </div>
+    </div>
+    
+    <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+<span class="text-sm font-medium text-gray-700">Average Score</span>
+        <span class="text-2xl font-bold {{ score_color }}">{{ average_score }}%</span>
+    </div>
+      <div class="text-xs {{ score_color }}">
+        {% if score_change > 0 %}
+            ↗ +{{ score_change }}% from last month
+        {% elif score_change < 0 %}
+            ↘ {{ score_change|abs }}% from last month
+        {% else %}
+            → No change from last month
+        {% endif %}
+    </div>
+    </div>
+</div>
+
+<div class="competency-grid">
+    {% for item in user_competencies %}
+    <div class="competency-item rounded-lg p-3 text-center">
+        <i class="fas 
+            {% if 'programming' in item.competency.name|lower or 'coding' in item.competency.name|lower %}fa-code
+            {% elif 'database' in item.competency.name|lower %}fa-database
+            {% elif 'algorithm' in item.competency.name|lower %}fa-chart-line
+            {% elif 'ai' in item.competency.name|lower or 'machine' in item.competency.name|lower %}fa-robot
+            {% else %}fa-graduation-cap
+            {% endif %} text-indigo-500 mb-2"></i>
+        <div class="text-xs font-medium text-gray-700">{{ item.competency.name }}</div>
+        <div class="text-sm font-bold text-gray-900">
+            {% if item.score > 0 %}
+                {{ item.score|floatformat:2 }}%
+            {% else %}
+                -
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-gray-500">No competency data available.</p>
+    {% endfor %}
+</div>
+
+<div class="mt-6">
+    <a href="{% url 'assessment' %}" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 px-4 rounded-lg font-medium text-center block transition duration-200">
+        Take Next Assessment
+    </a>
+</div>
+
+                <!-- Additional Skill Assessment Content here -->
+            </div>
+
+            <!-- Coding Challenges Section -->
+            <div class="main-card rounded-2xl p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-semibold text-gray-900 flex items-center">
+                        <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                            <i class="fas fa-code text-indigo-600"></i>
+                        </div>
+                        Coding Challenges
+                    </h2>
+                    <a href="{% url 'problem_list' %}" class="text-sm text-indigo-600 hover:text-indigo-700 font-medium">View All →</a>
+                </div>
+
+                <!-- Today's Challenge -->
+                <div class="today-challenge rounded-lg p-4 mb-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <h3 class="problem-title text-lg mb-2">Today's Challenge: Two Sum</h3>
+                            <p class="text-gray-600 mb-3 text-sm">Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.</p>
+                            <div class="flex items-center space-x-3 mb-3">
+                                <span class="difficulty-easy">Easy</span>
+                                <span class="acceptance-rate">Acceptance: 49.1%</span>
+                                <span class="tags">Array, Hash Table</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <a href="{% url 'problem_detail' 1 %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-200">Solve Now</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Popular Problems Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for problem in coding_problems %}
+                    <div class="problem-card rounded-lg p-4" data-problem-id="{{ problem.id }}">
+                        <div class="flex items-center justify-between mb-2">
+                            <h4 class="problem-title">{{ forloop.counter }}. {{ problem.title }}</h4>
+                            <div class="w-6 h-6 rounded-full flex items-center justify-center {% if problem.id in accepted_problem_ids %}bg-green-100{% else %}bg-gray-100{% endif %}">
+                                {% if problem.id in accepted_problem_ids %}
+                                    <i class="fas fa-check text-green-600 text-xs"></i>
+                                {% else %}
+                                    <span class="text-gray-600 text-xs font-medium">{{ forloop.counter }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 mb-2">
+                            <span class="difficulty-{{ problem.difficulty|lower }}">{{ problem.get_difficulty_display }}</span>
+                            <span class="acceptance-rate">{{ problem.acceptance_rate }}%</span>
+                        </div>
+                        <p class="tags">{{ problem.tags }}</p>
+                    </div>
+                    {% empty %}
+                    <p>No problems available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar: 1/3 column -->
+        <div class="space-y-6">
+            <!-- Recent Activity -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                    <div class="feature-icon w-8 h-8 rounded-lg flex items-center justify-center mr-2">
+                        <i class="fas fa-history text-indigo-600 text-sm"></i>
+                    </div>
+                    Recent Activity
+                </h3>
+                <div class="space-y-3">
+                    {% for submission in recent_submissions %}
+                    <div class="flex items-start space-x-3">
+                        <div class="w-2 h-2 {% if submission.status == 'accepted' %}bg-green-500{% else %}bg-gray-400{% endif %} rounded-full mt-2"></div>
+                        <div class="flex-1">
+                            <div class="text-sm font-medium text-gray-900">Solved "{{ submission.problem.title }}"</div>
+                            <div class="text-xs text-gray-500">
+                                {{ submission.status|capfirst }}{% if submission.execution_time %} in {{ submission.execution_time }}ms{% endif %} &bull; {{ submission.submitted_at|timesince }} ago
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="text-gray-500 text-sm">No recent activity available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="main-card rounded-2xl p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-code text-indigo-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Problems Solved</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ problems_solved }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-graduation-cap text-indigo-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Modules Completed</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ modules_completed }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-certificate text-indigo-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Certificates Earned</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ certificates_count }}</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-medal text-indigo-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Hackathon Wins</span>
+                        </div>
+                        <span class="text-sm font-semibold text-gray-900">{{ hackathons_won }}</span>
+                    </div>
+                    <!-- <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-star text-indigo-500 mr-2"></i>
+                            <span class="text-sm text-gray-700">Current Rank</span>
+                        </div>
+                        <span class="text-sm font-semibold text-indigo-600">{{ current_rank }}</span>
+                    </div> -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars
+    setTimeout(() => {
+        const progressBars = document.querySelectorAll('.progress-fill');
+        progressBars.forEach(bar => {
+            const width = bar.style.width;
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.width = width;
+            }, 100);
+        });
+    }, 300);
+
+    // Competency grid hover effects
+    const competencyItems = document.querySelectorAll('.competency-item');
+    competencyItems.forEach(item => {
+        item.addEventListener('click', function() {
+            window.location.href = "{% url 'assessment' %}";
+        });
+    });
+
+    // Problem card click handlers - Fixed to use numeric IDs
+    const problemCards = document.querySelectorAll('.problem-card');
+    problemCards.forEach(card => {
+        card.addEventListener('click', function() {
+            const problemId = this.getAttribute('data-problem-id');
+            if (problemId) {
+                window.location.href = `/problems/${problemId}/`;
+            } else {
+                window.location.href = "{% url 'problem_list' %}";
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

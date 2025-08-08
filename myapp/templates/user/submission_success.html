@@ -1,0 +1,462 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Submission Successful - {{ hackathon.name }} - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .success-gradient {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .section-divider {
+        border-bottom: 2px solid rgba(99, 102, 241, 0.1);
+        padding-bottom: 0.5rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+    
+    .section-divider::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 60px;
+        height: 2px;
+        background: linear-gradient(90deg, #6366f1, #4f46e5);
+        border-radius: 1px;
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-primary-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-success-custom {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-success-custom:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-secondary-custom {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #e5e7eb;
+        color: #1f2937;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+    
+    .success-checkmark {
+        animation: checkmark 0.6s ease-in-out;
+    }
+    
+    @keyframes checkmark {
+        0% { transform: scale(0); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+    
+    .info-card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+    }
+    
+    .info-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 16px rgba(99, 102, 241, 0.1);
+    }
+    
+    .file-item {
+        background: rgba(99, 102, 241, 0.05);
+        border: 1px solid rgba(99, 102, 241, 0.1);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        transition: all 0.2s ease;
+    }
+    
+    .file-item:hover {
+        background: rgba(99, 102, 241, 0.1);
+        border-color: rgba(99, 102, 241, 0.2);
+    }
+    
+    .pulse-animation {
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Success Header -->
+    <div class="success-gradient rounded-2xl p-8 mb-8 text-white text-center">
+        <div class="flex justify-center mb-4">
+            <div class="success-checkmark w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-white text-3xl"></i>
+            </div>
+        </div>
+        <h1 class="text-3xl font-bold mb-2">🎉 Submission Successful!</h1>
+        <p class="text-green-100 text-lg">Your project has been successfully submitted to {{ hackathon.name }}</p>
+        <div class="mt-4 text-sm text-green-200">
+            <i class="fas fa-clock mr-2"></i>Submitted {{ submission.submitted_at|naturaltime }}
+        </div>
+    </div>
+
+    <!-- Submission Summary -->
+    <div class="main-card rounded-2xl p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fas fa-file-alt text-indigo-600"></i>
+            </div>
+            Submission Summary
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="info-card">
+                <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fas fa-project-diagram text-indigo-600 mr-2"></i>
+                    Project Details
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-sm text-gray-500">Project Title</p>
+                        <p class="font-medium text-gray-900">{{ submission.project_title }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Description</p>
+                        <p class="text-gray-700 text-sm">{{ submission.project_description|truncatewords:30 }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Submitted By</p>
+                        <p class="font-medium text-gray-900">
+                            {% if submission.team %}
+                                <i class="fas fa-users text-indigo-600 mr-1"></i>{{ submission.team.name }}
+                            {% else %}
+                                <i class="fas fa-user text-indigo-600 mr-1"></i>{{ submission.individual_user.get_full_name|default:submission.individual_user.username }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
+                    <i class="fas fa-info-circle text-indigo-600 mr-2"></i>
+                    Submission Info
+                </h3>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-sm text-gray-500">Submission ID</p>
+                        <p class="font-mono text-gray-900 bg-gray-100 px-2 py-1 rounded text-sm">#{{ submission.id }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Submitted At</p>
+                        <p class="font-medium text-gray-900">{{ submission.submitted_at|date:"F j, Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Status</p>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            <i class="fas fa-check-circle mr-1"></i>Successfully Submitted
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Links & Files -->
+    {% if submission.github_url or submission.demo_url or submission.video_demo_url or submission.live_demo_url or submission.submission_file or additional_files %}
+    <div class="main-card rounded-2xl p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fas fa-link text-indigo-600"></i>
+            </div>
+            Submitted Links & Files
+        </h2>
+        
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Links -->
+            {% if submission.github_url or submission.demo_url or submission.video_demo_url or submission.live_demo_url %}
+            <div>
+                <h3 class="font-medium text-gray-900 mb-3">Project Links</h3>
+                <div class="space-y-2">
+                    {% if submission.github_url %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fab fa-github text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">GitHub Repository</span>
+                        </div>
+                        <a href="{{ submission.github_url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>View
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if submission.demo_url %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-globe text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">Demo URL</span>
+                        </div>
+                        <a href="{{ submission.demo_url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>View
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if submission.video_demo_url %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-video text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">Video Demo</span>
+                        </div>
+                        <a href="{{ submission.video_demo_url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>Watch
+                        </a>
+                    </div>
+                    {% endif %}
+                    
+                    {% if submission.live_demo_url %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-rocket text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">Live Demo</span>
+                        </div>
+                        <a href="{{ submission.live_demo_url }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                            <i class="fas fa-external-link-alt mr-1"></i>Try It
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Files -->
+            {% if submission.submission_file or additional_files %}
+            <div>
+                <h3 class="font-medium text-gray-900 mb-3">Uploaded Files</h3>
+                <div class="space-y-2">
+                    {% if submission.submission_file %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-file text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">Main Submission</span>
+                        </div>
+                        <span class="text-xs text-gray-500">
+                            {{ submission.submission_file.size|filesizeformat }}
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    {% for file in additional_files %}
+                    <div class="file-item flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="fas fa-paperclip text-gray-700 mr-2"></i>
+                            <span class="text-sm font-medium">{{ file.file.name|truncatechars:30 }}</span>
+                        </div>
+                        <span class="text-xs text-gray-500">
+                            {{ file.file_size|filesizeformat }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- GitHub Verification Status -->
+    {% if github_repo %}
+    <div class="main-card rounded-2xl p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fab fa-github text-indigo-600"></i>
+            </div>
+            GitHub Verification
+        </h2>
+        
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+            <div class="flex items-start">
+                <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                <div class="flex-1">
+                    <h3 class="font-medium text-green-900">Repository Verified Successfully!</h3>
+                    <div class="mt-2 grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <p class="text-green-700 font-medium">Repository:</p>
+                            <p class="text-green-600">{{ github_repo.repo_owner }}/{{ github_repo.repo_name }}</p>
+                        </div>
+                        <div>
+                            <p class="text-green-700 font-medium">Commits:</p>
+                            <p class="text-green-600">{{ github_repo.commit_count }} commits</p>
+                        </div>
+                        <div>
+                            <p class="text-green-700 font-medium">Languages:</p>
+                            <p class="text-green-600">{{ github_repo.languages.keys|join:", "|default:"Not detected" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Next Steps -->
+    <div class="main-card rounded-2xl p-6 mb-8">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center section-divider">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fas fa-route text-indigo-600"></i>
+            </div>
+            What Happens Next?
+        </h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-4">
+                <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-search text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Evaluation Phase</h3>
+                <p class="text-sm text-gray-600">Our judges will review and evaluate all submissions</p>
+            </div>
+            
+            <div class="text-center p-4">
+                <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-trophy text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Results Announced</h3>
+                <p class="text-sm text-gray-600">Winners will be announced after evaluation is complete</p>
+            </div>
+            
+            <div class="text-center p-4">
+                <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-envelope text-indigo-600 text-xl"></i>
+                </div>
+                <h3 class="font-semibold text-gray-900 mb-2">Notification</h3>
+                <p class="text-sm text-gray-600">You'll receive an email notification with your results</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="flex items-center justify-center space-x-4 pt-4">
+        <a href="{% url 'hackathon_dashboard' hackathon.id %}" class="btn-primary-custom">
+            <i class="fas fa-tachometer-alt mr-2"></i>Go to Dashboard
+        </a>
+        <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-secondary-custom">
+            <i class="fas fa-info-circle mr-2"></i>Hackathon Details
+        </a>
+        <a href="{% url 'hackathon' %}" class="btn-secondary-custom">
+            <i class="fas fa-list mr-2"></i>All Hackathons
+        </a>
+    </div>
+
+    <!-- Important Notes -->
+    <div class="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div class="flex items-start">
+            <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+            <div>
+                <p class="text-sm text-blue-800 font-medium">Important Notes:</p>
+                <ul class="text-sm text-blue-700 mt-1 list-disc list-inside space-y-1">
+                    <li>Your submission has been recorded with ID #{{ submission.id }}</li>
+                    <li>You will receive a confirmation email shortly</li>
+                    <li>Evaluation results will be available after {{ hackathon.end_date|date:"F j, Y" }}</li>
+                    <li>Contact the organizers if you have any questions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add success animation
+    const checkmark = document.querySelector('.success-checkmark');
+    if (checkmark) {
+        setTimeout(() => {
+            checkmark.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                checkmark.style.transform = 'scale(1)';
+            }, 200);
+        }, 500);
+    }
+    
+    // Auto-scroll to top
+    window.scrollTo(0, 0);
+    
+    // Show success message for 3 seconds
+    setTimeout(function() {
+        console.log('Submission success page loaded successfully');
+    }, 1000);
+});
+</script>
+{% endblock %}

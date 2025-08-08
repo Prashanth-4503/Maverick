@@ -1,0 +1,736 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Hackathon - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 1rem;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .form-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+    
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+    
+    .form-control {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    .form-control:hover {
+        border-color: #9ca3af;
+    }
+
+    /* ✅ CUSTOM FILE UPLOAD STYLING */
+    .file-upload-wrapper {
+        position: relative;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .file-upload-input {
+        position: absolute;
+        left: -9999px;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .file-upload-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border: 2px dashed #d1d5db;
+        border-radius: 0.5rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-align: center;
+        min-height: 3rem;
+    }
+
+    .file-upload-button:hover {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        border-color: #6366f1;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .file-upload-button.has-file {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        border-color: #10b981;
+        color: white;
+    }
+
+    .file-upload-button.has-file:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        border-color: #059669;
+    }
+
+    .file-upload-icon {
+        margin-right: 0.5rem;
+        font-size: 1rem;
+    }
+
+    .file-name-display {
+        margin-top: 0.5rem;
+        padding: 0.5rem;
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        color: #374151;
+        display: none;
+    }
+
+    .file-name-display.show {
+        display: block;
+    }
+    
+    .btn-primary {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        background: linear-gradient(135deg, #5855eb 0%, #4338ca 100%);
+    }
+    
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(107, 114, 128, 0.4);
+    }
+    
+    .error-message {
+        color: #dc2626;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .error-message::before {
+        content: "⚠️";
+        margin-right: 0.25rem;
+    }
+    
+    .help-text {
+        color: #6b7280;
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        font-style: italic;
+    }
+
+    .help-text::before {
+        content: "💡";
+        margin-right: 0.25rem;
+    }
+
+    /* Alert Styling */
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+    }
+
+    .alert::before {
+        margin-right: 0.5rem;
+        font-size: 1.2rem;
+    }
+
+    .alert-success {
+        background-color: #d1fae5;
+        border: 1px solid #a7f3d0;
+        color: #065f46;
+    }
+
+    .alert-success::before {
+        content: "✅";
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        border: 1px solid #fca5a5;
+        color: #dc2626;
+    }
+
+    .alert-error::before {
+        content: "❌";
+    }
+
+    .alert-warning {
+        background-color: #fef3c7;
+        border: 1px solid #fde68a;
+        color: #92400e;
+    }
+
+    .alert-warning::before {
+        content: "⚠️";
+    }
+
+    /* Header Styling */
+    .page-header {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+        color: white;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.3);
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+        margin-right: 0.5rem;
+    }
+
+    /* Checkbox and Radio Styling */
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #6366f1;
+        cursor: pointer;
+    }
+
+    /* Textarea Styling */
+    textarea.form-control {
+        min-height: 100px;
+        resize: vertical;
+    }
+
+    /* Select Styling */
+    select.form-control {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+        appearance: none;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .form-card {
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-header {
+            padding: 1.5rem;
+        }
+
+        .btn-primary, .btn-secondary {
+            width: 100%;
+            justify-content: center;
+            margin-bottom: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="page-header">
+        <h1 class="text-3xl font-bold mb-2">🚀 Create New Hackathon</h1>
+        <p class="text-purple-100">Set up your hackathon event with all the details</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="space-y-6" id="hackathon-form">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <span class="section-icon">📋</span>Basic Information
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="form-label" for="{{ form.name.id_for_label }}">Hackathon Name *</label>
+                    <input type="text" name="{{ form.name.name }}" class="form-control" id="{{ form.name.id_for_label }}" value="{{ form.name.value|default:'' }}" maxlength="200" required>
+                    {% if form.name.errors %}
+                        <div class="error-message">{{ form.name.errors.0 }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="md:col-span-2">
+                    <label class="form-label" for="{{ form.description.id_for_label }}">Description *</label>
+                    <textarea name="{{ form.description.name }}" class="form-control" id="{{ form.description.id_for_label }}" required>{{ form.description.value|default:'' }}</textarea>
+                    {% if form.description.errors %}
+                        <div class="error-message">{{ form.description.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Provide a detailed description of your hackathon theme and objectives</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.thumbnail.id_for_label }}">Thumbnail Image</label>
+                    <div class="file-upload-wrapper">
+                        <input type="file" name="{{ form.thumbnail.name }}" class="file-upload-input" id="{{ form.thumbnail.id_for_label }}" accept="image/*">
+                        <label for="{{ form.thumbnail.id_for_label }}" class="file-upload-button" id="thumbnail-button">
+                            <i class="fas fa-cloud-upload-alt file-upload-icon"></i>
+                            <span class="file-upload-text">Choose thumbnail image</span>
+                        </label>
+                        <div class="file-name-display" id="thumbnail-filename"></div>
+                    </div>
+                    {% if form.thumbnail.errors %}
+                        <div class="error-message">{{ form.thumbnail.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Upload an attractive image for your hackathon (JPG, PNG, max 5MB)</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.max_participants.id_for_label }}">Max Participants *</label>
+                    <input type="number" name="{{ form.max_participants.name }}" class="form-control" id="{{ form.max_participants.id_for_label }}" value="{{ form.max_participants.value|default:'' }}" min="1" required>
+                    {% if form.max_participants.errors %}
+                        <div class="error-message">{{ form.max_participants.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Maximum number of participants allowed</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="form-card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <span class="section-icon">📅</span>Schedule
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.registration_start.id_for_label }}">Registration Start *</label>
+                    <input type="datetime-local" name="{{ form.registration_start.name }}" class="form-control" id="{{ form.registration_start.id_for_label }}" value="{{ form.registration_start.value|default:'' }}" required>
+                    {% if form.registration_start.errors %}
+                        <div class="error-message">{{ form.registration_start.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">When participants can start registering</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.registration_end.id_for_label }}">Registration End *</label>
+                    <input type="datetime-local" name="{{ form.registration_end.name }}" class="form-control" id="{{ form.registration_end.id_for_label }}" value="{{ form.registration_end.value|default:'' }}" required>
+                    {% if form.registration_end.errors %}
+                        <div class="error-message">{{ form.registration_end.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Registration deadline</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.start_date.id_for_label }}">Hackathon Start *</label>
+                    <input type="datetime-local" name="{{ form.start_date.name }}" class="form-control" id="{{ form.start_date.id_for_label }}" value="{{ form.start_date.value|default:'' }}" required>
+                    {% if form.start_date.errors %}
+                        <div class="error-message">{{ form.start_date.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">When the hackathon officially begins</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.end_date.id_for_label }}">Hackathon End *</label>
+                    <input type="datetime-local" name="{{ form.end_date.name }}" class="form-control" id="{{ form.end_date.id_for_label }}" value="{{ form.end_date.value|default:'' }}" required>
+                    {% if form.end_date.errors %}
+                        <div class="error-message">{{ form.end_date.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Submission deadline</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Configuration -->
+        <div class="form-card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <span class="section-icon">👥</span>Team Configuration
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.team_size_min.id_for_label }}">Min Team Size *</label>
+                    <input type="number" name="{{ form.team_size_min.name }}" class="form-control" id="{{ form.team_size_min.id_for_label }}" value="{{ form.team_size_min.value|default:'1' }}" min="1" required>
+                    {% if form.team_size_min.errors %}
+                        <div class="error-message">{{ form.team_size_min.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Minimum team members required</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.team_size_max.id_for_label }}">Max Team Size *</label>
+                    <input type="number" name="{{ form.team_size_max.name }}" class="form-control" id="{{ form.team_size_max.id_for_label }}" value="{{ form.team_size_max.value|default:'5' }}" min="1" required>
+                    {% if form.team_size_max.errors %}
+                        <div class="error-message">{{ form.team_size_max.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Maximum team members allowed</div>
+                </div>
+                
+                <div class="flex items-center mt-6">
+                    <label class="form-label flex items-center cursor-pointer">
+                        <input type="checkbox" name="{{ form.allow_individual.name }}" id="{{ form.allow_individual.id_for_label }}" {% if form.allow_individual.value %}checked{% endif %}>
+                        <span class="ml-2">Allow Individual Participation</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="form-card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <span class="section-icon">📝</span>Content
+            </h2>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="form-label" for="{{ form.prize.id_for_label }}">Prizes</label>
+                    <textarea name="{{ form.prize.name }}" class="form-control" id="{{ form.prize.id_for_label }}">{{ form.prize.value|default:'' }}</textarea>
+                    {% if form.prize.errors %}
+                        <div class="error-message">{{ form.prize.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Describe the prizes and rewards for winners</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.rules.id_for_label }}">Rules & Guidelines</label>
+                    <textarea name="{{ form.rules.name }}" class="form-control" id="{{ form.rules.id_for_label }}">{{ form.rules.value|default:'' }}</textarea>
+                    {% if form.rules.errors %}
+                        <div class="error-message">{{ form.rules.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Set clear rules and guidelines for participants</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.evaluation_criteria.id_for_label }}">Evaluation Criteria *</label>
+                    <textarea name="{{ form.evaluation_criteria.name }}" class="form-control" id="{{ form.evaluation_criteria.id_for_label }}" required>{{ form.evaluation_criteria.value|default:'{"Innovation": 25, "Technical Implementation": 25, "Presentation": 25, "Impact": 25}' }}</textarea>
+                    {% if form.evaluation_criteria.errors %}
+                        <div class="error-message">{{ form.evaluation_criteria.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">JSON format: {"Innovation": 25, "Technical Implementation": 25, "Presentation": 25, "Impact": 25}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Settings (Optional) -->
+        <div class="form-card">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">
+                <span class="section-icon">⚙️</span>Advanced Settings (Optional)
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="form-label" for="{{ form.slack_webhook.id_for_label }}">Slack Webhook URL</label>
+                    <input type="url" name="{{ form.slack_webhook.name }}" class="form-control" id="{{ form.slack_webhook.id_for_label }}" value="{{ form.slack_webhook.value|default:'' }}">
+                    {% if form.slack_webhook.errors %}
+                        <div class="error-message">{{ form.slack_webhook.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">For Slack notifications</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.discord_webhook.id_for_label }}">Discord Webhook URL</label>
+                    <input type="url" name="{{ form.discord_webhook.name }}" class="form-control" id="{{ form.discord_webhook.id_for_label }}" value="{{ form.discord_webhook.value|default:'' }}">
+                    {% if form.discord_webhook.errors %}
+                        <div class="error-message">{{ form.discord_webhook.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">For Discord notifications</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.github_org.id_for_label }}">GitHub Organization</label>
+                    <input type="text" name="{{ form.github_org.name }}" class="form-control" id="{{ form.github_org.id_for_label }}" value="{{ form.github_org.value|default:'' }}">
+                    {% if form.github_org.errors %}
+                        <div class="error-message">{{ form.github_org.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">GitHub organization for repository submissions</div>
+                </div>
+                
+                <div>
+                    <label class="form-label" for="{{ form.max_file_size_mb.id_for_label }}">Max File Size (MB)</label>
+                    <input type="number" name="{{ form.max_file_size_mb.name }}" class="form-control" id="{{ form.max_file_size_mb.id_for_label }}" value="{{ form.max_file_size_mb.value|default:'50' }}" min="1" max="100">
+                    {% if form.max_file_size_mb.errors %}
+                        <div class="error-message">{{ form.max_file_size_mb.errors.0 }}</div>
+                    {% endif %}
+                    <div class="help-text">Maximum file size for uploads</div>
+                </div>
+            </div>
+            
+            <div class="mt-6 space-y-4">
+                <label class="form-label flex items-center cursor-pointer">
+                    <input type="checkbox" name="{{ form.allow_late_submission.name }}" id="{{ form.allow_late_submission.id_for_label }}" {% if form.allow_late_submission.value %}checked{% endif %}>
+                    <span class="ml-2">Allow Late Submissions (24h grace period)</span>
+                </label>
+                
+                <label class="form-label flex items-center cursor-pointer">
+                    <input type="checkbox" name="{{ form.auto_evaluation.name }}" id="{{ form.auto_evaluation.id_for_label }}" {% if form.auto_evaluation.value %}checked{% endif %}>
+                    <span class="ml-2">Enable Auto Evaluation</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-center">
+            <button type="submit" class="btn-primary">
+                <i class="fas fa-plus mr-2"></i>Create Hackathon
+            </button>
+            <a href="{% url 'hackathon' %}" class="btn-secondary">
+                <i class="fas fa-times mr-2"></i>Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ✅ File Upload Functionality
+    const fileInput = document.getElementById('{{ form.thumbnail.id_for_label }}');
+    const fileButton = document.getElementById('thumbnail-button');
+    const filenameDisplay = document.getElementById('thumbnail-filename');
+    const fileUploadText = fileButton.querySelector('.file-upload-text');
+
+    if (fileInput && fileButton) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                fileUploadText.textContent = 'Image selected';
+                fileButton.classList.add('has-file');
+                filenameDisplay.textContent = `Selected: ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
+                filenameDisplay.classList.add('show');
+                fileButton.querySelector('.file-upload-icon').className = 'fas fa-check-circle file-upload-icon';
+            } else {
+                fileUploadText.textContent = 'Choose thumbnail image';
+                fileButton.classList.remove('has-file');
+                filenameDisplay.classList.remove('show');
+                fileButton.querySelector('.file-upload-icon').className = 'fas fa-cloud-upload-alt file-upload-icon';
+            }
+        });
+
+        // Handle drag and drop
+        fileButton.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            fileButton.style.borderColor = '#6366f1';
+            fileButton.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+        });
+
+        fileButton.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            fileButton.style.borderColor = '#d1d5db';
+            fileButton.style.backgroundColor = '';
+        });
+
+        fileButton.addEventListener('drop', function(e) {
+            e.preventDefault();
+            fileButton.style.borderColor = '#d1d5db';
+            fileButton.style.backgroundColor = '';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                fileInput.files = files;
+                const event = new Event('change', { bubbles: true });
+                fileInput.dispatchEvent(event);
+            }
+        });
+    }
+
+    // ✅ Form Validation
+    const form = document.getElementById('hackathon-form');
+    form.addEventListener('submit', function(e) {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        // Add loading state
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+        submitBtn.disabled = true;
+        
+        // Re-enable after 5 seconds to prevent permanent disable
+        setTimeout(() => {
+            if (submitBtn.disabled) {
+                submitBtn.innerHTML = '<i class="fas fa-plus mr-2"></i>Create Hackathon';
+                submitBtn.disabled = false;
+            }
+        }, 5000);
+    });
+
+    // ✅ Auto-resize textareas
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    });
+
+    // ✅ Date validation
+    const registrationStart = document.getElementById('{{ form.registration_start.id_for_label }}');
+    const registrationEnd = document.getElementById('{{ form.registration_end.id_for_label }}');
+    const hackathonStart = document.getElementById('{{ form.start_date.id_for_label }}');
+    const hackathonEnd = document.getElementById('{{ form.end_date.id_for_label }}');
+
+    function validateDates() {
+        const regStart = new Date(registrationStart.value);
+        const regEnd = new Date(registrationEnd.value);
+        const hackStart = new Date(hackathonStart.value);
+        const hackEnd = new Date(hackathonEnd.value);
+
+        // Reset styles
+        [registrationStart, registrationEnd, hackathonStart, hackathonEnd].forEach(input => {
+            if (input) input.style.borderColor = '#d1d5db';
+        });
+
+        // Validate registration dates
+        if (regStart && regEnd && regStart >= regEnd) {
+            registrationEnd.style.borderColor = '#dc2626';
+            showTooltip(registrationEnd, 'Registration end must be after registration start');
+        }
+
+        // Validate hackathon dates
+        if (hackStart && hackEnd && hackStart >= hackEnd) {
+            hackathonEnd.style.borderColor = '#dc2626';
+            showTooltip(hackathonEnd, 'Hackathon end must be after hackathon start');
+        }
+
+        // Validate sequence
+        if (regEnd && hackStart && regEnd > hackStart) {
+            hackathonStart.style.borderColor = '#dc2626';
+            showTooltip(hackathonStart, 'Hackathon should start after registration ends');
+        }
+    }
+
+    function showTooltip(element, message) {
+        // Remove existing tooltip
+        const existingTooltip = element.parentNode.querySelector('.tooltip');
+        if (existingTooltip) {
+            existingTooltip.remove();
+        }
+        
+        // Create tooltip
+        const tooltip = document.createElement('div');
+        tooltip.className = 'tooltip absolute bg-red-600 text-white text-xs rounded px-2 py-1 z-10 -mt-8 left-0';
+        tooltip.textContent = message;
+        element.parentNode.style.position = 'relative';
+        element.parentNode.appendChild(tooltip);
+        
+        setTimeout(() => tooltip.remove(), 3000);
+    }
+
+    [registrationStart, registrationEnd, hackathonStart, hackathonEnd].forEach(input => {
+        if (input) {
+            input.addEventListener('change', validateDates);
+        }
+    });
+
+    // ✅ Team size validation
+    const minTeamSize = document.getElementById('{{ form.team_size_min.id_for_label }}');
+    const maxTeamSize = document.getElementById('{{ form.team_size_max.id_for_label }}');
+
+    function validateTeamSizes() {
+        const min = parseInt(minTeamSize.value);
+        const max = parseInt(maxTeamSize.value);
+
+        if (min && max && min > max) {
+            maxTeamSize.style.borderColor = '#dc2626';
+            showTooltip(maxTeamSize, 'Max team size must be greater than or equal to min team size');
+        } else {
+            maxTeamSize.style.borderColor = '#d1d5db';
+        }
+    }
+
+    if (minTeamSize && maxTeamSize) {
+        minTeamSize.addEventListener('input', validateTeamSizes);
+        maxTeamSize.addEventListener('input', validateTeamSizes);
+    }
+
+    // ✅ JSON validation for evaluation criteria
+    const evaluationCriteria = document.getElementById('{{ form.evaluation_criteria.id_for_label }}');
+    if (evaluationCriteria) {
+        evaluationCriteria.addEventListener('blur', function() {
+            try {
+                const json = JSON.parse(this.value);
+                this.style.borderColor = '#d1d5db';
+                
+                // Check if values sum to 100
+                const total = Object.values(json).reduce((sum, val) => sum + val, 0);
+                if (total !== 100) {
+                    this.style.borderColor = '#f59e0b';
+                    showTooltip(this, 'Criteria values should sum to 100');
+                }
+            } catch (e) {
+                this.style.borderColor = '#dc2626';
+                showTooltip(this, 'Invalid JSON format');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

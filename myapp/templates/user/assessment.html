@@ -1,0 +1,432 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Assessments - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    
+    .progress-bar {
+        transition: width 0.6s ease;
+        width: 0%; /* Start from 0% to prevent flash */
+    }
+    
+    /* Reduced height layout for uniform button positioning */
+    .competency-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 200px; /* Reduced from 280px to 200px */
+    }
+    
+    .competency-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .competency-stats {
+        min-height: 50px; /* Reduced from 80px to 50px */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    
+    .quiz-button-container {
+        margin-top: auto;
+        padding-top: 0.75rem; /* Reduced padding */
+    }
+    
+    .quiz-status {
+        font-size: 0.75rem;
+        margin-top: 0.25rem;
+        min-height: 2rem; /* Reduced from 2.5rem to 2rem */
+    }
+
+    /* Minimalist Available Quizzes Styling */
+    .quiz-card {
+        background: linear-gradient(135deg, rgba(99,102,241,0.02) 0%, rgba(99,102,241,0.05) 100%);
+        border: 1px solid rgba(99,102,241,0.1);
+        border-radius: 16px;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quiz-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, rgba(99,102,241,0.6), rgba(99,102,241,0.8));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.2s ease;
+    }
+    
+    .quiz-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .quiz-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px -5px rgba(99,102,241,0.15);
+        border-color: rgba(99,102,241,0.2);
+        background: linear-gradient(135deg, rgba(99,102,241,0.03) 0%, rgba(99,102,241,0.08) 100%);
+    }
+    
+    .quiz-icon-container {
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, rgba(99,102,241,0.9) 0%, rgba(99,102,241,1) 100%);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .quiz-card:hover .quiz-icon-container {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    
+    .quiz-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s ease;
+    }
+    
+    .quiz-card:hover .quiz-title {
+        color: rgba(99,102,241,1);
+    }
+    
+    .quiz-description {
+        color: #64748b;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 1.5rem;
+        flex-grow: 1;
+    }
+    
+    .quiz-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 0.75rem;
+        background: rgba(99,102,241,0.03);
+        border-radius: 8px;
+        border: 1px solid rgba(99,102,241,0.08);
+    }
+    
+    .quiz-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.75rem;
+        color: #64748b;
+        font-weight: 500;
+    }
+    
+    .quiz-meta-item i {
+        color: rgba(99,102,241,0.7);
+        font-size: 0.75rem;
+    }
+    
+    .quiz-button {
+        background: linear-gradient(135deg, rgba(99,102,241,0.9) 0%, rgba(99,102,241,1) 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 0.875rem;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .quiz-button:hover {
+        background: linear-gradient(135deg, rgba(99,102,241,1) 0%, rgba(79,70,229,1) 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(99,102,241,0.3);
+    }
+    
+    .quiz-button:active {
+        transform: translateY(0);
+    }
+    
+    .quiz-button-disabled {
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+        color: #f3f4f6;
+        cursor: not-allowed;
+    }
+    
+    .quiz-button-disabled:hover {
+        transform: none;
+        box-shadow: none;
+        background: linear-gradient(135deg, #9ca3af 0%, #6b7280 100%);
+    }
+    
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 2rem;
+    }
+    
+    .section-icon {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, rgba(99,102,241,0.9) 0%, rgba(99,102,241,1) 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        color: rgba(99,102,241,0.3);
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state h3 {
+        color: #374151;
+        margin-bottom: 0.5rem;
+    }
+
+    /* Helper function to get competency icon */
+    .competency-icon {
+        font-size: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center">
+            <i class="fas fa-file-alt text-indigo-500 mr-3"></i> Assessments
+        </h1>
+    </div>
+
+    <!-- Competency Progress -->
+    <div class="bg-white rounded-xl shadow-md p-6 mb-8">
+        <h2 class="text-xl font-semibold mb-4">Your Competency Levels</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for item in user_competencies %}
+            <div class="border rounded-lg p-4 hover:shadow-md transition competency-card">
+                <div class="competency-content">
+                    <!-- Header with Proper Icon -->
+                    <div class="flex items-center mb-2">
+                        <i class="{% if 'programming' in item.competency.name|lower or 'coding' in item.competency.name|lower or 'development' in item.competency.name|lower %}fas fa-code
+                               {% elif 'data' in item.competency.name|lower or 'analytics' in item.competency.name|lower %}fas fa-chart-bar
+                               {% elif 'design' in item.competency.name|lower or 'ui' in item.competency.name|lower or 'ux' in item.competency.name|lower %}fas fa-paint-brush
+                               {% elif 'network' in item.competency.name|lower or 'security' in item.competency.name|lower %}fas fa-shield-alt
+                               {% elif 'database' in item.competency.name|lower or 'sql' in item.competency.name|lower %}fas fa-database
+                               {% elif 'project' in item.competency.name|lower or 'management' in item.competency.name|lower %}fas fa-tasks
+                               {% elif 'cloud' in item.competency.name|lower or 'aws' in item.competency.name|lower or 'azure' in item.competency.name|lower %}fas fa-cloud
+                               {% elif 'mobile' in item.competency.name|lower or 'app' in item.competency.name|lower %}fas fa-mobile-alt
+                               {% elif 'machine' in item.competency.name|lower or 'ai' in item.competency.name|lower or 'artificial' in item.competency.name|lower %}fas fa-robot
+                               {% elif 'devops' in item.competency.name|lower or 'deployment' in item.competency.name|lower %}fas fa-cogs
+                               {% elif 'testing' in item.competency.name|lower or 'qa' in item.competency.name|lower %}fas fa-bug
+                               {% elif 'web' in item.competency.name|lower or 'frontend' in item.competency.name|lower or 'backend' in item.competency.name|lower %}fas fa-globe
+                               {% elif 'leadership' in item.competency.name|lower or 'team' in item.competency.name|lower %}fas fa-users
+                               {% elif 'communication' in item.competency.name|lower %}fas fa-comments
+                               {% elif 'business' in item.competency.name|lower or 'strategy' in item.competency.name|lower %}fas fa-briefcase
+                               {% elif 'finance' in item.competency.name|lower or 'accounting' in item.competency.name|lower %}fas fa-calculator
+                               {% elif 'marketing' in item.competency.name|lower %}fas fa-bullhorn
+                               {% elif 'sales' in item.competency.name|lower %}fas fa-handshake
+                               {% else %}fas fa-graduation-cap{% endif %} text-indigo-500 mr-2 competency-icon"></i>
+                        <h3 class="font-medium">{{ item.competency.name }}</h3>
+                    </div>
+                    
+                    <!-- Proficiency Score -->
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-sm text-gray-600">Proficiency</span>
+                        <span class="text-sm font-medium 
+                            {% if item.score >= 70 %}text-green-600
+                            {% elif item.score >= 40 %}text-yellow-600
+                            {% else %}text-red-600{% endif %}">
+                            {% if item.attempted %}
+                                {{ item.score|floatformat:0 }}%
+                            {% else %}
+                                Not Attempted
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+                        <div class="progress-bar h-2 rounded-full 
+                            {% if item.score >= 70 %}bg-green-600
+                            {% elif item.score >= 40 %}bg-yellow-500
+                            {% else %}bg-red-500{% endif %}" 
+                             data-width="{{ item.score|floatformat:0 }}"></div>
+                    </div>
+                    
+                    <!-- Quiz Status Information (Fixed Height Container) -->
+                    <div class="competency-stats">
+                        {% if item.attempted %}
+                        <div class="quiz-status text-gray-500">
+                            <div>Attempts: {{ item.attempts_count }}</div>
+                            {% if item.best_score > 0 %}
+                            <div>Best Score: {{ item.best_score|floatformat:0 }}%</div>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <div class="quiz-status text-gray-500">
+                            <div>&nbsp;</div> <!-- Placeholder to maintain height -->
+                            <div>&nbsp;</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Quiz Button (Anchored to Bottom) -->
+                    <div class="quiz-button-container">
+                        {% if item.has_in_progress_attempt %}
+                            <a href="{% url 'start_quiz' item.competency.id %}" 
+                               class="w-full inline-block text-center bg-yellow-50 hover:bg-yellow-100 text-yellow-700 py-2 px-3 rounded text-sm transition">
+                                Continue Quiz
+                            </a>
+                        {% elif item.reached_max_attempts %}
+                            <div class="w-full text-center bg-red-50 text-red-700 py-2 px-3 rounded text-sm">
+                                Max Attempts Reached
+                            </div>
+                        {% else %}
+                            <a href="{% url 'start_quiz' item.competency.id %}" 
+                               class="w-full inline-block text-center bg-indigo-50 hover:bg-indigo-100 text-indigo-700 py-2 px-3 rounded text-sm transition">
+                                {% if item.attempted %}Retake Quiz{% else %}Take Quiz{% endif %}
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-3 text-center py-4">
+                <p class="text-gray-500">No competency data available. Take a quiz to get started.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Minimalist Available Quizzes Section -->
+    <div class="bg-white rounded-xl shadow-md p-6">
+        <div class="section-header">
+            <div class="section-icon">
+                <i class="fas fa-brain"></i>
+            </div>
+            <div>
+                <h2 class="text-xl font-semibold text-gray-900">Available Quizzes</h2>
+                <p class="text-sm text-gray-600 mt-1">Test your knowledge and improve your skills</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for competency in competencies %}
+            <div class="quiz-card p-6 flex flex-col h-full">
+                <!-- Icon with Proper Logic -->
+                <div class="quiz-icon-container">
+                    <i class="{% if 'programming' in competency.name|lower or 'coding' in competency.name|lower or 'development' in competency.name|lower or 'programming language' in competency.name|lower %}fas fa-code
+                           {% elif 'operating system' in competency.name|lower or 'os' in competency.name|lower %}fas fa-desktop
+                           {% elif 'algorithm' in competency.name|lower %}fas fa-project-diagram
+                           {% elif 'data structure' in competency.name|lower or 'data structures' in competency.name|lower %}fas fa-sitemap
+                           {% elif 'software engineering' in competency.name|lower or 'software' in competency.name|lower %}fas fa-tools
+                           {% elif 'machine' in competency.name|lower or 'ai' in competency.name|lower or 'artificial' in competency.name|lower or 'ml' in competency.name|lower %}fas fa-robot
+                           {% elif 'network' in competency.name|lower %}fas fa-network-wired
+                           {% elif 'database' in competency.name|lower or 'sql' in competency.name|lower %}fas fa-database
+                           {% elif 'data' in competency.name|lower or 'analytics' in competency.name|lower %}fas fa-chart-bar
+                           {% elif 'design' in competency.name|lower or 'ui' in competency.name|lower or 'ux' in competency.name|lower %}fas fa-paint-brush
+                           {% elif 'security' in competency.name|lower %}fas fa-shield-alt
+                           {% elif 'project' in competency.name|lower or 'management' in competency.name|lower %}fas fa-tasks
+                           {% elif 'cloud' in competency.name|lower or 'aws' in competency.name|lower or 'azure' in competency.name|lower %}fas fa-cloud
+                           {% elif 'mobile' in competency.name|lower or 'app' in competency.name|lower %}fas fa-mobile-alt
+                           {% elif 'devops' in competency.name|lower or 'deployment' in competency.name|lower %}fas fa-cogs
+                           {% elif 'testing' in competency.name|lower or 'qa' in competency.name|lower %}fas fa-bug
+                           {% elif 'web' in competency.name|lower or 'frontend' in competency.name|lower or 'backend' in competency.name|lower %}fas fa-globe
+                           {% elif 'leadership' in competency.name|lower or 'team' in competency.name|lower %}fas fa-users
+                           {% elif 'communication' in competency.name|lower %}fas fa-comments
+                           {% elif 'business' in competency.name|lower or 'strategy' in competency.name|lower %}fas fa-briefcase
+                           {% elif 'finance' in competency.name|lower or 'accounting' in competency.name|lower %}fas fa-calculator
+                           {% elif 'marketing' in competency.name|lower %}fas fa-bullhorn
+                           {% elif 'sales' in competency.name|lower %}fas fa-handshake
+                           {% else %}fas fa-graduation-cap{% endif %} text-white text-xl"></i>
+                </div>
+                
+
+                <!-- Content -->
+                <h3 class="quiz-title">{{ competency.name }}</h3>
+                <p class="quiz-description">{{ competency.description|default:"Test your knowledge in this competency area and track your progress." }}</p>
+                
+                <!-- Quiz Meta Information -->
+                <div class="quiz-meta">
+                    <div class="quiz-meta-item">
+                        <i class="fas fa-clock"></i>
+                        <span>10 mins</span>
+                    </div>
+                    <div class="quiz-meta-item">
+                        <i class="fas fa-question-circle"></i>
+                        <span>10 questions</span>
+                    </div>
+                    <div class="quiz-meta-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Adaptive</span>
+                    </div>
+                </div>
+                
+                <!-- Action Button -->
+                {% if competency.is_active %}
+                    <a href="{% url 'start_quiz' competency.id %}" 
+                       class="quiz-button w-full text-center font-medium transition-all duration-200 mt-auto">
+                        <i class="fas fa-play mr-2 text-xs"></i>Start Quiz
+                    </a>
+                {% else %}
+                    <button class="quiz-button quiz-button-disabled w-full text-center font-medium mt-auto" disabled>
+                        <i class="fas fa-lock mr-2 text-xs"></i>Quiz Unavailable
+                    </button>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="col-span-3 empty-state">
+                <i class="fas fa-clipboard-list"></i>
+                <h3 class="text-lg font-semibold">No Quizzes Available</h3>
+                <p class="text-sm">Check back later for new competency assessments.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars smoothly from 0% to target width
+    const progressBars = document.querySelectorAll('.progress-bar[data-width]');
+    
+    // Small delay to ensure DOM is fully loaded
+    setTimeout(() => {
+        progressBars.forEach(bar => {
+            const width = bar.getAttribute('data-width');
+            const finalWidth = Math.min(Math.max(parseFloat(width) || 0, 2), 100);
+            
+            // Animate to the target width
+            bar.style.width = finalWidth + '%';
+        });
+    }, 100); // Small delay prevents the flash
+});
+</script>
+{% endblock %}

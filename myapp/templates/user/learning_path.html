@@ -1,0 +1,1032 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Learning Path - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+   
+@keyframes neonGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 4px rgba(0, 255, 255, 0.4),
+      0 0 10px rgba(0, 255, 255, 0.3),
+      0 0 20px rgba(0, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 6px rgba(0, 255, 255, 0.5),
+      0 0 14px rgba(0, 255, 255, 0.35),
+      0 0 28px rgba(0, 255, 255, 0.25);
+  }
+}
+
+.btn-neon {
+    position: relative;
+    display: inline-block;
+    padding: 0.6rem 1.5rem;
+    color: #0ff;
+    font-weight: 700;
+    font-size: 1rem;
+    /* text-transform: uppercase; */
+    text-decoration: none;
+    border: 2px solid #0ff;
+    border-radius: 20px;
+    background-color: #717171; /* solid black */
+    cursor: pointer;
+    transition: color 0.3s ease, background-color 0.3s ease;
+    animation: neonGlow 3s ease-in-out infinite alternate;
+}
+
+.btn-neon:hover {
+    color: #fff;
+    background-color: #0ff;
+    animation-play-state: paused;
+    box-shadow:
+        0 0 10px rgba(0, 255, 255, 0.6),
+        0 0 20px rgba(0, 255, 255, 0.45),
+        0 0 40px rgba(0, 255, 255, 0.35);
+}
+
+.btn-neon:active {
+    color: #ddffff;
+    background-color: rgba(0, 255, 255, 0.7);
+}
+.glow-edge {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+    border: 8px solid transparent;
+    border-radius: 12px;
+    box-sizing: border-box;
+    box-shadow:
+        0 0 30px 10px rgba(79, 70, 229, 0.9),
+        0 0 50px 20px rgba(79, 70, 229, 0.6),
+        inset 0 0 40px 10px rgba(99, 102, 241, 0.9);
+    opacity: 0; /* hidden initially */
+    transition: opacity 0.6s ease-in-out;
+    z-index: 11000;
+}
+
+/* Class to apply when glow should show */
+.glow-edge.active-glow {
+    opacity: 1;
+    animation: glowPulse 3s ease-in-out infinite alternate;
+}
+
+/* Glow pulse animation remains unchanged */
+@keyframes glowPulse {
+    0%, 100% {
+        box-shadow:
+            0 0 30px 10px rgba(79, 70, 229, 0.8),
+            0 0 50px 20px rgba(79, 70, 229, 0.5),
+            inset 0 0 40px 10px rgba(99, 102, 241, 0.8);
+    }
+    50% {
+        box-shadow:
+            0 0 40px 12px rgba(79, 70, 229, 1),
+            0 0 60px 24px rgba(79, 70, 229, 0.7),
+            inset 0 0 50px 14px rgba(99, 102, 241, 1);
+    }
+}
+
+
+
+
+
+
+    :root {
+        --primary: #4f46e5;
+        --primary-light: #6366f1;
+        --primary-dark: #4338ca;
+        --success: #22c55e;
+        --success-dark: #16a34a;
+        --danger: #dc2626;
+        --danger-dark: #b91c1c;
+        --warning: #f59e0b;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-400: #9ca3af;
+        --gray-500: #6b7280;
+        --gray-700: #374151;
+        --gray-900: #111827;
+    }
+    
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    /* Header Area */
+    .header-area {
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: #fff;
+        padding: 2.5rem;
+        border-radius: 1.25rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        flex-wrap: wrap;
+        gap: 2rem;
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.2);
+    }
+    
+    .header-area h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .header-area p {
+        color: rgba(255,255,255,0.9);
+        margin-bottom: 0.75rem;
+        font-size: 1.05rem;
+    }
+    
+    .header-stats {
+        display: flex;
+        gap: 2rem;
+        color: rgba(255,255,255,0.9);
+        font-size: 0.95rem;
+    }
+    
+    .header-stats div {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    /* Circular XP Progress */
+    .xp-progress {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        flex-shrink: 0;
+    }
+    
+    .xp-circle-bg {
+        fill: none;
+        stroke: rgba(255,255,255,0.15);
+        stroke-width: 8;
+    }
+    
+    .xp-circle-progress {
+        fill: none;
+        stroke: white;
+        stroke-width: 8;
+        stroke-linecap: round;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+        stroke-dasharray: 283;
+        stroke-dashoffset: calc(283 - (283 * {{ overall_progress }}) / 100);
+        transition: stroke-dashoffset 0.8s ease-in-out;
+    }
+    
+    .xp-circle-content {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: white;
+    }
+    
+    .xp-circle-content span {
+        font-size: 1.8rem;
+        font-weight: 700;
+        display: block;
+        line-height: 1;
+    }
+    
+    .xp-circle-content small {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        display: block;
+        margin-top: 0.25rem;
+    }
+    
+    /* Module Cards */
+    .module-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 28px;
+    }
+    
+    .module-card {
+        background: white;
+        border-radius: 1.25rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        padding: 1.75rem;
+        min-height: 340px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .module-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(79, 70, 229, 0.15);
+        border-color: rgba(79, 70, 229, 0.2);
+    }
+    
+    .module-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    }
+    
+    .module-top {
+        display: flex;
+        gap: 1.25rem;
+        align-items: flex-start;
+    }
+    
+    .module-thumbnail {
+        height: 90px;
+        width: 90px;
+        border-radius: 0.85rem;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 2.5rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    }
+    
+    .module-content h3 {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+        color: var(--gray-900);
+    }
+    
+    .module-description {
+        font-size: 0.95rem;
+        color: var(--gray-500);
+        line-height: 1.4;
+        margin-bottom: 0.5rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    .badge {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        font-weight: 500;
+        font-size: 0.8rem;
+        padding: 4px 10px;
+        border-radius: 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Progress Bar */
+    .progress-container {
+        margin: 1.5rem 0;
+    }
+    
+    .progress-info {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--gray-500);
+        margin-bottom: 0.25rem;
+    }
+    
+    .progress-bar-bg {
+        background: var(--gray-200);
+        height: 8px;
+        border-radius: 8px;
+        width: 100%;
+        overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+        background: linear-gradient(90deg, var(--primary), var(--primary-light));
+        height: 8px;
+        border-radius: 8px;
+        transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 0;
+    }
+    
+    /* Status Badges */
+    .status-badge {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 12px;
+        text-transform: uppercase;
+        user-select: none;
+        white-space: nowrap;
+    }
+    
+    .status-completed {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success);
+    }
+    
+    .status-in-progress {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--primary-light);
+    }
+    
+    .status-not-started {
+        background: rgba(156, 163, 175, 0.1);
+        color: var(--gray-500);
+    }
+    
+    /* Buttons */
+    .btn {
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .btn-primary {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .btn-primary:hover {
+        background: var(--primary-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(79, 70, 229, 0.2);
+    }
+    
+    .btn-success {
+        background: var(--success);
+        color: white;
+    }
+    
+    .btn-success:hover {
+        background: var(--success-dark);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(34, 197, 94, 0.2);
+    }
+    
+    /* Dropdown */
+    .relative {
+        position: relative;
+    }
+    
+    .dropdown-btn {
+        background: none;
+        border: none;
+        color: var(--gray-500);
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+    
+    .dropdown-btn:hover {
+        color: var(--primary);
+        background: rgba(79, 70, 229, 0.1);
+    }
+    
+    .dropdown-menu {
+        position: absolute;
+        right: 0;
+        margin-top: 0.5rem;
+        width: 200px;
+        background: white;
+        border-radius: 0.85rem;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        z-index: 15;
+        display: none;
+        overflow: hidden;
+        font-size: 0.95rem;
+        border: 1px solid var(--gray-200);
+    }
+    
+    .dropdown-menu.show {
+        display: block;
+        animation: fadeIn 0.2s ease-out;
+    }
+    
+    .dropdown-menu a,
+    .dropdown-menu span {
+        display: flex;
+        align-items: center;
+        padding: 0.75rem 1rem;
+        color: var(--gray-700);
+        text-decoration: none;
+        border-bottom: 1px solid var(--gray-100);
+        gap: 0.75rem;
+    }
+    
+    .dropdown-menu a:last-child,
+    .dropdown-menu span:last-child {
+        border-bottom: none;
+    }
+    
+    .dropdown-menu a:hover,
+    .dropdown-menu a:focus {
+        background: var(--gray-100);
+        color: var(--primary);
+    }
+    
+    .dropdown-menu .remove-link {
+        color: var(--danger);
+    }
+    
+    .dropdown-menu .remove-link:hover {
+        background: rgba(220, 38, 38, 0.05);
+        color: var(--danger-dark);
+    }
+    
+    .dropdown-menu .disabled,
+    .dropdown-menu span {
+        color: var(--gray-400);
+        cursor: not-allowed;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: var(--gray-100);
+        border-radius: 1.25rem;
+        grid-column: 1 / -1;
+        border: 1px dashed var(--gray-200);
+    }
+    
+    .empty-state-icon {
+        margin: 0 auto 1.5rem;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gray-200), white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 3rem;
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+    }
+    
+    .empty-state h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: var(--gray-900);
+    }
+    
+    .empty-state p {
+        max-width: 500px;
+        margin: 0 auto 1.5rem;
+        color: var(--gray-500);
+        line-height: 1.5;
+    }
+    
+    /* Modals */
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.5);
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        backdrop-filter: blur(4px);
+    }
+    
+    .modal-overlay.show {
+        display: flex;
+        animation: fadeIn 0.2s ease-out;
+    }
+    
+    .modal {
+        background: white;
+        border-radius: 1.25rem;
+        padding: 2.5rem;
+        max-width: 420px;
+        width: 90%;
+        margin: 1rem;
+        text-align: center;
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        position: relative;
+    }
+    
+    .modal-close {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        color: var(--gray-400);
+        cursor: pointer;
+    }
+    
+    .modal-close:hover {
+        color: var(--gray-500);
+    }
+    
+    .modal-icon {
+        margin: 0 auto 1.5rem;
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+    }
+    
+    .modal-icon.success {
+        background: rgba(34, 197, 94, 0.1);
+        color: var(--success);
+    }
+    
+    .modal-icon.warning {
+        background: rgba(245, 158, 11, 0.1);
+        color: var(--warning);
+    }
+    
+    .modal h3 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .modal p {
+        color: var(--gray-500);
+        margin-bottom: 2rem;
+        line-height: 1.5;
+    }
+    
+    .modal-badge {
+        background: var(--gray-100);
+        border-radius: 1rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        text-align: left;
+    }
+    
+    .modal-badge-icon {
+        width: 64px;
+        height: 64px;
+        flex-shrink: 0;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--warning);
+        font-size: 2rem;
+    }
+    
+    .modal-badge-content h4 {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .modal-badge-content p {
+        font-size: 0.9rem;
+        margin-bottom: 0;
+        color: var(--gray-500);
+    }
+    
+    .modal-actions {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+    
+    .modal-btn {
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.75rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        min-width: 120px;
+    }
+    
+    .modal-btn-secondary {
+        background: var(--gray-100);
+        color: var(--gray-700);
+        border: none;
+    }
+    
+    .modal-btn-secondary:hover {
+        background: var(--gray-200);
+    }
+    
+    .modal-btn-primary {
+        background: var(--primary);
+        color: white;
+        border: none;
+    }
+    
+    .modal-btn-primary:hover {
+        background: var(--primary-dark);
+    }
+    
+    .modal-btn-danger {
+        background: var(--danger);
+        color: white;
+        border: none;
+    }
+    
+    .modal-btn-danger:hover {
+        background: var(--danger-dark);
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header-area {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1.75rem;
+        }
+        
+        .xp-progress {
+            margin-top: 1rem;
+        }
+        
+        .module-list {
+            grid-template-columns: 1fr;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .header-area h1 {
+            font-size: 2rem;
+        }
+        
+        .header-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .module-card {
+            padding: 1.5rem;
+        }
+        
+        .module-top {
+            flex-direction: column;
+        }
+        
+        .module-thumbnail {
+            width: 100%;
+            height: 120px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+   <div id="glow-edge" class="glow-edge"></div>
+    <div class="header-area">
+        <div>
+            <h1><i class="fas fa-rocket" style="color: gold;"></i> Your Learning Journey</h1>
+            <p>Track your progress and master new skills.</p>
+            <div class="header-stats">
+                <div><i class="fas fa-check-circle"></i> {{ completed_count }} Completed</div>
+                <div><i class="fas fa-book-open"></i> {{ total_count }} Modules</div>
+                <div><i class="fas fa-star"></i> {{ xp_earned }} XP Earned</div>
+            </div>
+        </div>
+        
+        <!-- Circular XP Progress -->
+        <div class="xp-progress">
+            <svg viewBox="0 0 100 100" class="w-full h-full">
+                <circle cx="50" cy="50" r="45" class="xp-circle-bg"></circle>
+                <circle cx="50" cy="50" r="45" class="xp-circle-progress"></circle>
+            </svg>
+            <div class="xp-circle-content">
+                <span>{{ overall_progress }}%</span>
+                <small>Complete</small>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add Module Button -->
+    <div class="mb-8 flex justify-end space-x-4">
+    <!-- New AI Mode button -->
+    <a href="{% url 'quiz' %}" class="btn-neon" id="ai-mode-btn">AI Mode</a>
+
+
+    <!-- Existing Add New Module button -->
+    <a href="{% url 'module_list' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle"></i> Add New Module
+    </a>
+</div>
+
+
+
+
+    <!-- Modules -->
+    <div class="module-list">
+        {% for path in learning_paths %}
+        <div class="module-card">
+            <div class="module-top">
+                {% if path.module.thumbnail %}
+                    <img src="{{ path.module.thumbnail.url }}" alt="{{ path.module.name }}" class="module-thumbnail">
+                {% else %}
+                    <div class="module-thumbnail"><i class="fas fa-book-open"></i></div>
+                {% endif %}
+                <div class="module-content">
+                    <h3>{{ path.module.name }}</h3>
+                    <div class="module-description">{{ path.module.description|default_if_none:"No description provided." }}</div>
+                    <div class="flex flex-wrap mt-2">
+                        <span class="badge"><i class="fas fa-clock mr-1"></i> {{ path.module.estimated_time }}</span>
+                        <span class="badge"><i class="fas fa-bolt mr-1"></i> {{ path.module.get_difficulty_display }}</span>
+                        <span class="badge"><i class="fas fa-star mr-1"></i> {{ path.module.xp_reward }} XP</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span>Your Progress</span>
+                    <span>{{ path.progress }}%</span>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: {{ path.progress }}%;"></div>
+                </div>
+            </div>
+            
+            <div class="flex justify-between items-center mt-4">
+                <span class="status-badge {% if path.status == 'completed' %}status-completed{% elif path.status == 'in_progress' %}status-in-progress{% else %}status-not-started{% endif %}">
+                    <i class="fas {% if path.status == 'completed' %}fa-check-circle{% elif path.status == 'in_progress' %}fa-spinner{% else %}fa-flag{% endif %} mr-1"></i>
+                    {{ path.get_status_display }}
+                </span>
+                
+                <div class="relative">
+                    <button type="button" onclick="toggleDropdown('dropdown-{{ path.id }}')" class="dropdown-btn" aria-label="Open actions">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div id="dropdown-{{ path.id }}" class="dropdown-menu" tabindex="-1">
+                        {% if path.status == 'not_started' %}
+                            <a href="{% url 'start_module' path.module.id %}"><i class="fas fa-play mr-1"></i> Start Module</a>
+                        {% elif path.status == 'in_progress' %}
+                            <a href="{% url 'continue_module' path.module.id %}"><i class="fas fa-play-circle mr-1"></i> Continue</a>
+                        {% else %}
+                            <a href="{% url 'review_module' path.module.id %}"><i class="fas fa-redo mr-1"></i> Review</a>
+                        {% endif %}
+                        {% if path.status != 'completed' %}
+                            <a href="#" data-url="{% url 'remove_from_path' path.module.id %}" class="remove-link"><i class="fas fa-trash-alt mr-1"></i> Remove</a>
+                        {% else %}
+                            <span class="disabled"><i class="fas fa-trash-alt mr-1"></i> Remove</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6">
+                {% if path.status == 'not_started' %}
+                    <a href="{% url 'start_module' path.module.id %}" class="btn btn-primary w-full text-center">
+                        <i class="fas fa-play mr-1"></i> Start Learning
+                    </a>
+                {% elif path.status == 'in_progress' %}
+                    <a href="{% url 'continue_module' path.module.id %}" class="btn btn-primary w-full text-center">
+                        <i class="fas fa-arrow-right mr-1"></i> Continue
+                    </a>
+                {% else %}
+                    <a href="{% url 'review_module' path.module.id %}" class="btn btn-success w-full text-center">
+                        <i class="fas fa-redo mr-1"></i> Review Again
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h3>Your learning path is empty</h3>
+            <p>Add modules to your learning path to start your educational journey and track your progress</p>
+            <a href="{% url 'module_list' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Browse Modules
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Badge Modal -->
+<div id="badgeModal" class="modal-overlay">
+    <div class="modal">
+        <button class="modal-close" onclick="closeBadgeModal()">&times;</button>
+        <div class="modal-icon success">
+            <i class="fas fa-trophy"></i>
+        </div>
+        <h3>Congratulations!</h3>
+        <p>You've earned a new achievement for completing this module</p>
+        
+        <div class="modal-badge">
+            <div class="modal-badge-icon">
+                <i class="fas fa-award"></i>
+            </div>
+            <div class="modal-badge-content">
+                <h4 id="badgeName">Module Master</h4>
+                <p id="badgeDescription">Awarded for completing a learning module</p>
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button onclick="closeBadgeModal()" class="modal-btn modal-btn-primary">
+                Continue Learning
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal-overlay">
+    <div class="modal">
+        <div class="modal-icon warning">
+            <i class="fas fa-exclamation-triangle"></i>
+        </div>
+        <h3>Confirm Removal</h3>
+        <p>Are you sure you want to remove this module from your learning path? Your progress will not be saved.</p>
+        
+        <div class="modal-actions">
+            <button id="cancelBtn" class="modal-btn modal-btn-secondary">
+                Cancel
+            </button>
+            <button id="confirmBtn" class="modal-btn modal-btn-danger">
+                Remove
+            </button>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dropdown toggle
+    function toggleDropdown(id) {
+        const thisDropdown = document.getElementById(id);
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            if(menu !== thisDropdown) menu.classList.remove('show');
+        });
+        if(thisDropdown) thisDropdown.classList.toggle('show');
+    }
+    
+    // Close all dropdowns if click outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.relative')) {
+            document.querySelectorAll('.dropdown-menu').forEach(function(menu) {
+                menu.classList.remove('show');
+            });
+        }
+    });
+
+    // Badge modal
+    function showBadgeModal(badgeData) {
+        if (!badgeData) return;
+        document.getElementById('badgeName').textContent = badgeData.name || 'Achievement Unlocked';
+        document.getElementById('badgeDescription').textContent = badgeData.description || 'Awarded for completing a learning module';
+        
+        const modal = document.getElementById('badgeModal');
+        modal.classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    function closeBadgeModal() {
+        document.getElementById('badgeModal').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+    
+    // Check for badge data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const badgeData = sessionStorage.getItem('newBadge');
+        if(badgeData) {
+            try {
+                showBadgeModal(JSON.parse(badgeData));
+                sessionStorage.removeItem('newBadge');
+            } catch(e) {
+                console.error('Error parsing badge data:', e);
+            }
+        }
+        
+        // Animate progress bars
+        document.querySelectorAll('.progress-bar-fill').forEach(function(bar) {
+            const width = bar.style.width;
+            bar.style.width = "0%";
+            setTimeout(function() { 
+                bar.style.width = width; 
+            }, 50);
+        });
+    });
+    
+    // Confirmation Modal logic
+    document.addEventListener('DOMContentLoaded', function() {
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        let targetUrl = '';
+        
+        // Set up remove links
+        document.querySelectorAll('.remove-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                targetUrl = this.getAttribute('data-url');
+                confirmModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+        
+        // Cancel button
+        cancelBtn.addEventListener('click', () => {
+            confirmModal.classList.remove('show');
+            document.body.style.overflow = '';
+            targetUrl = '';
+        });
+        
+        // Confirm button
+        confirmBtn.addEventListener('click', () => {
+            if(targetUrl) window.location.href = targetUrl;
+        });
+        
+        // Close modal when clicking outside
+        confirmModal.addEventListener('click', e => {
+            if(e.target === confirmModal) {
+                confirmModal.classList.remove('show');
+                document.body.style.overflow = '';
+                targetUrl = '';
+            }
+        });
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.show').forEach(modal => {
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            });
+        }
+    });
+
+
+
+document.getElementById('ai-mode-btn').addEventListener('click', function(event) {
+    event.preventDefault();
+
+    const glow = document.getElementById('glow-edge');
+    glow.style.opacity = '1';
+
+    setTimeout(() => {
+        glow.style.opacity = '0';
+    }, 600);
+
+    setTimeout(() => {
+        window.location.href = this.href;
+    }, 1800);
+});
+
+
+</script>
+{% endblock %}

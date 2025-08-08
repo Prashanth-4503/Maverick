@@ -1,0 +1,913 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Team Management – {{ hackathon.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+  /* Root theme colors: light & pastel shades */
+  :root {
+    --primary-blue: #3b82f6;           /* bright blue */
+    --primary-light: #60a5fa;
+    --primary-dark: #2563eb;
+    --accent-yellow: #facc15;          /* pastel yellow */
+    --accent-orange: #fbbf24;
+    --accent-green: #22c55e;
+    --background-gradient: #ffffff;    /* pure white background */
+    --text-primary: #1f2937;           /* dark slate, for text */
+    --text-secondary: #4b5563;         /* subtle gray */
+    --border-light: #e5e7eb;           /* light border color */
+    --btn-shadow: rgba(59, 130, 246, 0.2);
+  }
+
+  /* Background and base */
+  body {
+    background: var(--background-gradient);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    margin: 0;
+  }
+
+  /* Container */
+  .container {
+    max-width: 960px;
+    margin: 3rem auto 4rem;
+    padding: 0 1.5rem;
+  }
+
+  /* Header */
+  .header {
+    background: #f9fafb;
+    border-radius: 16px;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header h1 {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0.5rem;
+    color: var(--primary-blue);
+  }
+
+  .header p {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+
+  .header-stats {
+    display: inline-flex;
+    align-items: center;
+    background: #e0e7ff;
+    color: var(--primary-blue);
+    padding: 0.5rem 1.4rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    box-shadow: 0 4px 10px var(--btn-shadow);
+    user-select: none;
+  }
+
+  /* Main card container */
+  .main-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 28px rgba(147, 197, 253, 0.25);
+    margin-bottom: 2.5rem;
+  }
+  .main-card:hover {
+    box-shadow: 0 12px 40px rgba(96, 165, 250, 0.35);
+  }
+
+  /* Team status card */
+  .team-status-card {
+    background: #f3f4f6;
+    border-radius: 16px;
+    padding: 2rem;
+    margin-bottom: 2.5rem;
+    box-shadow: 0 8px 24px rgba(147, 197, 253, 0.2);
+    position: relative;
+    overflow: visible;
+  }
+
+  .team-status-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 3rem;
+    width: calc(100% - 6rem);
+    height: 5px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-yellow));
+    border-radius: 9999px;
+    opacity: 0.6;
+  }
+
+  .team-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  @media(min-width: 640px) {
+    .team-header {
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+    }
+  }
+
+  .team-info {
+    flex: 1;
+  }
+
+  .team-name {
+    font-size: 1.625rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    margin: 0;
+    line-height: 1.25;
+  }
+
+  .team-meta {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    margin-top: 0.35rem;
+  }
+
+  .team-code {
+    background: #fef3c7;
+    border: 1px solid #fde68a;
+    padding: 0.5rem 1.1rem;
+    border-radius: 12px;
+    font-family: monospace;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #b45309;
+    display: inline-block;
+    user-select: all;
+    letter-spacing: 0.18em;
+  }
+
+  .team-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* No team state */
+  .no-team-state {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: #f9fafb;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(147, 197, 253, 0.15);
+  }
+
+  .no-team-state h2 {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: var(--primary-blue);
+    margin-bottom: 0.5rem;
+  }
+
+  .no-team-state p {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1.25rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* Team members */
+  .members-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1.5rem;
+  }
+
+  .members-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .members-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .member-tag {
+    background: linear-gradient(135deg, #BFDBFE, #93C5FD);
+    color: #1E40AF;
+    padding: 0.5rem 1rem;
+    border-radius: 9999px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+    user-select: none;
+    white-space: nowrap;
+  }
+
+  /* Teams grid */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* Team card */
+  .team-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 1.8rem 2rem;
+    position: relative;
+    overflow: visible;
+    box-shadow: 0 8px 28px rgba(147, 197, 253, 0.35);
+    transition: box-shadow 0.3s ease;
+  }
+
+  .team-card:hover {
+    box-shadow: 0 12px 40px rgba(96, 165, 250, 0.5);
+  }
+
+  .team-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 5px;
+    background: linear-gradient(90deg, var(--accent-green), var(--accent-yellow), var(--accent-orange));
+    border-radius: 9999px;
+    opacity: 0.4;
+  }
+
+  .team-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .team-card-name {
+    font-size: 1.25rem;
+    font-weight: 900;
+    color: var(--primary-blue);
+    margin: 0;
+  }
+
+  .team-size-badge {
+    padding: 0.35rem 1.1rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    user-select: none;
+  }
+
+  .badge-open {
+    background: #d1fae5;
+    color: #15803d;
+    border: 1px solid #22c55e;
+  }
+
+  .badge-full {
+    background: #fee2e2;
+    color: #dc2626;
+    border: 1px solid #ef4444;
+  }
+
+  .badge-yours {
+    background: #fef3c7;
+    color: #b45309;
+    border: 1px solid #facc15;
+  }
+
+  .team-leader {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+  }
+
+  .team-description {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    margin-bottom: 1rem;
+    max-height: 4rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .team-card-actions {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  /* Buttons */
+  .btn {
+    flex-shrink: 0;
+    padding: 0.55rem 1.4rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    cursor: pointer;
+    background-color: var(--primary-blue);
+    color: white;
+    box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+    white-space: nowrap;
+  }
+
+  .btn:hover {
+    background-color: var(--primary-light);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.5);
+  }
+
+  .btn-success {
+    background-color: var(--accent-green);
+  }
+  .btn-success:hover {
+    background-color: #16a34a;
+  }
+
+  .btn-danger {
+    background-color: #dc2626;
+  }
+  .btn-danger:hover {
+    background-color: #b91c1c;
+  }
+
+  .btn-secondary {
+    background-color: #64748b;
+  }
+  .btn-secondary:hover {
+    background-color: #475569;
+  }
+
+  .btn-yellow {
+    background-color: var(--accent-yellow);
+    color: #713f12;
+  }
+  .btn-yellow:hover {
+    background-color: var(--accent-orange);
+    color: #713f12;
+  }
+
+  .btn-outline {
+    background: transparent;
+    border: 2px solid var(--accent-yellow);
+    color: var(--accent-yellow);
+  }
+  .btn-outline:hover {
+    background: var(--accent-yellow);
+    color: #713f12;
+  }
+
+  .btn-full {
+    width: 100%;
+    text-align: center;
+  }
+
+  .btn-flex {
+    flex: 1;
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-secondary);
+  }
+
+  .empty-icon {
+    font-size: 4.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .empty-state h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--primary-blue);
+  }
+
+  .empty-state p {
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Modal styles */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(255, 255, 255, 0.85);
+    display: none;
+    z-index: 60;
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+  }
+
+  .modal-backdrop.show {
+    display: flex;
+    animation: fadeIn 0.25s ease forwards;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-content {
+    background: #ffffff;
+    border-radius: 1rem;
+    padding: 2.5rem 2rem;
+    box-shadow: 0 24px 48px rgba(59, 130, 246, 0.3);
+    max-width: 400px;
+    width: 100%;
+    color: var(--text-primary);
+    animation: scaleIn 0.3s ease forwards;
+  }
+
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .modal-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    text-align: center;
+    color: var(--primary-blue);
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-label {
+    display: block;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 2px solid var(--border-light);
+    border-radius: 8px;
+    background: #f9fafb;
+    color: var(--text-primary);
+    font-size: 1rem;
+    font-weight: 500;
+    transition: border-color 0.3s ease;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+  }
+
+  .form-input::placeholder {
+    color: var(--border-light);
+  }
+
+  .form-textarea {
+    resize: none;
+    min-height: 100px;
+  }
+
+  .form-input-code {
+    text-align: center;
+    font-family: monospace;
+    font-size: 1.5rem;
+    font-weight: 900;
+    letter-spacing: 0.25em;
+    color: var(--accent-yellow);
+    user-select: all;
+    background: #fffbeb;
+    border: none;
+    padding: 1rem 0;
+    border-radius: 8px;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1.25rem;
+    margin-top: 2rem;
+  }
+
+  .join-hint {
+    background: #bfdbfe;
+    border: 1px solid #93c5fd;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+    color: #2563eb;
+  }
+
+  .code-display {
+    background: #bfdbfe;
+    border-radius: 12px;
+    padding: 1.8rem 0;
+    margin-bottom: 1rem;
+    text-align: center;
+    color: #b45309;
+  }
+
+  .code-text {
+    font-size: 2.5rem;
+    font-weight: 900;
+    font-family: monospace;
+    letter-spacing: 0.32em;
+  }
+
+  .code-subtitle {
+    font-size: 1rem;
+    margin-top: 1rem;
+    color: #78350f;
+    font-weight: 600;
+  }
+
+  /* Back button */
+  .back-section {
+    text-align: center;
+    margin-top: 2.5rem;
+  }
+  .back-section a.btn {
+    padding: 0.6rem 1.25rem;
+    font-weight: 700;
+    background-color: var(--primary-blue);
+    color: white;
+    border-radius: 9999px;
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.25);
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+  }
+  .back-section a.btn:hover {
+    background-color: var(--primary-light);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+    .header h1 {
+      font-size: 2rem;
+    }
+    .team-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.6rem;
+    }
+    .team-actions,
+    .action-buttons {
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .btn {
+      width: 100%;
+    }
+    .teams-grid {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+    .modal-content {
+      margin: 1rem;
+      width: calc(100% - 2rem);
+      padding: 2rem 1.75rem;
+    }
+  }
+  @media (min-width: 640px) {
+    .team-header {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .action-buttons {
+      flex-direction: row;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div class="header-content">
+      <h1>👥 Team Management</h1>
+      <p>{{ hackathon.name }}</p>
+      <div class="header-stats">
+        {{ all_teams.count }} Teams • {{ total_participants }} Participants
+      </div>
+    </div>
+  </div>
+
+  <!-- User Team Status -->
+  {% if user_registration %}
+  <div class="team-status-card">
+    {% if user_team %}
+      <div class="team-header">
+        <div class="team-info">
+          <h2 class="team-name">{{ user_team.name }}</h2>
+          <div class="team-meta">
+            {{ user_team.member_count }} member{{ user_team.member_count|pluralize }} • 
+            {% if user_team.leader == request.user %}
+              You are the leader
+            {% else %}
+              Led by {{ user_team.leader.get_full_name|default:user_team.leader.username }}
+            {% endif %}
+          </div>
+          <div class="team-code">
+            Team Code: <strong>{{ user_team.invite_code }}</strong>
+          </div>
+        </div>
+        <div class="team-actions">
+          {% if user_team.leader == request.user %}
+          <button onclick="getTeamJoinCode()" class="btn btn-yellow" type="button" aria-label="Copy team code">📋 Copy Code</button>
+          {% endif %}
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="leave_team">
+            <button type="submit" class="btn btn-danger" aria-label="Leave team" onclick="return confirm('Are you sure you want to leave this team?')">🚪 Leave Team</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="members-section" aria-label="Team Members">
+        <div class="members-title">Team Members</div>
+        <div class="members-list">
+          {% for m in user_team.members.all %}
+            <span class="member-tag" title="{{ m.get_full_name|default:m.username }}">
+              {{ m.get_full_name|default:m.username }}
+              {% if m == user_team.leader %}<span title="Team Leader">👑</span>{% endif %}
+            </span>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      <div class="no-team-state">
+        <h2>You're Flying Solo!</h2>
+        <p>Join an existing team or create your own to collaborate with other participants.</p>
+        <div class="action-buttons">
+          <button onclick="showCreateTeamModal()" type="button" class="btn btn-primary">➕ Create Team</button>
+          <button onclick="showJoinCodeModal()" type="button" class="btn btn-success">🔗 Join with Code</button>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  <!-- Teams List -->
+  <div class="main-card" role="region" aria-label="Team List">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary-blue); margin: 0;">
+        {% if is_creator %}All Teams ({{ all_teams.count }}){% else %}Browse Teams{% endif %}
+      </h2>
+      {% if not user_team and user_registration %}
+      <button onclick="showCreateTeamModal()" type="button" class="btn btn-primary">➕ Create New Team</button>
+      {% endif %}
+    </div>
+
+    {% if all_teams %}
+    <div class="teams-grid">
+      {% for t in all_teams %}
+      <div class="team-card" tabindex="0" aria-labelledby="team-name-{{ t.id }}" aria-describedby="team-desc-{{ t.id }}">
+        <div class="team-card-header">
+          <h3 id="team-name-{{ t.id }}" class="team-card-name">{{ t.name }}</h3>
+          <span class="team-size-badge {% if t.member_count >= hackathon.team_size_max %}badge-full{% else %}badge-open{% endif %}" aria-label="Team size">
+            {{ t.member_count }}/{{ hackathon.team_size_max }}
+          </span>
+        </div>
+        <div class="team-leader"><strong>Leader:</strong> {{ t.leader.get_full_name|default:t.leader.username }}</div>
+        {% if t.description %}
+        <p id="team-desc-{{ t.id }}" class="team-description" title="{{ t.description }}">{{ t.description|truncatewords:18 }}</p>
+        {% endif %}
+        <div class="team-card-actions">
+          {% if user_team == t %}
+          <div class="btn btn-yellow btn-full" aria-current="true" aria-label="Your team">✅ Your Team</div>
+          {% elif not user_team and t.member_count < hackathon.team_size_max %}
+          <button onclick="showJoinCodeModal('{{ t.name|escapejs }}')" type="button" class="btn btn-secondary btn-flex" aria-label="Ask to join {{ t.name }}">🔑 Ask for Code</button>
+          {% elif t.member_count >= hackathon.team_size_max %}
+          <div class="btn btn-outline btn-full" style="opacity: 0.6; cursor: not-allowed;" aria-disabled="true" aria-label="Team is full">🔒 Team Full</div>
+          {% endif %}
+          {% if is_creator %}
+          <button onclick="viewTeamDetails({{ t.id }})" type="button" class="btn btn-primary" style="padding: 0.5rem;" aria-label="View details for {{ t.name }}">👁️</button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state" role="alert" aria-live="polite">
+      <div class="empty-icon" aria-hidden="true">👥</div>
+      <h3>No teams yet!</h3>
+      <p>Be the first to create a team and start collaborating.</p>
+      {% if user_registration and not user_team %}
+      <button onclick="showCreateTeamModal()" class="btn btn-primary">Create First Team</button>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Back Button -->
+  <div class="back-section">
+    <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn" style="background-color: var(--primary-blue); color:white; border-radius:9999px; padding: 0.6rem 1.25rem;">← Back to Hackathon</a>
+  </div>
+</div>
+
+<!-- Modals -->
+<!-- Create Team Modal -->
+<div id="createTeamModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="createTeamTitle" tabindex="-1">
+  <div class="modal-content">
+    <h3 id="createTeamTitle" class="modal-title">Create New Team</h3>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="create_team" />
+      <div class="form-group">
+        <label for="teamNameInput" class="form-label">Team Name</label>
+        <input id="teamNameInput" name="team_name" required class="form-input" placeholder="Enter team name" autocomplete="off" />
+      </div>
+      <div class="form-group">
+        <label for="teamDescInput" class="form-label">Description</label>
+        <textarea id="teamDescInput" name="team_description" rows="3" required class="form-input form-textarea" placeholder="What's your team about?"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-primary btn-flex">Create Team</button>
+        <button type="button" onclick="hideCreateTeamModal()" class="btn btn-outline btn-flex">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Join Code Modal -->
+<div id="joinCodeModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="joinCodeTitle" tabindex="-1">
+  <div class="modal-content">
+    <h3 id="joinCodeTitle" class="modal-title">Join Team with Code</h3>
+    <div id="joinTeamHint" class="join-hint" style="display:none;" role="alert">Ask the team leader for their invite code to join this team.</div>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <input type="hidden" name="action" value="join_team" />
+      <div class="form-group">
+        <label for="inviteCodeInput" class="form-label">Team Invite Code</label>
+        <input id="inviteCodeInput" name="invite_code" maxlength="8" required class="form-input form-input-code" placeholder="Enter code" autocomplete="off" />
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn btn-success btn-flex">Join Team</button>
+        <button type="button" onclick="hideJoinCodeModal()" class="btn btn-outline btn-flex">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Team Code Display Modal -->
+<div id="teamCodeModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="teamCodeTitle" tabindex="-1">
+  <div class="modal-content">
+    <h3 id="teamCodeTitle" class="modal-title">Your Team Invite Code</h3>
+    <div class="code-display" aria-live="polite" aria-atomic="true" role="region">
+      <div id="teamJoinCode" class="code-text" tabindex="0">{{ user_team.invite_code }}</div>
+      <div class="code-subtitle">Share this code with your teammates</div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="copyJoinCode()" type="button" class="btn btn-yellow btn-flex" aria-label="Copy invite code">📋 Copy Code</button>
+      <button onclick="hideTeamCodeModal()" type="button" class="btn btn-outline btn-flex">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* Modal toggles */
+  function showCreateTeamModal() { document.getElementById('createTeamModal').classList.add('show'); }
+  function hideCreateTeamModal() { document.getElementById('createTeamModal').classList.remove('show'); }
+  function showJoinCodeModal(teamName) {
+    const modal = document.getElementById('joinCodeModal');
+    const hint = document.getElementById('joinTeamHint');
+    if (teamName) {
+      hint.innerHTML = `Ask the leader of <strong>"${teamName}"</strong> for their invite code to join this team.`;
+      hint.style.display = 'block';
+    } else {
+      hint.style.display = 'none';
+    }
+    modal.classList.add('show');
+  }
+  function hideJoinCodeModal() { document.getElementById('joinCodeModal').classList.remove('show'); }
+  function showTeamCodeModal() { document.getElementById('teamCodeModal').classList.add('show'); }
+  function hideTeamCodeModal() { document.getElementById('teamCodeModal').classList.remove('show'); }
+
+  function getTeamJoinCode() {
+    const code = '{{ user_team.invite_code|default:"" }}';
+    document.getElementById('teamJoinCode').textContent = code;
+    if (code) {
+      navigator.clipboard.writeText(code)
+        .then(() => showNotification('Team code copied to clipboard: ' + code, 'success'))
+        .catch(() => showTeamCodeModal());
+    }
+  }
+
+  function copyJoinCode() {
+    const code = document.getElementById('teamJoinCode').textContent;
+    navigator.clipboard.writeText(code)
+      .then(() => showNotification('Team code copied: ' + code, 'success'))
+      .catch(() => prompt('Copy this code:', code));
+  }
+
+  /* Close modal on overlay click / Esc */
+  document.addEventListener('click', e => {
+    if (e.target.classList.contains('modal-backdrop')) {
+      hideCreateTeamModal(); hideJoinCodeModal(); hideTeamCodeModal();
+    }
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      hideCreateTeamModal(); hideJoinCodeModal(); hideTeamCodeModal();
+    }
+  });
+
+  // Notification system
+  function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    const bgColors = {
+      success: 'rgba(34, 197, 94, 0.9)',
+      error: 'rgba(239, 68, 68, 0.9)',
+      info: 'rgba(59, 130, 246, 0.9)',
+      warning: 'rgba(251, 191, 36, 0.9)',
+    };
+
+    notification.style.cssText = `
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      background: ${bgColors[type] || bgColors.info};
+      color: white;
+      font-weight: 600;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(10px);
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      user-select: none;
+    `;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => notification.style.transform = 'translateX(0)', 20);
+    setTimeout(() => {
+      notification.style.transform = 'translateX(100%)';
+      setTimeout(() => notification.remove(), 300);
+    }, 2800);
+  }
+
+  // Animate team cards on load (optional)
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.team-card');
+    cards.forEach((card, i) => {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(15px)';
+      setTimeout(() => {
+        card.style.transition = 'all 0.4s ease-out';
+        card.style.opacity = '1';
+        card.style.transform = 'translateY(0)';
+      }, i * 90);
+    });
+  });
+</script>
+{% endblock %}

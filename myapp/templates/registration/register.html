@@ -1,0 +1,219 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Register - Mavericks</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- FontAwesome CDN for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    /* Optional: Basic animations if you want to add them */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes slideBottom {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .animate-slide-bottom {
+      animation: slideBottom 0.8s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease forwards;
+    }
+
+    @keyframes slideRight {
+      0% { opacity: 0; transform: translateX(-10px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    .animate-slide-right {
+      animation: slideRight 0.6s ease forwards;
+    }
+  </style>
+
+</head>
+<body class="bg-gradient-to-r from-indigo-50 to-blue-50 min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
+
+  <div class="max-w-md w-full space-y-8 bg-white p-10 rounded-xl shadow-2xl transform transition-all duration-500 hover:scale-[1.01]">
+
+    <div class="text-center">
+      <img class="mx-auto h-12 w-auto animate-float" src="{% static 'images/logo1.png' %}" alt="Mavericks Logo" />
+      <h2 class="mt-6 text-3xl font-extrabold text-gray-900 animate-slide-bottom">Create your account</h2>
+      <p class="mt-2 text-sm text-gray-600 animate-slide-bottom delay-100">
+        Already have an account? <a href="{% url 'login' %}" class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a>
+      </p>
+    </div>
+
+    {% if form.errors %}
+      <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-4 animate-slide-right">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-circle h-5 w-5 text-red-500"></i>
+          </div>
+          <div class="ml-3">
+            <p class="text-sm text-red-700">
+              {% for field, errors in form.errors.items %}
+                {% for error in errors %}
+                  {{ error }}<br />
+                {% endfor %}
+              {% endfor %}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <form class="mt-8 space-y-6 animate-fade-in delay-200" method="POST" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      <div class="rounded-md shadow-sm space-y-4">
+
+        <!-- Profile Picture Upload -->
+        <div class="flex flex-col items-center">
+          <div class="relative mb-4 group">
+            <div class="h-24 w-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden border-4 border-white shadow-lg transition-all duration-300 group-hover:border-indigo-200 group-hover:shadow-xl">
+              <img id="profile-preview" src="{% static 'images/default-profile.png' %}" alt="Profile Preview" class="h-full w-full object-cover hidden" />
+              <i class="fas fa-user text-4xl text-gray-400" id="profile-icon"></i>
+            </div>
+            <label for="id_profile_picture" class="absolute -bottom-2 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition duration-200">
+              <i class="fas fa-camera"></i>
+              <input type="file" name="profile_picture" id="id_profile_picture" class="hidden" accept="image/*" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Username -->
+        <div class="relative">
+          <input id="id_username" name="username" type="text" required placeholder="Username"
+            value="{{ form.username.value|default:'' }}"
+            class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10" />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-user text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="relative">
+          <input id="id_email" name="email" type="email" required placeholder="Email address"
+            value="{{ form.email.value|default:'' }}"
+            class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10" />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-envelope text-gray-400"></i>
+          </div>
+        </div>
+
+        <!-- Password1 -->
+        <div class="relative">
+          <input id="id_password1" name="password1" type="password" required placeholder="Password"
+            class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10" />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-lock text-gray-400"></i>
+          </div>
+          <div id="password-strength" class="text-xs mt-1"></div>
+        </div>
+
+        <!-- Password2 -->
+        <div class="relative">
+          <input id="id_password2" name="password2" type="password" required placeholder="Confirm Password"
+            class="appearance-none rounded-lg relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm pl-10" />
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <i class="fas fa-lock text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center">
+        <input id="terms" name="terms" type="checkbox" required
+          class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded" />
+        <label for="terms" class="ml-2 block text-sm text-gray-900">
+          I agree to the <a href="#" class="text-indigo-600 hover:text-indigo-500">Terms of Service</a> and <a href="#"
+            class="text-indigo-600 hover:text-indigo-500">Privacy Policy</a>
+        </label>
+      </div>
+
+      <div>
+        <button type="submit"
+          class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg">
+          <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+            <i class="fas fa-user-plus text-indigo-300 group-hover:text-indigo-200"></i>
+          </span>
+          Register
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Profile picture preview
+    document.getElementById('id_profile_picture').addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const preview = document.getElementById('profile-preview');
+          preview.src = event.target.result;
+          preview.classList.remove('hidden');
+          document.getElementById('profile-icon').classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    // Password strength indicator
+    document.getElementById('id_password1').addEventListener('input', function () {
+      const password = this.value;
+      const strengthBadge = document.getElementById('password-strength');
+
+      let strength = 0;
+      if (password.length >= 8) strength += 1;
+      if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 1;
+      if (password.match(/\d/)) strength += 1;
+      if (password.match(/[^a-zA-Z\d]/)) strength += 1;
+
+      let text = '';
+      let color = '';
+      switch (strength) {
+        case 0:
+        case 1:
+          text = 'Weak';
+          color = 'text-red-500';
+          break;
+        case 2:
+          text = 'Moderate';
+          color = 'text-yellow-500';
+          break;
+        case 3:
+          text = 'Strong';
+          color = 'text-green-500';
+          break;
+        case 4:
+          text = 'Very Strong';
+          color = 'text-green-600 font-bold';
+          break;
+      }
+      if (password.length > 0) {
+        strengthBadge.textContent = `Strength: ${text}`;
+        strengthBadge.className = `text-xs mt-1 ${color}`;
+      } else {
+        strengthBadge.textContent = '';
+      }
+    });
+  </script>
+
+</body>
+</html>

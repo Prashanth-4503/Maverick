@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Submit Project - {{ hackathon.name }} - Mavericks{% endblock %}
+
+{% block extra_css %}
+<style>
+    .main-card {
+        background: rgba(255, 255, 255, 0.98);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+        
+    .main-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px -8px rgba(99, 102, 241, 0.12);
+        border-color: rgba(99, 102, 241, 0.15);
+    }
+    
+    .feature-icon {
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+        border: 1px solid rgba(99, 102, 241, 0.12);
+    }
+    
+    .indigo-gradient {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    }
+    
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        text-decoration: none;
+        display: inline-block;
+        cursor: pointer;
+    }
+    
+    .btn-primary-custom:hover:not(:disabled) {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-primary-custom:disabled {
+        background: #9ca3af;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .btn-secondary-custom {
+        background: #6b7280;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+    
+    .btn-secondary-custom:hover {
+        background: #4b5563;
+        transform: translateY(-1px);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .info-card {
+        background: rgba(99, 102, 241, 0.03);
+        border: 1px solid rgba(99, 102, 241, 0.08);
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .alert {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .alert-info { background-color: #dbeafe; border: 1px solid #93c5fd; color: #1e40af; }
+    
+    .file-upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        background: #f9fafb;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .file-upload-area:hover {
+        border-color: #6366f1;
+        background: #f0f2ff;
+    }
+    
+    .file-upload-area.dragover {
+        border-color: #4f46e5;
+        background: #eef2ff;
+        transform: scale(1.02);
+    }
+    
+    .file-info-display {
+        background: #f3f4f6;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    
+    <!-- Header -->
+    <div class="indigo-gradient rounded-2xl p-6 mb-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold mb-2">Submit Your Project</h1>
+                <p class="text-indigo-100">Upload your project files for: {{ hackathon.name }}</p>
+            </div>
+            <div class="hidden lg:block">
+                <div class="feature-icon w-16 h-16 rounded-xl flex items-center justify-center bg-white bg-opacity-20">
+                    <i class="fas fa-upload text-white text-2xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Assignment Info -->
+    {% if submission %}
+    <div class="main-card p-6 mb-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fas fa-lightbulb text-indigo-600"></i>
+            </div>
+            Your Assigned Project
+        </h2>
+        
+        <div class="info-card">
+            <h3 class="text-lg font-bold text-indigo-700 mb-2">{{ submission.project_title }}</h3>
+            <p class="text-gray-700 leading-relaxed">{{ submission.project_description|linebreaksbr }}</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- File Upload Form -->
+    <div class="main-card p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4 flex items-center">
+            <div class="feature-icon w-10 h-10 rounded-xl flex items-center justify-center mr-3">
+                <i class="fas fa-cloud-upload-alt text-indigo-600"></i>
+            </div>
+            {% if existing_submission %}Update Your Project{% else %}Upload Your Project{% endif %}
+        </h2>
+        
+        {% if existing_submission %}
+        <div class="alert alert-info">
+            <p class="text-sm">
+                You have already submitted a project. Uploading a new file will **replace** your current submission and trigger a new AI evaluation.
+            </p>
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" id="submission-form">
+            {% csrf_token %}
+            
+            <!-- File Upload Area -->
+            <div class="file-upload-area" id="file-upload-area">
+                <div class="mb-4">
+                    <i class="fas fa-file-archive text-4xl text-gray-400 mb-2"></i>
+                    <h3 class="text-lg font-semibold text-gray-700">Choose your project file</h3>
+                    <p class="text-gray-500 mb-4">Drag and drop your .zip file here, or click to browse</p>
+                </div>
+                
+                <!-- ✅ THIS IS THE FIXED INPUT. The name attribute is now correct. -->
+                <input type="file" 
+                       name="project_files" 
+                       id="file-input-field" 
+                       accept=".zip"
+                       class="hidden"
+                       required>
+                
+                <button type="button" 
+                        onclick="document.getElementById('file-input-field').click()" 
+                        class="btn-primary-custom">
+                    <i class="fas fa-folder-open mr-2"></i>Select File
+                </button>
+                
+                <p class="text-xs text-gray-500 mt-4">
+                    Maximum file size: {{ max_file_size_mb }}MB • Only .zip files are accepted
+                </p>
+            </div>
+            
+            <!-- File Info Display (when a file is selected) -->
+            <div id="file-info-display" class="file-info-display hidden">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-file-archive text-indigo-600 mr-2"></i>
+                        <span id="file-name-display" class="font-medium"></span>
+                    </div>
+                    <div class="flex items-center">
+                        <span id="file-size-display" class="text-sm text-gray-500 mr-3"></span>
+                        <button type="button" 
+                                onclick="clearFileSelection()" 
+                                class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Button Area -->
+            <div class="flex items-center justify-between mt-6 border-t border-gray-200 pt-4">
+                <a href="{% url 'hackathon_detail' hackathon.id %}" class="btn-secondary-custom">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Hackathon
+                </a>
+                
+                <button type="submit" 
+                        id="submit-button" 
+                        class="btn-primary-custom" 
+                        disabled>
+                    <i class="fas fa-upload mr-2"></i>
+                    {% if existing_submission %}Update and Evaluate{% else %}Submit and Evaluate{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file-input-field');
+    const fileUploadArea = document.getElementById('file-upload-area');
+    const fileInfoDisplay = document.getElementById('file-info-display');
+    const fileNameDisplay = document.getElementById('file-name-display');
+    const fileSizeDisplay = document.getElementById('file-size-display');
+    const submitBtn = document.getElementById('submit-button');
+    const form = document.getElementById('submission-form');
+    
+    // File input change handler
+    fileInput.addEventListener('change', function(e) {
+        handleFileSelect(e.target.files[0]);
+    });
+    
+    // Drag and drop handlers
+    fileUploadArea.addEventListener('click', () => fileInput.click());
+    fileUploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.add('dragover');
+    });
+    fileUploadArea.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+    });
+    fileUploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        fileUploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            handleFileSelect(files[0]);
+        }
+    });
+    
+    function handleFileSelect(file) {
+        if (!file) return;
+        
+        const maxSize = {{ max_file_size_mb }} * 1024 * 1024;
+        if (file.size > maxSize) {
+            alert(`File size exceeds {{ max_file_size_mb }}MB limit. Please choose a smaller file.`);
+            clearFileSelection();
+            return;
+        }
+        
+        // Display file info and enable submit button
+        fileNameDisplay.textContent = file.name;
+        fileSizeDisplay.textContent = formatFileSize(file.size);
+        fileInfoDisplay.classList.remove('hidden');
+        submitBtn.disabled = false;
+        
+        // Hide the drag-and-drop area
+        fileUploadArea.style.display = 'none';
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    // Allows user to cancel their file selection
+    window.clearFileSelection = function() {
+        fileInput.value = '';
+        fileInfoDisplay.classList.add('hidden');
+        fileUploadArea.style.display = 'block';
+        submitBtn.disabled = true;
+    };
+    
+    // Form submission handler to show a loading state
+    form.addEventListener('submit', function(e) {
+        if (!fileInput.files[0]) {
+            e.preventDefault();
+            alert('Please select a file to upload.');
+            return;
+        }
+        
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Uploading & Evaluating...';
+        submitBtn.disabled = true;
+    });
+});
+</script>
+{% endblock %}

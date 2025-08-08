@@ -1,0 +1,10 @@
+Software Engineering,Which technique is used for measuring code coverage?,hard,Code review,Testing tools that track executed code,Static analysis,Performance profiling,Testing tools that track executed code
+Software Engineering,What is the difference between verification and validation?,hard,No difference,Verification checks requirements validation checks user needs,Validation checks requirements verification checks user needs,Both same,Verification checks requirements validation checks user needs
+Software Engineering,Which architectural style is based on message passing?,hard,Layered,Event-driven architecture,MVC,Repository,Event-driven architecture
+Data Structures,Which data structure uses FIFO (First-In-First-Out) ordering?,easy,Stack,Queue,Heap,Tree,Queue
+Data Structures,What is the time complexity of accessing an element in an array by index?,easy,O(n),O(log n),O(1),O(n^2),O(1)
+Algorithms,Which algorithm is used to find the shortest path in an unweighted graph?,easy,DFS,BFS,Dijkstra,A*,BFS
+Databases,Which SQL command is used to retrieve data from a database?,easy,INSERT,UPDATE,SELECT,DELETE,SELECT
+Operating Systems,Which scheduling algorithm gives equal time to all processes?,easy,FIFO,Round Robin,Priority,SJF,Round Robin
+Networking,Which protocol is used for secure web communication?,easy,HTTP,HTTPS,FTP,SMTP,HTTPS
+Artificial Intelligence,What is the main goal of supervised learning?,easy,Learning without data,Learning with labeled data,Learning with unlabeled data,Learning without supervision,Learning with labeled data

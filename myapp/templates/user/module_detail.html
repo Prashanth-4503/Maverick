@@ -1,0 +1,426 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ module.name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Hero Section -->
+    <div class="relative bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 mb-8 overflow-hidden">
+        <div class="relative z-10">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                <div class="max-w-2xl">
+                    <div class="flex items-center mb-2">
+                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full">
+                            {{ module.get_difficulty_display }}
+                        </span>
+                        <span class="ml-3 text-sm text-gray-500">
+                            <i class="far fa-clock mr-1"></i> {{ module.estimated_time }}
+                        </span>
+                    </div>
+                    <h1 class="text-4xl font-bold text-gray-900 mb-3">
+                        {{ module.name }}
+                    </h1>
+                    <p class="text-lg text-gray-600 mb-6">{{ module.description }}</p>
+                </div>
+                
+                <!-- Status Badge with Animation -->
+                <div class="mt-6 md:mt-0">
+                    <div class="relative">
+                        <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium 
+                            {% if learning_path and learning_path.status == 'completed' %}bg-green-100 text-green-800 shadow-green-sm
+                            {% elif learning_path and learning_path.status == 'in_progress' %}bg-blue-100 text-blue-800 shadow-blue-sm
+                            {% else %}bg-gray-100 text-gray-800 shadow-sm{% endif %}">
+                            {% if learning_path %}
+                                {{ learning_path.get_status_display }}
+                            {% else %}
+                                Not Started
+                            {% endif %}
+                        </span>
+                        {% if learning_path and learning_path.status == 'completed' %}
+                        <span class="absolute -top-2 -right-2 animate-ping h-3 w-3 rounded-full bg-green-400 opacity-75"></span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- Main Content -->
+        <div class="lg:w-2/3">
+            <!-- Module Contents Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 transform transition-all hover:shadow-2xl" id="contents-card">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-list-ul text-blue-500 mr-3"></i>
+                        Module Contents
+                    </h2>
+                    <p class="text-gray-500 mt-1">Complete all items to finish this module</p>
+                </div>
+                
+                <div class="divide-y divide-gray-100">
+                    {% for content in contents %}
+                    <div class="group p-5 hover:bg-gray-50 transition duration-200 {% if content.id in completed_contents %}bg-green-50{% endif %}">
+                        <a href="{% url 'content_detail' content.id %}" class="block">
+                            <div class="flex items-start">
+                                <!-- Content Icon -->
+                                <div class="flex-shrink-0 relative">
+                                    {% if content.content_type == 'video' %}
+                                    <div class="h-12 w-12 rounded-lg bg-red-100 flex items-center justify-center group-hover:bg-red-200 transition">
+                                        <i class="fas fa-play text-red-600 text-xl"></i>
+                                    </div>
+                                    {% elif content.content_type == 'pdf' %}
+                                    <div class="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center group-hover:bg-blue-200 transition">
+                                        <i class="fas fa-file-pdf text-blue-600 text-xl"></i>
+                                    </div>
+                                    {% elif content.content_type == 'quiz' %}
+                                    <div class="h-12 w-12 rounded-lg bg-purple-100 flex items-center justify-center group-hover:bg-purple-200 transition">
+                                        <i class="fas fa-question-circle text-purple-600 text-xl"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center group-hover:bg-green-200 transition">
+                                        <i class="fas fa-tasks text-green-600 text-xl"></i>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    {% if content.id in completed_contents %}
+                                    <div class="absolute -top-2 -right-2 bg-white rounded-full p-0.5 shadow-sm">
+                                        <div class="h-5 w-5 rounded-full bg-green-500 flex items-center justify-center">
+                                            <i class="fas fa-check text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Content Details -->
+                                <div class="ml-4 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="text-lg font-semibold text-gray-900 group-hover:text-blue-600 transition">
+                                            {{ content.title }}
+                                        </h3>
+                                        <span class="text-xs font-medium px-2 py-1 rounded-full 
+                                            {% if content.id in completed_contents %}bg-green-100 text-green-800
+                                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ content.duration_minutes }} min
+                                        </span>
+                                    </div>
+                                    <p class="text-sm text-gray-500 mt-1">
+                                        {{ content.content_type|title }}
+                                        {% if content.points_value %}
+                                        • {{ content.points_value }} XP
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                    {% empty %}
+                    <div class="p-6 text-center">
+                        <i class="fas fa-inbox text-gray-300 text-4xl mb-3"></i>
+                        <p class="text-gray-500">No contents available for this module.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Instructor Section -->
+            {% if module.instructor %}
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-8" id="instructor-card">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-chalkboard-teacher text-indigo-500 mr-3"></i>
+                        About the Instructor
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="flex items-start">
+                        <img class="h-16 w-16 rounded-full object-cover shadow-md" src="{{ module.instructor.profile.image.url|default:'/static/images/default-avatar.png' }}" alt="{{ module.instructor.get_full_name }}">
+                        <div class="ml-4">
+                            <h3 class="text-lg font-bold text-gray-900">{{ module.instructor.get_full_name }}</h3>
+                            <p class="text-sm text-blue-600">{{ module.instructor.profile.title|default:"Course Instructor" }}</p>
+                            <p class="text-sm text-gray-500 mt-2">{{ module.instructor.profile.bio|truncatewords:30 }}</p>
+                            <div class="mt-3 flex space-x-4">
+                                {% if module.instructor.profile.twitter_url %}
+                                <a href="{{ module.instructor.profile.twitter_url }}" class="text-gray-400 hover:text-blue-400">
+                                    <i class="fab fa-twitter"></i>
+                                </a>
+                                {% endif %}
+                                {% if module.instructor.profile.linkedin_url %}
+                                <a href="{{ module.instructor.profile.linkedin_url }}" class="text-gray-400 hover:text-blue-700">
+                                    <i class="fab fa-linkedin-in"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="lg:w-1/3 space-y-6">
+            <!-- Action Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden" id="actions-card">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-rocket text-purple-500 mr-2"></i>
+                        Module Actions
+                    </h2>
+                </div>
+                
+                <div class="p-6 space-y-4">
+                    <!-- Progress Indicator
+                    <div>
+                        <div class="flex justify-between text-sm font-medium text-gray-600 mb-2">
+                            <span>Your Progress</span>
+                            <span>{{ progress_percent|default:"0" }}%</span>
+                        </div>
+                        <div class="relative pt-1">
+                            <div class="overflow-hidden h-3 mb-4 text-xs flex rounded-full bg-gray-200">
+                                <div style="width:{{ progress_percent|default:"0" }}%" 
+                                    class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 ease-out"></div>
+                            </div>
+                        </div>
+                    </div> -->
+                    
+                    <!-- Dynamic Action Button -->
+                    <div class="space-y-3">
+                        {% if not learning_path %}
+                            <a href="{% url 'start_module' module.id %}" 
+                               class="group relative overflow-hidden w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <div class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-play-circle mr-3 text-xl transition-transform group-hover:scale-110"></i>
+                                    Start Learning Journey
+                                </div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </a>
+                        
+                        {% elif learning_path.status == 'completed' %}
+                            {% if not has_certificate %}
+                                <div class="relative">
+                                    <a href="{% url 'generate_certificate' module.id %}" 
+                                       class="group relative overflow-hidden w-full bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                        <div class="relative z-10 flex items-center justify-center">
+                                            <i class="fas fa-award mr-3 text-xl transition-transform group-hover:scale-110"></i>
+                                            Claim Your Certificate
+                                        </div>
+                                        <div class="absolute inset-0 bg-gradient-to-r from-purple-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </a>
+                                    {% if module.xp_reward > 0 %}
+                                        <span class="absolute -top-3 -right-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-3 py-1 rounded-full animate-bounce">
+                                            +{{ module.xp_reward }} XP
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div class="space-y-3">
+                                    <a href="{% url 'view_certificate' module.id %}" 
+                                       class="group relative overflow-hidden w-full bg-gradient-to-r from-green-600 to-teal-700 hover:from-green-700 hover:to-teal-800 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                        <div class="relative z-10 flex items-center justify-center">
+                                            <i class="fas fa-certificate mr-3 text-xl transition-transform group-hover:scale-110"></i>
+                                            View Certificate
+                                        </div>
+                                        <div class="absolute inset-0 bg-gradient-to-r from-green-700 to-teal-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                    </a>
+                                    <div class="flex justify-center space-x-4">
+                                        <a href="{% url 'view_certificate' module.id %}?format=pdf" 
+                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center transition">
+                                            <i class="fas fa-file-pdf mr-2"></i> Download
+                                        </a>
+                                        <a href="#" onclick="shareCertificate('{{ module.name }}')" 
+                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center transition">
+                                            <i class="fas fa-share-alt mr-2"></i> Share
+                                        </a>
+                                        <a href="#" 
+                                           class="text-sm text-blue-600 hover:text-blue-800 hover:underline flex items-center transition">
+                                            <i class="fas fa-print mr-2"></i> Print
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        
+                        {% elif learning_path.status == 'not_started' %}
+                            <a href="{% url 'start_module' module.id %}" 
+                               class="group relative overflow-hidden w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <div class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-play-circle mr-3 text-xl transition-transform group-hover:scale-110"></i>
+                                    Begin Module
+                                </div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-blue-700 to-indigo-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </a>
+                        
+                        {% else %}
+                            <a href="{% url 'continue_module' module.id %}" 
+                               class="group relative overflow-hidden w-full bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 text-white px-6 py-4 rounded-xl font-semibold transition-all duration-300 block text-center shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                                <div class="relative z-10 flex items-center justify-center">
+                                    <i class="fas fa-forward mr-3 text-xl transition-transform group-hover:scale-110"></i>
+                                    Continue Learning
+                                </div>
+                                <div class="absolute inset-0 bg-gradient-to-r from-indigo-700 to-purple-800 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                            </a>
+                        {% endif %}
+                    </div>
+
+                    {% if learning_path and learning_path.status == 'completed' %}
+                    <div class="mt-4 p-3 bg-green-50 rounded-lg border border-green-200 text-center animate-pulse">
+                        <div class="flex items-center justify-center text-green-700">
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <span class="font-medium">Module Completed!</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Key Details Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden" id="details-card">
+                <div class="p-6 border-b border-gray-100">
+                    <h2 class="text-xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                        Module Details
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600">
+                                <i class="far fa-clock"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-gray-500">Estimated Time</h3>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ module.estimated_time }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                                <i class="fas fa-bolt"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-gray-500">Difficulty</h3>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ module.get_difficulty_display }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-lg bg-green-50 flex items-center justify-center text-green-600">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-gray-500">XP Reward</h3>
+                                <p class="mt-1 text-sm font-semibold text-gray-900">{{ module.xp_reward }} XP</p>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Share Certificate Modal -->
+<div id="shareModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">Share Your Achievement</h3>
+            <button onclick="closeShareModal()" class="text-gray-400 hover:text-gray-500">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <p class="text-gray-600">Share your certificate for completing <strong>{{ module.name }}</strong></p>
+            
+            <div class="flex space-x-3">
+                <button onclick="shareOnPlatform('twitter')" class="flex-1 bg-blue-400 hover:bg-blue-500 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fab fa-twitter mr-2"></i> Twitter
+                </button>
+                <button onclick="shareOnPlatform('linkedin')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fab fa-linkedin-in mr-2"></i> LinkedIn
+                </button>
+                <button onclick="shareOnPlatform('facebook')" class="flex-1 bg-blue-800 hover:bg-blue-900 text-white py-2 px-4 rounded-lg flex items-center justify-center">
+                    <i class="fab fa-facebook-f mr-2"></i> Facebook
+                </button>
+            </div>
+            
+            <div class="pt-4 border-t border-gray-200">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Or copy link</label>
+                <div class="flex">
+                    <input id="certificateLink" type="text" readonly 
+                           value="{{ request.build_absolute_uri }}{% if not learning_path.status == 'completed' %}#{% else %}{% url 'view_certificate' module.id %}{% endif %}" 
+                           class="flex-1 rounded-l-lg border border-gray-300 px-3 py-2 text-sm">
+                    <button onclick="copyCertificateLink()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-4 py-2 rounded-r-lg border border-l-0 border-gray-300">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function shareCertificate(moduleName) {
+    document.getElementById('shareModal').classList.remove('hidden');
+    
+    if (!navigator.share) {
+        return;
+    }
+    
+    navigator.share({
+        title: 'I completed ' + moduleName,
+        text: 'Check out my certificate for completing ' + moduleName,
+        url: window.location.href
+    }).catch(err => {
+        console.log('Error sharing:', err);
+    });
+}
+
+function closeShareModal() {
+    document.getElementById('shareModal').classList.add('hidden');
+}
+
+function shareOnPlatform(platform) {
+    const url = encodeURIComponent(document.getElementById('certificateLink').value);
+    let shareUrl = '';
+    
+    switch(platform) {
+        case 'twitter':
+            shareUrl = `https://twitter.com/intent/tweet?text=I%20completed%20${encodeURIComponent('{{ module.name }}')}!&url=${url}`;
+            break;
+        case 'linkedin':
+            shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`;
+            break;
+        case 'facebook':
+            shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            break;
+    }
+    
+    window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function copyCertificateLink() {
+    const linkInput = document.getElementById('certificateLink');
+    linkInput.select();
+    document.execCommand('copy');
+    
+    const copyButton = event.currentTarget;
+    const originalHtml = copyButton.innerHTML;
+    copyButton.innerHTML = '<i class="fas fa-check"></i> Copied!';
+    
+    setTimeout(() => {
+        copyButton.innerHTML = originalHtml;
+    }, 2000);
+}
+
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelector(this.getAttribute('href')).scrollIntoView({
+            behavior: 'smooth'
+        });
+    });
+});
+</script>
+{% endblock %}

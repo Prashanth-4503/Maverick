@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Evaluate Submissions - {{ hackathon.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-star"></i> Evaluate Submissions - {{ hackathon.name }}
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% if submission_forms %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Evaluation Instructions:</strong> Score each submission based on the defined criteria. 
+                        Your evaluations will be used to calculate final scores and rankings.
+                    </div>
+
+                    {% for item in submission_forms %}
+                    <div class="card border-left-primary mb-4">
+                        <div class="card-header bg-light">
+                            <div class="row align-items-center">
+                                <div class="col-md-8">
+                                    <h5 class="mb-0">{{ item.submission.project_title }}</h5>
+                                    <small class="text-muted">
+                                        by {{ item.submission.submitter_name }} • 
+                                        Submitted: {{ item.submission.submitted_at|date:"M d, Y H:i" }}
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-right">
+                                    {% if item.evaluated %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check"></i> Evaluated
+                                    </span>
+                                    {% else %}
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock"></i> Pending
+                                    </span>
+                                    {% endif %}
+                                    {% if item.submission.final_score %}
+                                    <div class="mt-1">
+                                        <span class="badge badge-primary">Score: {{ item.submission.final_score|floatformat:1 }}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <!-- Project Details -->
+                                    <h6 class="text-primary">Project Description</h6>
+                                    <p class="text-muted">{{ item.submission.project_description }}</p>
+                                    
+                                    <!-- Project Links -->
+                                    <div class="mb-3">
+                                        {% if item.submission.github_url %}
+                                        <a href="{{ item.submission.github_url }}" target="_blank" class="btn btn-outline-dark btn-sm mr-2">
+                                            <i class="fab fa-github"></i> GitHub
+                                        </a>
+                                        {% endif %}
+                                        {% if item.submission.demo_url %}
+                                        <a href="{{ item.submission.demo_url }}" target="_blank" class="btn btn-outline-primary btn-sm mr-2">
+                                            <i class="fas fa-play"></i> Demo
+                                        </a>
+                                        {% endif %}
+                                        {% if item.submission.submission_url %}
+                                        <a href="{{ item.submission.submission_url }}" target="_blank" class="btn btn-outline-info btn-sm mr-2">
+                                            <i class="fas fa-external-link-alt"></i> Project
+                                        </a>
+                                        {% endif %}
+                                        {% if item.submission.submission_file %}
+                                        <a href="{{ item.submission.submission_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                            <i class="fas fa-download"></i> Download File
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Evaluation Form -->
+                                    <h6 class="text-primary">Evaluation Scores</h6>
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="submission_id" value="{{ item.submission.id }}">
+                                        
+                                        {% for field in item.form %}
+                                        <div class="form-group">
+                                            {% if 'score_' in field.name %}
+                                            <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                            {{ field }}
+                                            {% elif field.name == 'comments' %}
+                                            <label for="{{ field.id_for_label }}" class="form-label">Comments & Feedback</label>
+                                            {{ field }}
+                                            {% endif %}
+                                        </div>
+                                        {% endfor %}
+                                        
+                                        <button type="submit" class="btn btn-warning btn-block">
+                                            <i class="fas fa-save"></i> Save Evaluation
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">No submissions to evaluate</h4>
+                        <p class="text-muted">Submissions will appear here once participants submit their projects.</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Navigation -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'admin_hackathon_management' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Management
+                        </a>
+                        {% if submission_forms %}
+                        <a href="{% url 'select_winners' hackathon.id %}" class="btn btn-success ml-2">
+                            <i class="fas fa-trophy"></i> Select Winners
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add form-control class to form fields
+document.addEventListener('DOMContentLoaded', function() {
+    const formFields = document.querySelectorAll('input, textarea, select');
+    formFields.forEach(field => {
+        field.classList.add('form-control');
+    });
+});
+</script>
+{% endblock %}
