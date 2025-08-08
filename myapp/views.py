@@ -5938,7 +5938,7 @@ import requests
 from django.shortcuts import render, redirect
 from django.views.decorators.csrf import csrf_exempt
 
-OPENROUTER_API_KEY = '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'  # << Secure this key
+OPENROUTER_API_KEY = '#ENTER YOUR API KEY'  # << Secure this key
 
 
 @csrf_exempt
