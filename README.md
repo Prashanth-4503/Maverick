@@ -4,7 +4,7 @@ Welcome to the **Mavericks Coding Platform** – a gamified coding and learning 
 
 ## Live Application
 
-You can access the hosted application here: **[Mavericks Live](https://maverick.selfmade.one/)**
+You can access the hosted application here: **[Mavericks Live](https://maverick.selfmade.technology/)**
 
 ## Features
 
